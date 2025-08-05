@@ -1,0 +1,112 @@
+/* ----- Alapstílusok ----- */
+
+.print-container {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: white;
+  color: black;
+  width: 100vw;
+  z-index: 999999;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.court-block {
+  min-height: 450px;
+  page-break-inside: avoid;
+}
+
+table {
+  margin-top: 4rem;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+thead th {
+  font-size: 11pt;
+  font-weight: bold;
+  text-align: center;
+  height: 30px;
+  background: #fff; /* fehér háttér, hogy ne vesszen el */
+  vertical-align: middle;
+}
+th,
+td {
+  border: 1px solid #000;
+  padding: 6px;
+  font-size: 10pt;
+  width: 14.28%;
+  vertical-align: top;
+  word-break: break-word;
+}
+th
+
+.res-box {
+  background: #e6f7ff;
+  padding: 4px;
+  margin-bottom: 4px;
+  font-size: 9pt;
+  border-radius: 3px;
+}
+
+.page-break {
+  page-break-after: always;
+}
+
+
+/* ----- NYOMTATÁS ----- */
+
+@media print {
+  /* Csak a #print-root jelenjen meg */
+  body * {
+    visibility: hidden !important;
+  }
+
+  #print-root,
+  #print-root * {
+    visibility: visible !important;
+  }
+
+  #print-root {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: white;
+    color: black;
+    padding: 20px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Nyomtatásnál ne legyen oldaltörés a konténeren belül */
+  .print-container {
+    margin: 0 auto;
+    width: 100%;
+    background: white;
+    padding: 0;
+  }
+}
+
+
+/* ----- Képernyőn elrejtés ----- */
+@media screen {
+  #print-root {
+    display: none;
+  }
+}
