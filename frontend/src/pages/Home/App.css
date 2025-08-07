@@ -252,11 +252,15 @@ footer .gallery-container{
   z-index: 900;
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+}
+.footer-info-upper{
+  display: flex;
+  flex-direction: row;
 }
 
 .footer-info-provider,
@@ -299,10 +303,13 @@ footer .gallery-container{
   overflow: hidden;
 }
 @media (max-width: 768px) {
-  .footer-info {
+  .footer-info-upper {
     flex-direction: column;
     text-align: center;
     align-items: center;
+  }
+  .footer-info-lower{
+  text-align: center;
   }
 
   .footer-info-provider,

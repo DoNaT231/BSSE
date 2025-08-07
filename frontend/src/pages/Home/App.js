@@ -77,7 +77,8 @@ function App(isLogged) {
       </section>
       <footer>
         <div className='footer-info'>
-          <div className='footer-info-provider'>
+          <div className='footer-info-upper'>
+            <div className='footer-info-provider'>
             <h2>A weboldal üzemeltetője:</h2>
             <ul>
                 <li>Szolgáltató neve: Bognár Balázs</li>
@@ -85,13 +86,16 @@ function App(isLogged) {
                 <li>E-mail: almadistrandroplabda@gmail.com</li>
                 <li>Telefonszám: +36 70 280 3145</li>
             </ul>
-            <p>A weboldalon keresztül elérhető pályafoglalási szolgáltatás ingyenesen használható, kereskedelmi tevékenységet nem szolgál.</p>
-            <p>A weboldal jelenleg magánszemély által működtetett, a Balatoni Strandsport Egyesület megalakulását követően az üzemeltetési jogokat átadjuk az egyesületnek, amelyről az impresszum frissítésével tájékoztatjuk a felhasználókat.</p>
           </div>
           <div className='footer-info-docs'>
             <h2>Dokumentumok</h2>
             <Link to="/adatkezelesitajekoztatoesaszf">Adatkezelési Tájékoztató és ASZF</Link>
             <Link to="/smashspt">Smash pályahasználati tájékoztató</Link>
+          </div>
+          </div>
+          <div className='footer-info-lower'>
+            <p>A weboldalon keresztül elérhető pályafoglalási szolgáltatás magánszemélyként ingyenesen használható, kereskedelmi tevékenységet nem szolgál, ha cég szeretne foglalni keresse fel az önkormányzatot.</p>
+            <p>A weboldal jelenleg magánszemély által működtetett, a Balatoni Strandsport Egyesület megalakulását követően az üzemeltetési jogokat átadjuk az egyesületnek, amelyről az impresszum frissítésével tájékoztatjuk a felhasználókat.</p>
           </div>
         </div>
         <div className='map-container'>

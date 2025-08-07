@@ -120,7 +120,7 @@ export default function LoginRegist(){
 
             {stage === 'askName' && (
                 <form onSubmit={handleNameSubmit}>
-                    <p>Adja meg a nevét hogy regsiztráljuk</p>
+                    <p>Adja meg a nevét, hogy regisztráljuk</p>
                     <input type="text" value={name} onChange={e => setName(e.target.value)} />
                     <button type="submit">Regisztráció</button>
                 </form>

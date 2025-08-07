@@ -21,7 +21,7 @@ const days = [
   "Szombat",
   "Vasárnap",
 ];
-const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8:00 - 20:00
+const hours = Array.from({ length: 12 }, (_, i) => i + 9); // 8:00 - 20:00
 
 function WeeklyCalendar() {
   const [selectedCourts, setSelectedCourts] = useState([]);
