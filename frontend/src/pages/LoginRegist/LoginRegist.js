@@ -102,7 +102,7 @@ export default function LoginRegist(){
             {stage === 'askEmail' && (
                 <form onSubmit={handleEmailSubmit}>
                     <h1>BEJELENTKEZÉS</h1>
-                    <p>Adja meg az Email címét hogy tudjon foglalni</p>
+                    <p>Adja meg az Email címét, hogy tudjon foglalni</p>
                     {alertMessage!=="" && <p style={{ color: 'red' , fontSize: '12px' , marginBottom: '16px'}}>{alertMessage}</p>}
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
                     <button type="submit">Tovább</button>

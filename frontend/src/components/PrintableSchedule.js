@@ -8,6 +8,11 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
     d.setDate(d.getDate() + i);
     return d;
   });
+  const weekEnd = () => {
+    const weekend = new Date(weekStart)
+    weekend.setDate(weekend.getDate()+7) 
+    return weekend
+  }
 
   console.log("reses:", reservations);
   console.log("courts:", courts);
@@ -26,7 +31,7 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
 
   return ReactDOM.createPortal(
     <div className="print-container">
-      <h1>Heti Foglalási Táblázat</h1>
+      <h1>Heti Foglalási Táblázat ({weekStart.toLocaleDateString()} - {weekEnd().toLocaleDateString()})</h1>
       {courts.map((court) => (
         <div key={court.id} className="court-block">
           <h2>{court.name}</h2>
