@@ -58,7 +58,7 @@ function Header(){
         {isOpen && (
             <nav className="navbar">
             <Link to="/">Kezdőlap</Link>
-            <Link to="/foglalas">Foglalás</Link>
+            <Link to="/palyafoglalas">Foglalás</Link>
             {!loggedIn && <Link onClick={()=>setModal("login")}>Bejelentkezés</Link>}
             {role==="admin" && <Link to={'/admin'}>Admin felület</Link>}
             {loggedIn && <Link onClick={()=>setModal("logout")}>Kijelentkezés</Link>}

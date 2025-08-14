@@ -25,7 +25,7 @@ const router = createBrowserRouter([
     element: <AktAndAfsz/>
   },
   {
-    path: '/foglalas',
+    path: '/palyafoglalas',
     element: <Booking/>
   },
   {

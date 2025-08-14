@@ -20,7 +20,7 @@ function App(isLogged) {
       <section className='landing-page'>
         <div>
           <h1>BSSE</h1>
-          <Link to='/foglalas'><button onClick={()=>navigate('/')}>Pálya foglalás</button></Link>
+          <Link to='/palyafoglalas'><button onClick={()=>navigate('/palyafoglalas')}>Pálya foglalás</button></Link>
         </div>
       </section>
       <WaveDivider/>
@@ -70,7 +70,7 @@ function App(isLogged) {
 
         <div class="sponsor-contact">
           <h4>Érdekel a lehetőség?</h4>
-          <p>📧 <a href="almadistrandroplabda@gmail.com">almadistrandroplabda@gmail.com</a></p>
+          <p>📧 <a href="mailto:almadistrandroplabda@gmail.com?subject=Tárgy&body=Szöveg">almadistrandroplabda@gmail.com</a></p>
           <p>📞 +36 70 280 3145</p>
           <p>Szívesen egyeztetünk személyesen vagy e-mailben – kérj ajánlatot még ma!</p>
         </div>
@@ -94,7 +94,7 @@ function App(isLogged) {
           </div>
           </div>
           <div className='footer-info-lower'>
-            <p>A weboldalon keresztül elérhető pályafoglalási szolgáltatás magánszemélyként ingyenesen használható, kereskedelmi tevékenységet nem szolgál, ha cég szeretne foglalni keresse fel az önkormányzatot.</p>
+            <p>A weboldalon keresztül elérhető pályafoglalási szolgáltatás magánszemélyként ingyenesen használható, kereskedelmi tevékenységet nem szolgál, ha cég szeretne foglalni, kérjük érdeklődjön az <a href='https://balatonalmadi.hu/kapcsolat/elerhetoseg'>önkormányzatnál</a>!</p>
             <p>A weboldal jelenleg magánszemély által működtetett, a Balatoni Strandsport Egyesület megalakulását követően az üzemeltetési jogokat átadjuk az egyesületnek, amelyről az impresszum frissítésével tájékoztatjuk a felhasználókat.</p>
           </div>
         </div>

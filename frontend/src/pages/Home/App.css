@@ -248,6 +248,7 @@ footer .gallery-container{
   position: absolute;
 }
 
+
 .footer-info {
   z-index: 900;
   display: flex;
@@ -291,6 +292,9 @@ footer .gallery-container{
   text-decoration: none;
   font-weight: 500;
 }
+.footer-info-lower a{
+  display: inline;
+}
 
 .footer-info a:hover {
   text-decoration: underline;
@@ -299,7 +303,7 @@ footer .gallery-container{
 .map-container {
   width: 100%;
   background-color: var(--Black);
-  padding: 2rem 2rem;
+  padding: 2rem 2rem 4rem 2rem;
   overflow: hidden;
 }
 @media (max-width: 768px) {
