@@ -45,6 +45,7 @@ import { useNavigate } from "react-router-dom";
 import LoginRegist from "../pages/LoginRegist/LoginRegist.js";
 import { tr } from "date-fns/locale"; // (import itt jelenleg nincs használva)
 import sendEmail from "../sendEmail.js";
+import "../styleComponents.css";
 
 dayjs.extend(utc);
 
@@ -110,6 +111,7 @@ function WeeklyCalendar() {
   /** Általános modal (információ/hiba) */
   const [modal, setModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [errorModal, setErrorModal] = useState(false);
 
   /** Nem bejelentkezett felhasználónál foglalás trigger esetén login modal */
   const [reservationModal, setReservationModal] = useState(false); // (state létezik, de UI-ban most nem renderelsz külön modalt, csak overlayt)
@@ -236,16 +238,19 @@ function WeeklyCalendar() {
 
       if (response.ok) {
         setModal(true);
+        setErrorModal(false)
         setModalMessage("Változtatások sikeresen mentve!");
         await fetchReservations();
       } else {
         console.error("Hiba a szinkronizáláskor:", result);
         setModal(true);
+        setErrorModal(true)
         setModalMessage(result.message || "Hiba történt a szinkronizálás során.");
       }
     } catch (error) {
       console.error("Fetch error:", error);
       setModal(true);
+      setErrorModal(true)
       setModalMessage("Hálózati hiba vagy szerverhiba.");
     }
 
@@ -306,6 +311,7 @@ function WeeklyCalendar() {
     } catch (err) {
       console.error(err);
       setModal(true);
+      setErrorModal(true)
       setModalMessage("Hiba történt a foglalások lekérésekor.");
     }
   };
@@ -395,7 +401,7 @@ function WeeklyCalendar() {
    */
   const handleSubmit = async () => {
     if (loggedIn) {
-      if (!ownReservations.length) {
+      if (ownReservations.lengt===0) {
         setModal(true);
         setModalMessage("Erre a pályára és hétre nincs foglalása");
         await syncReservations(ownReservations);
@@ -444,97 +450,129 @@ function WeeklyCalendar() {
       );
     };
 
-    // 1) múlt tiltás
-    if (cellDate < today) {
-      setModal(true);
-      setModalMessage("Múltbeli időpontokra nem lehet foglalni");
-      return;
-    }
-
-    // 2) mai nap tiltás
-    if (isSameDay(today, cellDate)) {
-      setModal(true);
-      setModalMessage("A mai napra már nem lehet foglalani");
-      return;
-    }
-
-    // 3) holnap 18 után tiltás
-    let tomorrow = today;
-    tomorrow = new Date(tomorrow.setDate(tomorrow.getDate() + 1));
-    if (isSameDay(tomorrow, cellDate) && today.getHours() > 18) {
-      setModal(true);
-      setModalMessage("18 óra után már nem lehet a következő napra foglalni");
-      return;
-    }
-
-    // 4) napi/heti limit számolás (saját foglalások alapján)
-    let maxReservationInaWeek = 0;
-    let maxReservationInaDay = 0;
-
-    for (let i = 0; i < ownReservations.length; i++) {
-      const resDate = new Date(ownReservations[i].startTime);
-
-      if (
-        isSameDay(cellDate, new Date(ownReservations[i].startTime)) &&
-        cellDate.getTime() !== resDate.getTime()
-      )
-        maxReservationInaDay++;
-
-      if (monday < cellDate && cellDate < sunday && cellDate.getTime() !== resDate.getTime())
-        maxReservationInaWeek++;
-
-      if (maxReservationInaDay >= 2) {
-        setModal(true);
-        setModalMessage("egy nap maximum két óra foglalható");
-        maxReservationInaDay--;
-        return;
+    /**Szabad a hely? */
+    let freeToBook = true;
+    reservedDates.forEach(date => {
+     
+      const resDate = new Date(date.startTime)
+       console.log(resDate + " es a masik " + cellDate)
+      if(resDate.getTime() == cellDate.getTime()){
+        freeToBook = false;
+        console.log("mar nem szabad")
       }
-      if (maxReservationInaWeek >= 10) {
-        setModal(true);
-        setModalMessage("egy héten maximum 10 óra foglalható");
-        maxReservationInaDay--;
-        return;
-      }
-    }
-
-    // ADMIN: ütközés esetén törlési modal
-    if (role === "admin") {
-      const conflict = reservedDates.find(
-        (r) => new Date(r.startTime).getTime() === cellDate.getTime()
-      );
-      if (conflict) {
-        setAdminSelectedSlot(cellDate);
-        setAdminConflict(conflict);
-        setAdminModalVisible(true);
-      }
-      return;
-    }
-
-    // Normál user: saját foglalás-e?
-    const isOwnReserved = ownReservations.some((r) => {
-      const rDate = new Date(r.startTime);
-      return rDate.getTime() === cellDate.getTime();
     });
 
-    // Ha saját foglalásra kattint -> törlés ownReservations + reservedDates listából
-    if (isOwnReserved) {
-      console.log("sajat reservatiionre nyomtál");
+    /** ha szabad */
+    if(freeToBook){
+      // 1) múlt tiltás
+      if (cellDate < today) {
+        setModal(true);
+        setErrorModal(true)
+        setModalMessage("Múltbeli időpontokra nem lehet foglalni");
+        return;
+      }
 
-      setOwnReservations((prev) =>
-        prev.filter((r) => new Date(r.startTime).getTime() !== cellDate.getTime())
-      );
+      // 2) mai nap tiltás
+      if (isSameDay(today, cellDate)) {
+        setModal(true);
+        setErrorModal(true)
+        setModalMessage("A mai napra már nem lehet foglalani");
+        return;
+      }
 
-      setReservedDates((prev) =>
-        prev.filter(
-          (r) =>
-            !(
-              new Date(r.startTime).getTime() === cellDate.getTime() &&
-              Number(r.userId) === Number(userId)
-            )
+       // 3) holnap 18 után tiltás
+        let tomorrow = today;
+        tomorrow = new Date(tomorrow.setDate(tomorrow.getDate() + 1));
+        if (isSameDay(tomorrow, cellDate) && today.getHours() > 18) {
+          setModal(true);
+          setErrorModal(true)
+          setModalMessage("18 óra után már nem lehet a következő napra foglalni");
+          return;
+        }
+        // 4) napi/heti limit számolás (saját foglalások alapján)
+      let maxReservationInaWeek = 0;
+      let maxReservationInaDay = 0;
+
+      for (let i = 0; i < ownReservations.length; i++) {
+        const resDate = new Date(ownReservations[i].startTime);
+
+        if (
+          isSameDay(cellDate, new Date(ownReservations[i].startTime)) &&
+          cellDate.getTime() !== resDate.getTime()
         )
-      );
-      return;
+          maxReservationInaDay++;
+
+        if (monday < cellDate && cellDate < sunday && cellDate.getTime() !== resDate.getTime())
+          maxReservationInaWeek++;
+
+        if (maxReservationInaDay >= 2) {
+          setModal(true);
+        setErrorModal(true)
+          setModalMessage("Egy nap maximum két óra foglalható");
+          maxReservationInaDay--;
+          return;
+        }
+        if (maxReservationInaWeek >= 10) {
+          setModal(true);
+          setErrorModal(true)
+          setModalMessage("Egy héten maximum 10 óra foglalható");
+          maxReservationInaDay--;
+          return;
+        }
+      }
     }
+    else{ /**Ha nem szabad -> Valakié */
+
+       // ADMIN: ütközés esetén törlési modal
+      if (role === "admin") {
+        const conflict = reservedDates.find(
+          (r) => new Date(r.startTime).getTime() === cellDate.getTime()
+        );
+        if (conflict) {
+          setAdminSelectedSlot(cellDate);
+          setAdminConflict(conflict);
+          setAdminModalVisible(true);
+        }
+        return;
+      }
+
+      // Normál user: saját foglalás-e?
+      const isOwnReserved = ownReservations.some((r) => {
+        const rDate = new Date(r.startTime);
+        return rDate.getTime() === cellDate.getTime();
+      });
+
+      console.log("own? : " + isOwnReserved)
+      // Ha saját foglalásra kattint -> törlés ownReservations + reservedDates listából
+      if (isOwnReserved) {
+        console.log("sajat reservatiionre nyomtál");
+
+        setOwnReservations((prev) =>
+          prev.filter((r) => new Date(r.startTime).getTime() !== cellDate.getTime())
+        );
+
+        setReservedDates((prev) =>
+          prev.filter(
+            (r) =>
+              !(
+                new Date(r.startTime).getTime() === cellDate.getTime() &&
+                Number(r.userId) === Number(userId)
+              )
+          )
+        );
+        return;
+      }
+      else{
+        setModal(true);
+        setErrorModal(true)
+        setModalMessage("Ezt már valaki lefoglalta");
+        return;
+      }
+    }
+
+    
+
+   
 
     // Egyébként toggle: hozzáadás / eltávolítás ownReservations-ben
     setOwnReservations((prev) => {
@@ -629,9 +667,10 @@ function WeeklyCalendar() {
       {/* Általános információs / hiba modal */}
       {modal && (
         <Modal closeModal={() => setModal(false)}>
-          <p className="flex flex-col">{modalMessage}</p>
+          { errorModal&&<h4 className="title-base">Hiba</h4>}
+          <p className={errorModal?'desc-base':'title-base'}>{modalMessage}</p>
           <button
-            className="px-4 py-2 font-semibold text-white transition rounded-lg bg-lightBlue hover:bg-yellow"
+            className="btn-primary"
             onClick={() => setModal(false)}
           >
             Rendben

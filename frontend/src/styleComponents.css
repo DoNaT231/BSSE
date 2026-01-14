@@ -24,11 +24,11 @@
   }
 
   .btn-primary {
-    @apply w-40 py-2 mx-auto mt-2 font-semibold text-white transition rounded-lg bg-slate-700 hover:bg-slate-800;
+    @apply w-40 py-2 mx-auto mt-2 font-medium text-white transition rounded-lg bg-slate-700 hover:bg-slate-800;
   }
 
   .btn-secondary {
-    @apply w-40 py-2 mx-auto font-semibold transition bg-gray-200 rounded-lg hover:bg-gray-300;
+    @apply w-40 py-2 mx-auto font-medium transition bg-gray-200 rounded-lg hover:bg-gray-300;
   }
 
   .helper-row {
