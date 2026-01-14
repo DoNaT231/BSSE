@@ -1,40 +1,19 @@
-.gallery-container {
-  
-  width: 100%;
-  overflow: hidden;
-  background: white;
-  padding: 20px 0;
-  mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  box-sizing: border-box;
-}
 
 
-.gallery-track {
-  display: flex;
-  width: max-content;
-  animation: scroll-horizontal 60s linear infinite;
-}
-
-.gallery-image {
-
-  width: 240px;
-  height: 380px;
-  object-fit: cover;
-  margin: 0 16px;
-  border-radius: 17px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
+/* Mobilon nincs mask */
 @media only screen and (max-width: 500px) {
   .gallery-container {
     mask-image: none;
     -webkit-mask-image: none;
-    margin: none;
-    padding: none;
   }
 }
 
-/* Animáció: balról jobbra (cseréld meg a translateX irányt ha kell) */
+/* Végtelen scroll animáció */
+.gallery-track {
+  animation: scroll-horizontal 60s linear infinite;
+}
+
+/* Kulcsanimáció – 1:1 az eredetivel */
 @keyframes scroll-horizontal {
   0% {
     transform: translateX(0%);
@@ -42,4 +21,21 @@
   100% {
     transform: translateX(-50%);
   }
+}
+/* CSAK a képekre hasson */
+.gallery-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 20%,
+    black 80%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
 }

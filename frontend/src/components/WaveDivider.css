@@ -1,34 +1,40 @@
-svg path{
-    animation: pathAnim 10s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+/* 
+  Csak azokra a path-okra vonatkozik,
+  amik a .wave-svg-on belül vannak
+*/
+.wave-svg .wave-path {
+  animation: waveMorph 10s linear infinite;
 }
-svg path:nth-child(2){
-    animation-delay: 2s;
+
+/* Rétegenkénti késleltetés */
+.wave-svg .wave-1 {
+  animation-delay: 0s;
 }
-svg path:nth-child(3){
-    animation-delay: 6s;
+
+.wave-svg .wave-2 {
+  animation-delay: 3s;
 }
-svg path:nth-child(4){
-    animation-play-state: paused;
+
+.wave-svg .wave-3 {
+  animation-delay: 6s;
 }
 
 
-
-@keyframes pathAnim {
+/* Hullám forma animáció (d attribútum) */
+@keyframes waveMorph {
   0% {
-    d: path("M0, 192 C220, 100, 440, 100, 660, 192 C880, 290, 1100, 290, 1320, 192 L1320 500 L0 500");
+    d: path("M0,200 C220,100 440,100 660,200 C880,300 1100,300 1320,200 L1320 500 L0 500");
   }
   25% {
-    d: path("M0, 100 C220, 100, 440, 292, 660, 292 C880, 292, 1100, 100, 1320, 100 L1320 500 L0 500");
+    d: path("M0,100 C220,100 440,300 660,300 C880,300 1100,100 1320,100 L1320 500 L0 500");
   }
   50% {
-    d: path("M0, 192 C220, 290, 440, 290, 660, 192 C880, 100, 1100, 100, 1320, 192 L1320 500 L0 500");
+    d: path("M0,200 C220,300 440,300 660,200 C880,100 1100,100 1320,200 L1320 500 L0 500");
   }
   75% {
-    d: path("M0, 292 C220, 292, 440, 100, 660, 100 C880, 100, 1100, 292, 1320, 292 L1320 500 L0 500");
+    d: path("M0,300 C220,300 440,100 660,100 C880,100 1100,300 1320,300 L1320 500 L0 500");
   }
   100% {
-    d: path("M0, 192 C220, 100, 440, 100, 660, 192 C880, 290, 1100, 290, 1320, 192 L1320 500 L0 500");
+    d: path("M0,200 C220,100 440,100 660,200 C880,300 1100,300 1320,200 L1320 500 L0 500");
   }
 }
