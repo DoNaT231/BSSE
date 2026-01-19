@@ -36,7 +36,7 @@ const AdminDashboard = () => {
           </ul>
         </nav>
 
-        <main className="admin-content">
+        <main className="flex flex-col admin-content gap-7">
           <h2>Üdvözlünk az admin panelen!</h2>
           <div className="admin-cards">
             <div className="admin-card">
@@ -53,11 +53,9 @@ const AdminDashboard = () => {
             </div>
           </div>
           <section className='admin-calendarium-section'>
-              <h1>Foglalások</h1>
               <WeeklyTimeGrid/>
           </section>
           <section className='admin-user-list'>
-            <h1>Felhasználók</h1>
                <UserList />
           </section>
           <section className='admin-court-list'>
