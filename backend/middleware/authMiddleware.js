@@ -20,8 +20,7 @@ export default function authMiddleware(req, res, next) {
     // 4️⃣ req.user beállítása, hogy a route handler is használhassa
     req.user = decoded;
     req.user.role = decoded.role;
-
-    console.log('✅ Token OK, felhasználó:', req.user);
+    
     
     // 5️⃣ Továbbengedés a következő middleware-hez vagy route-hoz
     next();

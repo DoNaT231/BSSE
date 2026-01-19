@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import Modal from '../../components/Modal';
+import Modal from '../../../components/Modal';
 import { tr } from 'date-fns/locale';
-import { API_BASE_URL } from "../../config";
+import { API_BASE_URL } from "../../../config";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);

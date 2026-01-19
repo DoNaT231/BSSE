@@ -120,7 +120,6 @@ router.get('/by-court-week', async (req, res) => {
       [parseInt(courtId), start, end]
     );
     res.json(result.rows);
-    console.log("ezeket uldi a frontendre: ", result.rows)
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Hiba a foglalások lekérdezésekor' });
@@ -129,13 +128,12 @@ router.get('/by-court-week', async (req, res) => {
 
 // Admin: Foglalás törlése időpont alapján
 router.delete('/delete-reservation', authMiddleware, async (req, res) => {
-	console.log('?? DELETE /delete-reservation h�v�s �rkezett');
+	console.log('?? DELETE /delete-reservation h�v�s �rkezett');
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin törölhet' });
 
   const { court_id, startTime } = req.body;
 
   try {
-	console.log(court_id, startTime)
     const result = await db.query(
       'DELETE FROM reservations WHERE court_id = $1 AND booked_time = $2 RETURNING *',
       [court_id, startTime]

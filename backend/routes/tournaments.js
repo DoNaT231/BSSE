@@ -18,21 +18,10 @@
 
 import express from "express";
 import db from "../db.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import adminOnly from "../middleware/adminGuard.js";
 
 const router = express.Router();
-
-/**
- * Admin jogosultság ellenőrzés.
- * - Feltételezés: valamilyen auth middleware már beállítja a req.user-t.
- * - Ha nálad más a role jelölés, itt írd át.
- */
-function requireAdmin(req, res, next) {
-  if (!req.user) return res.status(401).json({ message: "Nincs bejelentkezve." });
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Nincs jogosultság (admin szükséges)." });
-  }
-  next();
-}
 
 /**
  * PUBLIC: Versenyek listája felhasználóknak
@@ -59,7 +48,7 @@ router.get("/", async (req, res) => {
  * ADMIN: Összes verseny listája (minden mező, minden státusz)
  * - Admin felületen a teljes táblát szeretnénk látni
  */
-router.get("/admin/all", requireAdmin, async (req, res) => {
+router.get("/admin/all", authMiddleware, adminOnly, async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT id, title, description, category, start_at, status, created_by, created_at
@@ -84,7 +73,7 @@ router.get("/admin/all", requireAdmin, async (req, res) => {
  *
  * created_by: a bejelentkezett admin user id-ja (ha van)
  */
-router.post("/", requireAdmin, async (req, res) => {
+router.post("/", authMiddleware, adminOnly, async (req, res) => {
   try {
     const {
       title,
@@ -93,6 +82,7 @@ router.post("/", requireAdmin, async (req, res) => {
       start_at = null,
       status = "active",
     } = req.body;
+    console.log(req.body)
 
     if (!title || !category) {
       return res
@@ -129,7 +119,7 @@ router.post("/", requireAdmin, async (req, res) => {
  * COALESCE logika:
  * - ha a body-ban nem adod meg, marad a régi érték
  */
-router.put("/:id", requireAdmin, async (req, res) => {
+router.put("/:id", authMiddleware, adminOnly, async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ message: "Hibás ID." });
@@ -167,7 +157,7 @@ router.put("/:id", requireAdmin, async (req, res) => {
  * ADMIN: Verseny törlése
  * - ON DELETE CASCADE esetén a hozzá tartozó tournament_registrations sorok is törlődnek
  */
-router.delete("/:id", requireAdmin, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ message: "Hibás ID." });

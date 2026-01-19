@@ -109,7 +109,6 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  console.log(email + " " + password)
   if (!email || !password) {
     return res.status(400).json({ status: 'missing_fields', error: 'Email és jelszó szükséges.' });
   }
@@ -127,7 +126,6 @@ router.post('/login', async (req, res) => {
   }
 
   const match = await bcrypt.compare(password, user.password);
-  console.log(password.length, user.password.length)
   if (!match) {
     return res.status(401).json({ status: 'invalid_password', error: 'Hibás jelszó.' });
   }

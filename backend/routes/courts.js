@@ -7,7 +7,7 @@ const router = express.Router();
 // Minden pálya lekérése
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT id, name FROM courts');
+    const result = await db.query('SELECT * FROM courts');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ message: 'Hiba a pályák lekérdezésekor' });
