@@ -59,6 +59,9 @@ export default function TournamentSignupSection() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
+  const token = localStorage.getItem('token');
+  const { userId, userEmail } = useAuth()
+
   const [openTournamentId, setOpenTournamentId] = useState(null);
 
   // form state
@@ -69,8 +72,10 @@ export default function TournamentSignupSection() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitMsg, setSubmitMsg] = useState("");
   const [submitErr, setSubmitErr] = useState("");
-  
-  const token = localStorage.getItem('token');
+  const [myRegistrations, setMyRegistrations] = useState([]); // lista
+  const [regByTournamentId, setRegByTournamentId] = useState({}); // gyors lookup: { [tournamentId]: registration }
+  const [activeRegistration, setActiveRegistration] = useState(null); // épp szerkesztett nevezés (ha van)
+
 
   const selectedTournament = useMemo(
     () => tournaments.find((t) => t.id === openTournamentId) || null,
@@ -113,6 +118,8 @@ export default function TournamentSignupSection() {
 
         const data = await res.json();
         if (mounted) setTournaments(Array.isArray(data) ? data : []);
+
+        if (mounted) await fetchMyRegistrations();
       } catch (e) {
         if (mounted) setLoadError(e.message || "Ismeretlen hiba.");
       } finally {
@@ -125,11 +132,82 @@ export default function TournamentSignupSection() {
     };
   }, []);
 
+  async function onDeleteRegistration() {
+    if (!activeRegistration?.id) return;
+
+    try {
+      setSubmitLoading(true);
+      setSubmitErr("");
+      setSubmitMsg("");
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/tournament-registrations/${activeRegistration.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await safeJson(res);
+      if (!res.ok) throw new Error(data?.message || `Törlés sikertelen (${res.status})`);
+
+      setSubmitMsg("Nevezés törölve 🗑️");
+      setActiveRegistration(null);
+
+      await fetchMyRegistrations();
+
+      // UI reset
+      setTeamName("");
+      setTelNumber("");
+      setPlayers([]);
+    } catch (e) {
+      setSubmitErr(e.message || "Szerver hiba törlés közben.");
+    } finally {
+      setSubmitLoading(false);
+    }
+  }
+
+  async function fetchMyRegistrations() {
+  const res = await fetch(`${API_BASE_URL}/api/tournament-registrations/my`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `Nevezések lekérése sikertelen (${res.status})`);
+
+  const list = Array.isArray(data) ? data : [];
+  setMyRegistrations(list);
+
+  const map = {};
+  for (const r of list) {
+    // várjuk: r.tournament_id
+    map[r.tournament_id] = r;
+  }
+  setRegByTournamentId(map);
+}
+
   function openForm(tournamentId) {
     setOpenTournamentId(tournamentId);
-    setTeamName("");
-    setEmail("");
-    setTelNumber("");
+
+    const existing = regByTournamentId[tournamentId] || null;
+    setActiveRegistration(existing);
+
+    if (existing) {
+      setTeamName(existing.team_name || "");
+      setTelNumber(existing.tel_number || "");
+      setPlayers(Array.isArray(existing.players) ? existing.players : []);
+    } else {
+      setTeamName("");
+      setTelNumber("");
+      setPlayers([]);
+    }
+
     setSubmitMsg("");
     setSubmitErr("");
   }
@@ -137,8 +215,8 @@ export default function TournamentSignupSection() {
   function closeForm() {
     setOpenTournamentId(null);
     setTeamName("");
-    setEmail("");
     setTelNumber("");
+    setEmail(userEmail || "")
     setPlayers([]);
     setSubmitLoading(false);
     setSubmitMsg("");
@@ -155,7 +233,6 @@ export default function TournamentSignupSection() {
 
   function validate() {
     if (!selectedTournament) return "Nincs kiválasztott verseny.";
-    if (!email.trim()) return "Az email kötelező.";
     if (!telNumber.trim()) return "A telefonszám kötelező.";
 
     const required = Number(selectedTournament.number_of_players ?? 0);
@@ -187,33 +264,44 @@ export default function TournamentSignupSection() {
       const payload = {
         tournament_id: selectedTournament.id,
         team_name: teamName.trim() || null,
-        email: email.trim(),
+        user_id: userId,
         tel_number: telNumber.trim(),
         players: players.map((p) => p.trim()),
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/tournament-registrations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            },
+      const isEdit = Boolean(activeRegistration?.id);
+
+      const url = isEdit
+        ? `${API_BASE_URL}/api/tournament-registrations/${activeRegistration.id}`
+        : `${API_BASE_URL}/api/tournament-registrations`;
+
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       });
 
       const data = await safeJson(res);
-      if (!res.ok) throw new Error(data?.message || `Sikertelen nevezés (${res.status})`);
+      if (!res.ok) throw new Error(data?.message || `Sikertelen mentés (${res.status})`);
 
-      setSubmitMsg("Sikeres nevezés! ✅");
-      setTeamName("");
-      setEmail("");
-      setTelNumber("");
-      setPlayers(players.map(() => ""));
+      setSubmitMsg(isEdit ? "Nevezés módosítva ✅" : "Sikeres nevezés! ✅");
+
+      // ✅ frissítsük a saját nevezéseket, hogy a kártyákon is látszódjon
+      await fetchMyRegistrations();
+
+      // opcionális: maradjon nyitva a modal, de most már edit módban legyen
+      const updated = isEdit ? { ...activeRegistration, ...payload } : null;
+      setActiveRegistration(updated || regByTournamentId[selectedTournament.id] || null);
     } catch (err) {
       setSubmitErr(err.message || "Szerver hiba nevezés közben.");
     } finally {
       setSubmitLoading(false);
     }
   }
+
 
   return (
     <div>
@@ -238,8 +326,9 @@ export default function TournamentSignupSection() {
         )}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {tournaments.map((t) => (
-            <div
+          {tournaments.map((t) => {
+               const alreadyRegistered = Boolean(regByTournamentId[t.id]?.id);
+               return(<div
               key={t.id}
               className="p-5 transition bg-white border shadow-sm rounded-2xl border-slate-200 hover:shadow-md"
             >
@@ -261,15 +350,16 @@ export default function TournamentSignupSection() {
                   {t.description}
                 </p>
               )}
-
+            
               <button
                 onClick={() => openForm(t.id)}
                 className="mt-4 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200/60"
               >
-                Jelentkezés
+                {alreadyRegistered ? "Nevezés módosítása" : "Jelentkezés"}
               </button>
-            </div>
-          ))}
+              
+            </div>)
+        })}
         </div>
 
         {/* Modal */}
@@ -307,18 +397,16 @@ export default function TournamentSignupSection() {
               <form onSubmit={onSubmit} className="mt-5 space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <Field
-                    label="Csapatnév (opcionális)"
+                    label="Csapatnév"
                     value={teamName}
                     onChange={setTeamName}
                     placeholder="pl. SMASH Duo"
                   />
                   <Field
-                    label="Email *"
+                    label="Email"
                     value={email}
                     onChange={setEmail}
-                    placeholder="pl. valaki@email.com"
-                    type="email"
-                    required
+                    placeholder="pl. valaki@gmail.com"
                   />
                   <Field
                     label="Telefonszám *"
@@ -364,8 +452,19 @@ export default function TournamentSignupSection() {
                   disabled={submitLoading}
                   className="w-full px-4 py-3 text-sm font-extrabold text-white transition border shadow-sm rounded-xl border-slate-200 bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200/60 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {submitLoading ? "Mentés..." : "Jelentkezés elküldése"}
+                  {submitLoading ? "Mentés..." : activeRegistration?.id ? "Módosítás mentése" : "Jelentkezés elküldése"}
                 </button>
+
+                {activeRegistration?.id && (
+                  <button
+                    type="button"
+                    onClick={onDeleteRegistration}
+                    disabled={submitLoading}
+                    className="w-full px-4 py-3 text-sm font-extrabold text-red-700 transition border border-red-200 shadow-sm rounded-xl bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-200/60 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {submitLoading ? "Törlés..." : "Nevezés törlése"}
+                  </button>
+                )}
 
                 <p className="text-xs text-slate-500">
                   Ha 401/403 hibát kapsz, a nevezéshez be kell jelentkezni (authMiddleware).

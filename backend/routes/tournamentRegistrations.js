@@ -3,21 +3,24 @@
  * ------------------------------------------------------------------
  * Verseny nevezések (tournament_registrations) végpontok kezelése.
  *
- * Cél:
- * - Felhasználói oldal:
- *   - Nevezés egy adott versenyre (tournament_id alapján)
- *   - Nevezés módosítása
- *   - Nevezés törlése
+ * Felhasználó:
+ * - POST   /api/tournament-registrations              -> nevezés
+ * - GET    /api/tournament-registrations/my           -> saját nevezéseim
+ * - PUT    /api/tournament-registrations/:id          -> saját nevezés módosítás
+ * - DELETE /api/tournament-registrations/:id          -> saját nevezés törlés
  *
- * - Admin oldal:
- *   - Összes nevezés lekérése (áttekintéshez)
+ * Admin:
+ * - GET /api/tournament-registrations/admin/all
+ * - GET /api/tournament-registrations/admin/by-tournament/:tournamentId
  *
- * Adatbázis mezők (jelenlegi táblád alapján):
- * - id, tournament_id, email, tel_number, players (text[]), created_at
+ * Ajánlott DB mezők:
+ * - id, tournament_id, user_id, tel_number, players (text[]), team_name,
+ *   contact_email (nullable), created_at
  *
- * Fontos:
- * - A "saját nevezéseim" funkcióhoz ajánlott hozzáadni a user_id-t a táblához
- *   (lásd a válasz alján, miért és hogyan).
+ * Megjegyzés:
+ * - user_id-t mindig authból vesszük (req.user.id), nem a bodyból.
+ * - A "contact_email" NEM a login email duplikációja: ez a nevezéshez tartozó
+ *   kapcsolati email (ha másra kéred az értesítést).
  * ------------------------------------------------------------------
  */
 
@@ -27,30 +30,35 @@ import adminOnly from "../middleware/adminGuard.js";
 import db from "../db.js";
 
 const router = express.Router();
+
+// kis helper validálások
+const isNonEmptyString = (v) => typeof v === "string" && v.trim().length > 0;
+
 /**
  * FELHASZNÁLÓ: Nevezés egy versenyre
  * POST /api/tournament-registrations
  * Body:
  * - tournament_id (kötelező)
- * - team_name
- * - email (kötelező)
- * - tel_number (kötelező nálad, mert NOT NULL)
- * - players (kötelezőnek ajánlott, de DB-ben lehet NULL; itt validáljuk)
- *
- * Megjegyzés:
- * - Ha majd bevezeted a user_id-t, ide be tudjuk írni: user_id = req.user.id
+ * - tel_number (kötelező)
+ * - players (tömb, ajánlott kötelező)
+ * - team_name (opcionális)
+ * - contact_email (opcionális)
  */
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { tournament_id, email, tel_number, players, team_name } = req.body;
+    const userId = req.user?.id;
+    const { tournament_id, tel_number, players, team_name, contact_email } = req.body;
 
-    if (!tournament_id || !email || !tel_number) {
+    if (!userId) {
+      return res.status(401).json({ message: "Nincs bejelentkezve." });
+    }
+
+    if (!tournament_id || !isNonEmptyString(tel_number)) {
       return res.status(400).json({
-        message: "Hiányzó mezők: tournament_id, email, tel_number kötelező.",
+        message: "Hiányzó mezők: tournament_id és tel_number kötelező.",
       });
     }
 
-    // players legyen tömb, ha küldöd
     if (players !== undefined && !Array.isArray(players)) {
       return res.status(400).json({ message: "players mezőnek tömbnek kell lennie." });
     }
@@ -59,155 +67,224 @@ router.post("/", authMiddleware, async (req, res) => {
     const t = await db.query(`SELECT id FROM tournaments WHERE id = $1`, [tournament_id]);
     if (!t.rows.length) return res.status(404).json({ message: "Nincs ilyen verseny." });
 
+    // (Ajánlott) Ne lehessen ugyanarra a versenyre 2 nevezés ugyanattól a usertől
+    const existing = await db.query(
+      `SELECT id FROM tournament_registrations WHERE tournament_id = $1 AND user_id = $2`,
+      [tournament_id, userId]
+    );
+    if (existing.rows.length) {
+      return res.status(409).json({
+        message: "Erre a versenyre már van nevezésed. Használd a módosítást.",
+        registration_id: existing.rows[0].id,
+      });
+    }
+
+    // FIGYELEM: ha a tábládban a mező neve email, akkor itt állítsd át
+    // contact_email -> email
     const { rows } = await db.query(
-      `INSERT INTO tournament_registrations (tournament_id, email, tel_number, players, team_name)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO tournament_registrations
+        (tournament_id, user_id, tel_number, players, team_name, contact_email)
+       VALUES
+        ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [tournament_id, email, tel_number, players ?? null, team_name]
+      [
+        tournament_id,
+        userId,
+        tel_number.trim(),
+        players ?? null,
+        team_name?.trim() || null,
+        contact_email?.trim() || null,
+      ]
     );
 
-    res.status(201).json(rows[0]);
+    return res.status(201).json(rows[0]);
   } catch (err) {
     console.error("tournament_registrations POST / error:", err);
-    res.status(500).json({ message: "Szerver hiba (nevezés létrehozás)." });
+    return res.status(500).json({ message: "Szerver hiba (nevezés létrehozás)." });
   }
 });
 
 /**
- * FELHASZNÁLÓ: Nevezés módosítása
+ * FELHASZNÁLÓ: Saját nevezéseim
+ * GET /api/tournament-registrations/my
+ *
+ * Visszaad:
+ * - a belépett user összes nevezését (tournament_id-val)
+ * - a frontend ebből tud map-et építeni: regByTournamentId[tournament_id] = reg
+ */
+router.get("/my", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Nincs bejelentkezve." });
+
+    const { rows } = await db.query(
+      `SELECT
+         tr.id,
+         tr.tournament_id,
+         tr.user_id,
+         tr.tel_number,
+         tr.team_name,
+         tr.players,
+         tr.contact_email,
+         tr.created_at
+       FROM tournament_registrations tr
+       WHERE tr.user_id = $1
+       ORDER BY tr.created_at DESC`,
+      [userId]
+    );
+
+    return res.json(rows);
+  } catch (err) {
+    console.error("tournament_registrations GET /my error:", err);
+    return res.status(500).json({ message: "Szerver hiba (saját nevezések)." });
+  }
+});
+
+/**
+ * FELHASZNÁLÓ: Nevezés módosítása (csak a saját)
  * PUT /api/tournament-registrations/:id
  * Body (bármelyik jöhet):
- * - email
  * - tel_number
  * - players (text[])
  * - team_name
- *
- * Megjegyzés:
- * - Jelenleg nincs "tulajdonos" ellenőrzés (mert nincs user_id).
- * - Ha bevezeted a user_id-t, itt tudjuk ellenőrizni, hogy csak a sajátját módosítsa.
+ * - contact_email
  */
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ message: "Hibás ID." });
 
-    const { email = null, tel_number = null, players = null, team_name = null } = req.body;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Nincs bejelentkezve." });
 
-    if (players !== null && players !== undefined && !Array.isArray(players)) {
+    const { tel_number, players, team_name, contact_email } = req.body;
+
+    if (players !== undefined && players !== null && !Array.isArray(players)) {
       return res.status(400).json({ message: "players mezőnek tömbnek kell lennie." });
     }
 
     const { rows } = await db.query(
       `UPDATE tournament_registrations
        SET
-         email = COALESCE($1, email),
-         tel_number = COALESCE($2, tel_number),
-         players = COALESCE($3, players)
-         team_name = COALESCE($4, team_name)
-       WHERE id = $5
+         tel_number = COALESCE($1, tel_number),
+         players = COALESCE($2, players),
+         team_name = COALESCE($3, team_name),
+         contact_email = COALESCE($4, contact_email)
+       WHERE id = $5 AND user_id = $6
        RETURNING *`,
-      [email, tel_number, players, team_name, id]
+      [
+        tel_number !== undefined ? (tel_number?.trim() || null) : null,
+        players !== undefined ? players : null,
+        team_name !== undefined ? (team_name?.trim() || null) : null,
+        contact_email !== undefined ? (contact_email?.trim() || null) : null,
+        id,
+        userId,
+      ]
     );
 
-    if (!rows.length) return res.status(404).json({ message: "Nincs ilyen nevezés." });
-    res.json(rows[0]);
+    if (!rows.length) {
+      return res.status(404).json({ message: "Nincs ilyen nevezés, vagy nincs jogosultságod." });
+    }
+
+    return res.json(rows[0]);
   } catch (err) {
     console.error("tournament_registrations PUT /:id error:", err);
-    res.status(500).json({ message: "Szerver hiba (nevezés módosítás)." });
+    return res.status(500).json({ message: "Szerver hiba (nevezés módosítás)." });
   }
 });
 
 /**
- * FELHASZNÁLÓ: Nevezés törlése
+ * FELHASZNÁLÓ: Nevezés törlése (csak a saját)
  * DELETE /api/tournament-registrations/:id
- *
- * Megjegyzés:
- * - user_id nélkül nem tudjuk szépen korlátozni, ki törölhet mit.
- * - user_id bevezetése után lehet: WHERE id=$1 AND user_id=$2.
  */
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ message: "Hibás ID." });
 
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Nincs bejelentkezve." });
+
     const { rows } = await db.query(
       `DELETE FROM tournament_registrations
-       WHERE id = $1
+       WHERE id = $1 AND user_id = $2
        RETURNING id`,
-      [id]
+      [id, userId]
     );
 
-    if (!rows.length) return res.status(404).json({ message: "Nincs ilyen nevezés." });
-    res.json({ message: "Törölve.", id: rows[0].id });
+    if (!rows.length) {
+      return res.status(404).json({ message: "Nincs ilyen nevezés, vagy nincs jogosultságod." });
+    }
+
+    return res.json({ message: "Törölve.", id: rows[0].id });
   } catch (err) {
     console.error("tournament_registrations DELETE /:id error:", err);
-    res.status(500).json({ message: "Szerver hiba (nevezés törlés)." });
+    return res.status(500).json({ message: "Szerver hiba (nevezés törlés)." });
   }
 });
 
 /**
- * ADMIN: Összes nevezés megtekintése
+ * ADMIN: Összes nevezés
  * GET /api/tournament-registrations/admin/all
  *
- * Ajánlott: JOIN a tournaments táblára, hogy admin felületen látszódjon a verseny neve is.
+ * Fontos: adminOnly önmagában kevés, kell authMiddleware is.
  */
-router.get("/admin/all", adminOnly, async (req, res) => {
+router.get("/admin/all", authMiddleware, adminOnly, async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT
          tr.id,
          tr.tournament_id,
          t.title AS tournament_title,
-         tr.email,
+         tr.user_id,
+         u.email AS user_email,
+         tr.contact_email,
          tr.tel_number,
          tr.team_name,
          tr.players,
-
          tr.created_at
        FROM tournament_registrations tr
        JOIN tournaments t ON t.id = tr.tournament_id
+       LEFT JOIN users u ON u.id = tr.user_id
        ORDER BY tr.created_at DESC`
     );
 
-    res.json(rows);
+    return res.json(rows);
   } catch (err) {
     console.error("tournament_registrations ADMIN GET /admin/all error:", err);
-    res.status(500).json({ message: "Szerver hiba (admin nevezések lista)." });
+    return res.status(500).json({ message: "Szerver hiba (admin nevezések lista)." });
   }
 });
+
 /**
- * ADMIN: Nevezések lekérése egy versenyhez (tournament_id alapján)
+ * ADMIN: Nevezések egy versenyhez
  * GET /api/tournament-registrations/admin/by-tournament/:tournamentId
- *
- * Hibák:
- * - 400: hibás tournamentId
- * - 404: nincs ilyen verseny
- * - 500: szerver hiba
  */
-router.get("/admin/by-tournament/:tournamentId", adminOnly, async (req, res) => {
+router.get("/admin/by-tournament/:tournamentId", authMiddleware, adminOnly, async (req, res) => {
   try {
     const tournamentId = Number(req.params.tournamentId);
     if (!Number.isFinite(tournamentId)) {
       return res.status(400).json({ message: "Hibás tournamentId." });
     }
 
-    // 1) ellenőrizzük, hogy létezik-e a verseny + elkérjük a címét
     const t = await db.query(`SELECT id, title FROM tournaments WHERE id = $1`, [tournamentId]);
     if (!t.rows.length) {
       return res.status(404).json({ message: "Nincs ilyen verseny." });
     }
 
-    // 2) lekérjük az adott verseny nevezéseit
     const { rows } = await db.query(
       `SELECT
          tr.id,
          tr.tournament_id,
-         tr.email,
+         tr.user_id,
+         u.email AS user_email,
+         tr.contact_email,
          tr.tel_number,
          tr.team_name,
          tr.players,
          tr.created_at
        FROM tournament_registrations tr
+       LEFT JOIN users u ON u.id = tr.user_id
        WHERE tr.tournament_id = $1
        ORDER BY tr.created_at DESC`,
       [tournamentId]
