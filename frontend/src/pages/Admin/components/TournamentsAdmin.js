@@ -18,7 +18,11 @@ export default function TournamentsAdminSection() {
   const [items, setItems] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [error, setError] = useState("");
-   const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
+  const [openRegsId, setOpenRegsId] = useState(null);
+  const [registrations, setRegistrations] = useState([]);
+  const [regsLoading, setRegsLoading] = useState(false);
+  const [regsError, setRegsError] = useState("");
 
   // Create form
   const [createForm, setCreateForm] = useState({
@@ -65,6 +69,66 @@ export default function TournamentsAdminSection() {
     const mi = pad(d.getMinutes());
     return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
   }
+
+  function renderRegistrationsList(tournamentId) {
+  if (openRegsId !== tournamentId) return null;
+
+  return (
+    <div className="p-4 mt-3 border bg-gray-50 rounded-2xl">
+      {regsLoading && <div className="text-sm text-gray-600">Betöltés...</div>}
+
+      {regsError && (
+        <div className="text-sm font-semibold text-red-600">
+          {regsError}
+        </div>
+      )}
+
+      {!regsLoading && registrations.length === 0 && (
+        <div className="text-sm text-gray-600">
+          Nincs nevezés erre a versenyre.
+        </div>
+      )}
+
+      {!regsLoading && registrations.length > 0 && (
+        <div className="space-y-3">
+          {registrations.map((r, index) => (
+            <div
+              key={r.id}
+              className="p-3 bg-white border rounded-xl"
+            >
+              <div className="text-sm font-semibold">
+                {index + 1}. {r.team_name || "Névtelen csapat"}
+              </div>
+
+              <div className="mt-1 text-xs text-gray-600">
+                Tel: {r.tel_number}
+              </div>
+
+              <div className="text-xs text-gray-600">
+                Email: {r.contact_email || r.user_email || "—"}
+              </div>
+
+              {Array.isArray(r.players) && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {r.players.map((p, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-1 text-xs border rounded-full bg-gray-50"
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
   
   function datetimeLocalToString(value) {
   if (!value) return null;
@@ -206,6 +270,33 @@ export default function TournamentsAdminSection() {
     }
   }
 
+  async function fetchRegistrationsForTournament(tournamentId) {
+    try {
+      setRegsLoading(true);
+      setRegsError("");
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/tournament-registrations/admin/by-tournament/${tournamentId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Hiba történt");
+
+      setRegistrations(data.registrations || []);
+      setOpenRegsId(tournamentId);
+    } catch (e) {
+      setRegsError(e.message);
+    } finally {
+      setRegsLoading(false);
+    }
+  }
+
   async function handleDelete(id) {
     if (!id) return;
     const ok = window.confirm("Biztos törlöd ezt a versenyt? (A jelentkezések is törlődhetnek.)");
@@ -218,6 +309,15 @@ export default function TournamentsAdminSection() {
     } catch (e) {
       setError(e.message || "Hiba törlés közben.");
     }
+  }
+
+  function toggleRegistrations(tournamentId) {
+    if (openRegsId === tournamentId) {
+      setOpenRegsId(null);
+      return;
+    }
+
+    fetchRegistrationsForTournament(tournamentId);
   }
 
   return (
@@ -360,6 +460,7 @@ export default function TournamentsAdminSection() {
         ) : (
           <div className="mt-3 space-y-3">
             {sortedItems.map((t) => (
+              <div className="flex flex-col">
               <div
                 key={t.id}
                 className="flex flex-col gap-3 p-4 border rounded-2xl md:flex-row md:items-center md:justify-between"
@@ -401,13 +502,23 @@ export default function TournamentsAdminSection() {
                   >
                     Szerkesztés
                   </button>
+
                   <button
                     onClick={() => handleDelete(t.id)}
                     className="px-3 py-2 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 hover:bg-red-100"
                   >
                     Törlés
                   </button>
+
+                  <button
+                    onClick={() => toggleRegistrations(t.id)}
+                    className="px-3 py-2 text-sm bg-gray-100 border rounded-xl hover:bg-gray-200"
+                  >
+                    Jelentkezők
+                  </button>
                 </div>
+              </div>
+                {renderRegistrationsList(t.id)}
               </div>
             ))}
           </div>
