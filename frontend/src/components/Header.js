@@ -137,7 +137,7 @@ function Header() {
         h-100 md:h-24
         md:translate-y-0
         md:justify-end justify-center
-        ${isOpen ? "translate-y-0" : "-translate-y-52"}`}>
+        ${isOpen ? "translate-y-0" : "-translate-y-80"}`}>
         <nav
           className={`
             w-fit
