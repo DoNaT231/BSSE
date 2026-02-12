@@ -11,6 +11,7 @@ import SmashSPT from './pages/SmashSPT.js';
 import 'leaflet/dist/leaflet.css';
 import AdminDashboard from './pages/Admin/AdminDashboard.js';
 import { AuthProvider } from './AuthContext.js';
+import TournamentSignupSection from './pages/TournamentSignupSection.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const apiUrl = "http://localhost:5000";
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: '/palyafoglalas',
     element: <Booking/>
+  },
+  {
+    path: '/versenyek',
+    element: <TournamentSignupSection/>
   },
   {
     path: '/smashspt',

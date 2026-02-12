@@ -26,6 +26,7 @@ export default function TournamentsAdminSection() {
     category: "",
     description: "",
     start_at: "", // datetime-local
+    players: "2",
     status: "active",
   });
   const [creating, setCreating] = useState(false);
@@ -37,6 +38,7 @@ export default function TournamentsAdminSection() {
     category: "",
     description: "",
     start_at: "",
+    players: "",
     status: "active",
   });
   const [saving, setSaving] = useState(false);
@@ -124,6 +126,7 @@ export default function TournamentsAdminSection() {
         title: createForm.title.trim(),
         category: createForm.category.trim(),
         description: createForm.description?.trim() || null,
+        number_of_players: createForm.players.trim(),
         start_at: datetimeLocalToString(createForm.start_at),
         status: createForm.status || "active",
       };
@@ -146,6 +149,7 @@ export default function TournamentsAdminSection() {
         title: "",
         category: "",
         description: "",
+        number_of_players: "",
         start_at: "",
         status: "active",
       });
@@ -293,6 +297,19 @@ export default function TournamentsAdminSection() {
           </div>
 
           <div>
+            <label className="text-sm text-gray-700">Csapatlétszám</label>
+            <input
+              type="number"
+              className="w-full px-3 py-2 mt-1 border rounded-xl"
+              value={createForm.players}
+              onChange={(e) => setCreateForm((p) => ({ ...p, players: e.target.value }))}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Megadhatod a csapatlétszámot, de alapból 2.
+            </p>
+          </div>
+
+          <div>
             <label className="text-sm text-gray-700">Státusz (status)</label>
             <select
               className="w-full px-3 py-2 mt-1 border rounded-xl"
@@ -354,7 +371,10 @@ export default function TournamentsAdminSection() {
                       {t.category}
                     </span>
                     <span className="px-2 py-1 text-xs text-gray-700 border rounded-full">
-                      status: {t.status}
+                      státusz: {t.status}
+                    </span>
+                    <span className="px-2 py-1 text-xs text-gray-700 border rounded-full">
+                      csapatlétszám: {t.number_of_players}
                     </span>
                   </div>
 

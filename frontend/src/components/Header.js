@@ -158,6 +158,10 @@ function Header() {
             Foglalás
           </Link>
 
+          <Link className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" to="/versenyek">
+            Versenyek
+          </Link>
+
           {!loggedIn && (
             <span
               className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"

@@ -32,7 +32,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, title, description, category, start_at
+      `SELECT id, title, description, category, number_of_players, start_at
        FROM tournaments
        WHERE status = 'active'
        ORDER BY start_at ASC NULLS LAST`
@@ -51,7 +51,7 @@ router.get("/", async (req, res) => {
 router.get("/admin/all", authMiddleware, adminOnly, async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, title, description, category, start_at, status, created_by, created_at
+      `SELECT id, title, description, category, number_of_players, start_at, status, created_by, created_at
        FROM tournaments
        ORDER BY created_at DESC`
     );
@@ -78,6 +78,7 @@ router.post("/", authMiddleware, adminOnly, async (req, res) => {
     const {
       title,
       category,
+      number_of_players,
       description = null,
       start_at = null,
       status = "active",
@@ -93,10 +94,10 @@ router.post("/", authMiddleware, adminOnly, async (req, res) => {
     const createdBy = req.user?.id ?? null;
 
     const { rows } = await db.query(
-      `INSERT INTO tournaments (title, description, category, start_at, status, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO tournaments (title, description, category, number_of_players, start_at, status, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [title, description, category, start_at, status, createdBy]
+      [title, description, category, number_of_players, start_at, status, createdBy]
     );
 
     res.status(201).json(rows[0]);
@@ -128,6 +129,7 @@ router.put("/:id", authMiddleware, adminOnly, async (req, res) => {
       title = null,
       description = null,
       category = null,
+      number_of_players = null,
       start_at = null,
       status = null,
     } = req.body;
@@ -138,11 +140,12 @@ router.put("/:id", authMiddleware, adminOnly, async (req, res) => {
          title = COALESCE($1, title),
          description = COALESCE($2, description),
          category = COALESCE($3, category),
-         start_at = COALESCE($4, start_at),
-         status = COALESCE($5, status)
-       WHERE id = $6
+         number_of_players = COALESCE($4, number_of_players),
+         start_at = COALESCE($5, start_at),
+         status = COALESCE($6, status)
+       WHERE id = $7
        RETURNING *`,
-      [title, description, category, start_at, status, id]
+      [title, description, category, number_of_players, start_at, status, id]
     );
 
     if (!rows.length) return res.status(404).json({ message: "Nincs ilyen verseny." });
