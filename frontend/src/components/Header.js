@@ -4,6 +4,7 @@ import { useAuth } from "../AuthContext";
 import Modal from "./Modal";
 import LoginRegist from "../pages/LoginRegist/LoginRegist";
 import AddPasswordForm from "../pages/LoginRegist/SettingPassword";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Header komponens
@@ -20,7 +21,8 @@ function Header() {
    * - desktop (>600px): mindig nyitva
    * - mobil: toggle-elhető
    */
-  const [isOpen, setIsOpen] = useState(window.innerWidth > 600);
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate()
 
   /**
    * Aktív modal típusa:
@@ -51,6 +53,10 @@ function Header() {
     logout();
     setModal("");
   };
+  const handleNavClick = (page) =>{
+    setIsOpen(false)
+    navigate(page)
+  }
 
   return (
     <header
@@ -137,7 +143,7 @@ function Header() {
         h-100 md:h-24
         md:translate-y-0
         md:justify-end justify-center
-        ${isOpen ? "translate-y-0" : "-translate-y-80"}`}>
+        ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%-108px)] "}`}>
         <nav
           className={`
             w-fit
@@ -150,17 +156,17 @@ function Header() {
             text-center md:text-end`}  
         >
           {/* Navigációs linkek */}
-          <Link className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" to="/">
+          <p className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" onClick={()=>handleNavClick("/")}>
             Kezdőlap
-          </Link>
+          </p>
 
-          <Link className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" to="/palyafoglalas">
+          <p className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" onClick={()=>handleNavClick("/palyafoglalas")}>
             Foglalás
-          </Link>
+          </p>
 
-          <Link className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" to="/versenyek">
+          <p className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" onClick={()=>handleNavClick("/versenyek")}>
             Versenyek
-          </Link>
+          </p>
 
           {!loggedIn && (
             <span

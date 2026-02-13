@@ -46,6 +46,7 @@ import LoginRegist from "../pages/LoginRegist/LoginRegist.js";
 import { tr } from "date-fns/locale"; // (import itt jelenleg nincs használva)
 import sendEmail from "../sendEmail.js";
 import "../styleComponents.css";
+import AuthFrostLock from "./AuthLock.js";
 
 dayjs.extend(utc);
 
@@ -592,23 +593,8 @@ function WeeklyCalendar() {
   return (
   <div className="relative">
 
-    {/* LOGIN OVERLAY – ha nincs bejelentkezve */}
-    {!userId && (
-      <div
-        className="
-          absolute top-[30%] left-1/2 -translate-x-1/2 z-10
-          w-[340px] max-h-[360px] p-8 pt-0
-          bg-lightBlue rounded-[17px]
-          flex flex-col items-center justify-center
-          text-center
-        "
-      >
-        <LoginRegist />
-      </div>
-    )}
+    <AuthFrostLock loggedIn={loggedIn}>
 
-    {/* Ha nincs userId, a teljes naptár elmosódik és nem kattintható */}
-    <div className={userId ? "" : "blur-sm pointer-events-none"}>
 
       {/* ADMIN MODAL – más foglalás törlése */}
       {adminModalVisible && adminSelectedSlot && adminConflict && (
@@ -821,7 +807,8 @@ function WeeklyCalendar() {
           </div>
         ))}
       </div>
-    </div>
+            
+    </AuthFrostLock>
   </div>
 );
 

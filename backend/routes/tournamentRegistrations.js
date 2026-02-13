@@ -224,39 +224,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 });
 
 /**
- * ADMIN: Összes nevezés
- * GET /api/tournament-registrations/admin/all
- *
- * Fontos: adminOnly önmagában kevés, kell authMiddleware is.
- */
-router.get("/admin/all", authMiddleware, adminOnly, async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      `SELECT
-         tr.id,
-         tr.tournament_id,
-         t.title AS tournament_title,
-         tr.user_id,
-         u.email AS user_email,
-         tr.contact_email,
-         tr.tel_number,
-         tr.team_name,
-         tr.players,
-         tr.created_at
-       FROM tournament_registrations tr
-       JOIN tournaments t ON t.id = tr.tournament_id
-       LEFT JOIN users u ON u.id = tr.user_id
-       ORDER BY tr.created_at DESC`
-    );
-
-    return res.json(rows);
-  } catch (err) {
-    console.error("tournament_registrations ADMIN GET /admin/all error:", err);
-    return res.status(500).json({ message: "Szerver hiba (admin nevezések lista)." });
-  }
-});
-
-/**
  * ADMIN: Nevezések egy versenyhez
  * GET /api/tournament-registrations/admin/by-tournament/:tournamentId
  */

@@ -2,40 +2,38 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 /**
  * AuthContext / AuthProvider
- * ------------------------------------------------------------
+ * ============================================================
  * Cél:
- * - A teljes appban elérhetővé tenni az auth állapotot (login/logout),
- *   valamint a JWT-ből kiolvasott felhasználói adatokat.
+ * - Globális auth állapot biztosítása az egész alkalmazásban
+ * - JWT token kezelése
+ * - JWT payload dekódolása
+ * - Login / Logout kezelése
  *
  * Tárolás:
- * - A JWT token a localStorage-ben van ("token" kulcs).
+ * - A JWT token localStorage-ben: "token"
  *
- * JWT elvárás (payload mezők):
- * - exp: number (UNIX timestamp másodpercben) -> lejárat
- * - id: user azonosító
- * - username: felhasználónév / display név
- * - role: jogosultsági szerep (pl. "admin", "user")
- * - email: felhasználó e-mail címe  ✅ (új)
+ * Provider által adott értékek:
+ * ------------------------------------------------------------
+ * token        -> aktuális JWT (string | null)
+ * loggedIn     -> boolean
+ * role         -> string
+ * username     -> string
+ * userId       -> number | null
+ * userEmail    -> string
  *
- * Provider által adott value:
- * - loggedIn: boolean
- * - role: string
- * - username: string
- * - userId: string|number|null
- * - userEmail: string (✅ új)
- * - login(token): JWT mentés + state frissítés
- * - logout(): JWT törlés + state reset
- * - setUsername/setRole/setLoggedIn: (ha kell kézi állítás)
+ * login(token) -> token mentés + state frissítés
+ * logout()     -> token törlés + state reset
  *
- * Megjegyzés:
- * - A state-ek frissítése aszinkron, ezért a console.log azonnal a setState után
- *   régi értéket is mutathat. Debughoz használd a külön useEffect logot.
+ * FONTOS:
+ * - A token state-be van téve, nem csak localStorage-ben van
+ * - Így token változás -> context re-render -> useEffect([token]) működik
  */
 
-// 1) Kontextus
 const AuthContext = createContext(null);
 
-/** JWT payload biztonságos dekódolása (base64url kompatibilis) */
+/**
+ * JWT payload dekódolás (base64url kompatibilis)
+ */
 function decodeJwtPayload(token) {
   if (!token || typeof token !== "string") return null;
 
@@ -43,14 +41,15 @@ function decodeJwtPayload(token) {
   if (parts.length !== 3) return null;
 
   try {
-    // base64url -> base64
     const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+
     const json = decodeURIComponent(
       atob(base64)
         .split("")
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
+
     return JSON.parse(json);
   } catch (err) {
     console.error("JWT decode error:", err);
@@ -58,7 +57,9 @@ function decodeJwtPayload(token) {
   }
 }
 
-/** Ellenőrzés: formátum + exp */
+/**
+ * Token validálás (exp ellenőrzés)
+ */
 function isJwtValid(token) {
   const payload = decodeJwtPayload(token);
   if (!payload) return false;
@@ -69,25 +70,36 @@ function isJwtValid(token) {
   return payload.exp > now;
 }
 
-// 2) Provider
+/**
+ * AuthProvider
+ */
 export const AuthProvider = ({ children }) => {
+  // 🔥 Token state (ez triggereli az újrarendert)
+  const [token, setToken] = useState(null);
+
+  // JWT payloadból származtatott state-ek
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState("");
   const [username, setUsername] = useState("");
   const [userId, setUserId] = useState(null);
-  const [userEmail, setUserEmail] = useState(""); // ✅ új
+  const [userEmail, setUserEmail] = useState("");
 
-  /** Közös “state kitöltés” a payload alapján */
+  /**
+   * Payload alkalmazása state-re
+   */
   const applyPayload = (payload) => {
     setUserId(payload?.id ?? null);
     setUsername(payload?.username ?? "");
     setRole(payload?.role ?? "");
-    setUserEmail(payload?.email ?? ""); // ✅ új
+    setUserEmail(payload?.email ?? "");
     setLoggedIn(true);
   };
 
-  /** Reset minden state */
+  /**
+   * Teljes auth state reset
+   */
   const clearAuthState = () => {
+    setToken(null);
     setLoggedIn(false);
     setRole("");
     setUsername("");
@@ -95,13 +107,19 @@ export const AuthProvider = ({ children }) => {
     setUserEmail("");
   };
 
-  // 3) App induláskor token ellenőrzés
+  /**
+   * App induláskor:
+   * - localStorage-ből token beolvasás
+   * - validálás
+   * - state kitöltés
+   */
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const storedToken = localStorage.getItem("token");
 
-    if (token && isJwtValid(token)) {
-      const payload = decodeJwtPayload(token);
+    if (storedToken && isJwtValid(storedToken)) {
+      const payload = decodeJwtPayload(storedToken);
       if (payload) {
+        setToken(storedToken);
         applyPayload(payload);
       } else {
         logout();
@@ -109,52 +127,61 @@ export const AuthProvider = ({ children }) => {
     } else {
       logout();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 4) Debug: állapotváltozás log (opcionális)
-  useEffect(() => {
-    // Ha nem kell, nyugodtan töröld
-    // console.log("Auth state:", { loggedIn, userId, username, userEmail, role });
-  }, [loggedIn, userId, username, userEmail, role]);
+  /**
+   * Login
+   * - token mentés
+   * - validálás
+   * - state frissítés
+   */
+  const login = (newToken) => {
+    localStorage.setItem("token", newToken);
 
-  // 5) Login / Logout
-  const login = (token) => {
-    localStorage.setItem("token", token);
-
-    const payload = decodeJwtPayload(token);
-    if (!payload || !isJwtValid(token)) {
+    const payload = decodeJwtPayload(newToken);
+    if (!payload || !isJwtValid(newToken)) {
       logout();
       return;
     }
 
+    setToken(newToken);
     applyPayload(payload);
   };
 
+  /**
+   * Logout
+   * - token törlés
+   * - state reset
+   */
   const logout = () => {
     localStorage.removeItem("token");
     clearAuthState();
   };
 
-  // 6) Value memo (kevesebb re-render)
+  /**
+   * Memoizált context value
+   * - Csak akkor változik, ha ténylegesen változik valamelyik state
+   * - Optimalizálja a re-renderelést
+   */
   const value = useMemo(
     () => ({
+      token,
       loggedIn,
       role,
       username,
       userId,
-      userEmail, // ✅ új
-      setLoggedIn,
-      setRole,
-      setUsername,
+      userEmail,
       login,
       logout,
     }),
-    [loggedIn, role, username, userId, userEmail]
+    [token, loggedIn, role, username, userId, userEmail]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// 7) Hook
+/**
+ * useAuth hook
+ * - Egyszerű hozzáférés a contexthez
+ */
 export const useAuth = () => useContext(AuthContext);

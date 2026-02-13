@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../config";
 import { useAuth } from "../AuthContext";
 import Header from "../components/Header";
-
+import AuthFrostLock from "../components/AuthLock.js";
 /**
  * TournamentSignupSection (Tailwind)
  * ------------------------------------------------------------
@@ -59,8 +59,7 @@ export default function TournamentSignupSection() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  const token = localStorage.getItem('token');
-  const { userId, userEmail } = useAuth()
+  const { userId, userEmail, loggedIn, token } = useAuth()
 
   const [openTournamentId, setOpenTournamentId] = useState(null);
 
@@ -82,6 +81,11 @@ export default function TournamentSignupSection() {
     [tournaments, openTournamentId]
   );
 
+
+  useEffect(() => {
+    console.log("us" + userEmail)
+  if (loggedIn && userEmail) setEmail(userEmail);
+  }, [loggedIn, userEmail]);
   // players mezők beállítása number_of_players alapján
   useEffect(() => {
     if (!selectedTournament) return;
@@ -130,7 +134,7 @@ export default function TournamentSignupSection() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [loggedIn]);
 
   async function onDeleteRegistration() {
     if (!activeRegistration?.id) return;
@@ -308,7 +312,9 @@ export default function TournamentSignupSection() {
   return (
   <div className="min-h-screen bg-[#e9f6ff]">
     <Header />
-
+    <AuthFrostLock
+          loggedIn={loggedIn}
+    >
     {/* Top spacing under fixed header if needed */}
     <section className="w-full max-w-6xl px-4 pt-32 pb-12 mx-auto">
       {/* Section header (centered like the screenshot) */}
@@ -538,6 +544,7 @@ export default function TournamentSignupSection() {
         </div>
       )}
     </section>
+    </AuthFrostLock>
   </div>
 );
 
