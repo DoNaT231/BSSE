@@ -44,7 +44,6 @@ import utc from "dayjs/plugin/utc";
 import { useNavigate } from "react-router-dom";
 import LoginRegist from "../pages/LoginRegist/LoginRegist.js";
 import { tr } from "date-fns/locale"; // (import itt jelenleg nincs használva)
-import sendEmail from "../sendEmail.js";
 import "../styleComponents.css";
 import AuthFrostLock from "./AuthLock.js";
 
@@ -396,7 +395,6 @@ function WeeklyCalendar() {
    * Mentés (Save):
    * - ha loggedIn:
    *    - ha nincs ownReservations: modal "Erre a pályára és hétre nincs foglalása"
-   *    - sendEmail(userId, ownReservations)
    *    - syncReservations(ownReservations)
    * - ha nincs login: reservationModal = true (de UI-ban most overlayvel takarsz)
    */
@@ -407,7 +405,6 @@ function WeeklyCalendar() {
         setModalMessage("Erre a pályára és hétre nincs foglalása");
         await syncReservations(ownReservations);
       }
-      sendEmail(userId, ownReservations);
       await syncReservations(ownReservations);
     } else setReservationModal(true);
   };

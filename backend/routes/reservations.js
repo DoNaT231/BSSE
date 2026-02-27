@@ -1,6 +1,8 @@
 import express from 'express';
 import db from '../db.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import { formatBookings } from '../utils/formatBookings.js';
+import { sendReservationSyncConfirmationEmail } from '../services/email/service.js';
 
 const router = express.Router();
 
@@ -97,11 +99,33 @@ router.post('/sync', authMiddleware, async (req, res) => {
     res.json({
       message: `Sikeres szinkronizálás. Hozzáadva: ${toInsert.length}, törölve: ${toDelete.length}`
     });
+    afterSuccessfulReservationSave({ userId, bookings: reservations })
+  .catch(err => console.error("Email task failed:", err));
+
   } catch (err) {
     console.error('Szinkronizálási hiba1:', err);
     res.status(500).json({ message: 'Hiba a szinkronizálás során' });
   }
 });
+
+async function afterSuccessfulReservationSave({ userId, bookings }) {
+  const userRes = await db.query("SELECT email, username FROM users WHERE id = $1", [userId]);
+  if (!userRes.rows.length) return;
+
+  const { email, username } = userRes.rows[0];
+  const bookingsText = await formatBookings(bookings);
+
+  // Ne bukjon el a foglalás, ha az email hibázik
+  try {
+    await sendReservationSyncConfirmationEmail({
+      toEmail: email,
+      toName: username,
+      bookingsText,
+    });
+  } catch (e) {
+    console.error("Reservation email failed:", e);
+  }
+}
 
 // Foglalások lekérése adott hétre és pályára
 router.get('/by-court-week', async (req, res) => {
