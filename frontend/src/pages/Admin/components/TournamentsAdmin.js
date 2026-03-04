@@ -32,6 +32,7 @@ export default function TournamentsAdminSection() {
     start_at: "", // datetime-local
     players: "2",
     status: "active",
+    entry_fee: "0",
   });
   const [creating, setCreating] = useState(false);
 
@@ -42,8 +43,9 @@ export default function TournamentsAdminSection() {
     category: "",
     description: "",
     start_at: "",
-    players: "",
+    players: "2",
     status: "active",
+    entry_fee: "0",
   });
   const [saving, setSaving] = useState(false);
 
@@ -192,7 +194,8 @@ export default function TournamentsAdminSection() {
         description: createForm.description?.trim() || null,
         number_of_players: createForm.players.trim(),
         start_at: datetimeLocalToString(createForm.start_at),
-        status: createForm.status || "active",
+        status: createForm.status.trim() || "active",
+        entry_fee: createForm.entry_fee.trim() || 0,
       };
       console.log(JSON.stringify(payload))
 
@@ -213,9 +216,10 @@ export default function TournamentsAdminSection() {
         title: "",
         category: "",
         description: "",
-        number_of_players: "",
+        players: "2",
         start_at: "",
         status: "active",
+        entry_fee: "0",
       });
     } catch (e2) {
       setError(e2.message || "Hiba a létrehozáskor.");
@@ -232,6 +236,8 @@ export default function TournamentsAdminSection() {
       description: t?.description || "",
       start_at: toDatetimeLocalValue(t?.start_at),
       status: t?.status || "active",
+      players: String(t?.number_of_players ?? t?.players ?? "2"),
+      entry_fee: String(t?.entry_fee ?? "0"),
     });
   }
 
@@ -254,6 +260,8 @@ export default function TournamentsAdminSection() {
         description: editForm.description?.trim() || null,
         start_at: datetimeLocalToString(editForm.start_at),
         status: editForm.status || null,
+        entry_fee: editForm.entry_fee || null,
+        number_of_players: editForm.players.trim(),
       };
 
       const updated = await request(`/api/tournaments/${editing.id}`, {
@@ -426,6 +434,19 @@ export default function TournamentsAdminSection() {
             </p>
           </div>
 
+          <div>
+            <label className="text-sm text-gray-700">Nevezési díj (Ft)</label>
+            <input
+              type="number"
+              className="w-full px-3 py-2 mt-1 border rounded-xl"
+              value={createForm.entry_fee}
+              onChange={(e) => setCreateForm((p) => ({ ...p, entry_fee: e.target.value }))}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Nevezési díj ami alapból ingyenes
+            </p>
+          </div>
+
           <div className="flex items-center gap-3 md:col-span-2">
             <button
               type="submit"
@@ -439,7 +460,7 @@ export default function TournamentsAdminSection() {
               type="button"
               className="px-4 py-2 text-sm border rounded-xl hover:bg-gray-50"
               onClick={() =>
-                setCreateForm({ title: "", category: "", description: "", start_at: "", status: "active" })
+                setCreateForm({ title: "", category: "", description: "", start_at: "", status: "active" , players: "", entry_fee: ""})
               }
               disabled={creating}
             >
@@ -476,6 +497,9 @@ export default function TournamentsAdminSection() {
                     </span>
                     <span className="px-2 py-1 text-xs text-gray-700 border rounded-full">
                       csapatlétszám: {t.number_of_players}
+                    </span>
+                    <span className="px-2 py-1 text-xs text-gray-700 border rounded-full">
+                      nevezési díj: {t.entry_fee} Ft
                     </span>
                   </div>
 
@@ -592,6 +616,26 @@ export default function TournamentsAdminSection() {
                   <option value="draft">draft</option>
                   <option value="archived">archived</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-700">Csapatlétszám </label>
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 mt-1 border rounded-xl"
+                  value={editForm.players}
+                  onChange={(e) => setEditForm((p) => ({ ...p, players: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-700">Nevezési díj (Ft)</label>
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 mt-1 border rounded-xl"
+                  value={editForm.entry_fee}
+                  onChange={(e) => setEditForm((p) => ({ ...p, entry_fee: e.target.value }))}
+                />
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 md:col-span-2">

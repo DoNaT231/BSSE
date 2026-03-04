@@ -1,5 +1,5 @@
 export default class Tournaments {
-    constructor(id, title, description, category, start_at, status, created_by, created_at){
+    constructor(id, title, description, category, start_at, status, created_by, created_at, entry_fee){
         this.id = id;
         this.title = title;
         this.description = description;
@@ -8,5 +8,6 @@ export default class Tournaments {
         this.status = status;
         this.created_by = created_by;
         this.created_at = created_at;
+        this.entry_fee = entry_fee;
     }
 }

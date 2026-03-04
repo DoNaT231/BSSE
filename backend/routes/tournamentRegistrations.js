@@ -28,6 +28,8 @@ import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminGuard.js";
 import db from "../db.js";
+import { sendTournamentRegistrationSuccessEmail } from "../services/email/service.js";
+import { start } from "repl";
 
 const router = express.Router();
 
@@ -86,7 +88,14 @@ router.post("/", authMiddleware, async (req, res) => {
         (tournament_id, user_id, tel_number, players, team_name, contact_email)
        VALUES
         ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
+       RETURNING
+        id,
+        tournament_id,
+        tel_number,
+        players,
+        team_name,
+        contact_email,
+        created_at;`,
       [
         tournament_id,
         userId,
@@ -97,12 +106,61 @@ router.post("/", authMiddleware, async (req, res) => {
       ]
     );
 
+    const data = rows[0];
+
+    afterSuccessfulTournamentReservationSave({
+      tournament_id,
+      userId,
+      tel_number,
+      registrationDate: data.created_at,
+      contact_email
+    })
     return res.status(201).json(rows[0]);
   } catch (err) {
     console.error("tournament_registrations POST / error:", err);
     return res.status(500).json({ message: "Szerver hiba (nevezés létrehozás)." });
   }
 });
+
+async function afterSuccessfulTournamentReservationSave({ tournament_id, userId, tel_number, registrationDate, contact_email}) {
+  const t = await db.query(`
+    SELECT 
+      title, 
+      start_at, 
+      CASE 
+        WHEN entry_fee IS NULL OR entry_fee = 0  THEN  'Ingyenes' 
+        ELSE CONCAT(entry_fee, ' Ft') 
+      END AS entry_fee 
+    FROM tournaments 
+    WHERE id = $1` ,
+     [tournament_id]);
+  if (!t.rows.length) return;
+
+  const { title, start_at, entry_fee } = t.rows[0];
+
+  const u = await db.query("SELECT username from users WHERE id=$1;",[userId] )
+  if (!u.rows.length) return;
+
+  const {username} = u.rows[0];
+
+
+  // Ne bukjon el a foglalás, ha az email hibázik
+  try {
+    console.log(contact_email, username, title ,start_at, registrationDate , tel_number, entry_fee)
+    await sendTournamentRegistrationSuccessEmail({
+      toEmail: contact_email,
+      toName: username,
+      tournamentName: title,
+      phoneNumber: tel_number,
+      registrationDate: registrationDate,
+      tournamentDate: new Date(start_at).toLocaleString("hu-HU"),
+      entryFee: entry_fee,
+
+    });
+  } catch (e) {
+    console.error("Reservation email failed:", e);
+  }
+}
 
 /**
  * FELHASZNÁLÓ: Saját nevezéseim

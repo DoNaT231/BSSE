@@ -17,7 +17,8 @@ const LocationMap = () => {
     <MapContainer
       center={position}
       zoom={15}
-      style={{ height: '200px', width: '100%', borderRadius: '1rem', overflow: 'hidden' }}
+      className="h-[400px] w-full z-0" 
+      zoomControl={false}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
@@ -26,6 +27,8 @@ const LocationMap = () => {
       <Marker position={position}>
         <Popup>Balatonalmádi Strand Sport Egyesület</Popup>
       </Marker>
+      <div className="pointer-events-none absolute inset-0 z-20 w-full h-[400px]
+                  bg-black/80 backdrop-blur-[1px]  border-10 border-red-50" />
     </MapContainer>
   );
 };

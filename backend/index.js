@@ -22,7 +22,6 @@ import authRoutes from './routes/auth.js';
 import courtRoutes from './routes/courts.js';
 import userRoutes from './routes/users.js';
 import reservationRoutes from './routes/reservations.js';
-import sendEmailRoute from './routes/sendEmail.js';
 import tournaments from './routes/tournaments.js';
 import tournamentRegistrations from './routes/tournamentRegistrations.js';
 
@@ -46,7 +45,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courts', courtRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/reservations', reservationRoutes);
-app.use('/api', sendEmailRoute);
 app.use('/api/tournaments/', tournaments);
 app.use('/api/tournament-registrations', tournamentRegistrations);
 

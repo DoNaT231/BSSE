@@ -32,7 +32,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, title, description, category, number_of_players, start_at
+      `SELECT id, title, description, category, number_of_players, start_at, entry_fee
        FROM tournaments
        WHERE status = 'active'
        ORDER BY start_at ASC NULLS LAST`
@@ -51,7 +51,7 @@ router.get("/", async (req, res) => {
 router.get("/admin/all", authMiddleware, adminOnly, async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, title, description, category, number_of_players, start_at, status, created_by, created_at
+      `SELECT id, title, description, category, number_of_players, start_at, status, created_by, created_at, entry_fee
        FROM tournaments
        ORDER BY created_at DESC`
     );
@@ -82,6 +82,7 @@ router.post("/", authMiddleware, adminOnly, async (req, res) => {
       description = null,
       start_at = null,
       status = "active",
+      entry_fee = 0,
     } = req.body;
     console.log(req.body)
 
@@ -94,10 +95,10 @@ router.post("/", authMiddleware, adminOnly, async (req, res) => {
     const createdBy = req.user?.id ?? null;
 
     const { rows } = await db.query(
-      `INSERT INTO tournaments (title, description, category, number_of_players, start_at, status, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO tournaments (title, description, category, number_of_players, start_at, status, created_by, entry_fee)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [title, description, category, number_of_players, start_at, status, createdBy]
+      [title, description, category, number_of_players, start_at, status, createdBy, entry_fee]
     );
 
     res.status(201).json(rows[0]);
@@ -132,6 +133,7 @@ router.put("/:id", authMiddleware, adminOnly, async (req, res) => {
       number_of_players = null,
       start_at = null,
       status = null,
+      entry_fee = null,
     } = req.body;
 
     const { rows } = await db.query(
@@ -142,10 +144,11 @@ router.put("/:id", authMiddleware, adminOnly, async (req, res) => {
          category = COALESCE($3, category),
          number_of_players = COALESCE($4, number_of_players),
          start_at = COALESCE($5, start_at),
-         status = COALESCE($6, status)
-       WHERE id = $7
+         status = COALESCE($6, status),
+         entry_fee = COALESCE($7, entry_fee)
+       WHERE id = $8
        RETURNING *`,
-      [title, description, category, number_of_players, start_at, status, id]
+      [title, description, category, number_of_players, start_at, status, entry_fee, id]
     );
 
     if (!rows.length) return res.status(404).json({ message: "Nincs ilyen verseny." });

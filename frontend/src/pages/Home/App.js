@@ -35,9 +35,6 @@ export default function HomePage() {
       {/* GALÉRIA */}
       <GallerySection />
 
-      {/* PÁLYAFOGLALÁS (beágyazott heti naptár) */}
-      <CalendarSection />
-
       {/* SZPONZORÁCIÓ */}
       <SponsorSection />
 

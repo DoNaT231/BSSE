@@ -55,7 +55,7 @@ export default function FooterSection() {
       </div>
 
       {/* Térkép blokk */}
-      <div className="w-full bg-[#1D1D1B] p-8 pb-16 overflow-hidden">
+      <div className="w-full z-10 bg-[#1D1D1B] overflow-hidden relative">
         <LocationMap />
       </div>
     </footer>

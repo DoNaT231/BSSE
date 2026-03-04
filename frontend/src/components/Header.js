@@ -71,7 +71,7 @@ function Header() {
 
       {/* KIJELENTKEZÉS MODAL */}
       {modal === "logout" && (
-        <Modal>
+        <Modal closeModal={()=>setModal("")}>
           <h1 className="mb-4 text-xl font-bold">
             Biztosan kijelentkezel?
           </h1>

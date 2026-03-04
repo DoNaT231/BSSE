@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './AdminDashboard.css';
 import { useNavigate, Link} from 'react-router-dom';
-import WeeklyTimeGrid from '../../components/WeeklyTimeGrid';
+import WeeklyCalendar from '../../features/booking/page/WeeklyTimeGrid';
 import { useAuth } from '../../AuthContext';
 import UserList from './components/UserList';
 import { API_BASE_URL } from "../../config";
@@ -53,7 +53,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           <section className='admin-calendarium-section'>
-              <WeeklyTimeGrid/>
+              <WeeklyCalendar/>
           </section>
           <section className='admin-user-list'>
                <UserList />

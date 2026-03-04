@@ -12,7 +12,7 @@
  * - Nyomtatás: összes pálya foglalásainak lekérése és PrintableSchedule render + window.print()
  *
  * Fontos megjegyzések / implicit szabályok:
- * - Múltbeli időpontra nem lehet foglalni
+* - Múltbeli időpontra nem lehet foglalni
  * - A mai napra már nem lehet foglalni
  * - 18:00 után nem lehet a következő napra foglalni
  * - Limit: 1 nap max 2 óra foglalható (a kód számláló logikája alapján)
@@ -33,19 +33,23 @@
  *   nem explicit time-zone konverzió (nincs .utc()) – fontos lehet, ha backend UTC-t vár.
  */
 
+import fetchReservations from "../api/ReservationApi.js";
+import fetchCourts from "../api/CourtsApi.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom"; // (Link import itt jelenleg nincs használva)
-import { useAuth } from "../AuthContext";
-import Modal from "./Modal.js";
-import PrintableSchedule from "./PrintableSchedule.js";
-import { API_BASE_URL } from "../config";
+import { useAuth } from "../../../AuthContext.js";
+import Modal from "../../../components/Modal.js";
+import PrintableSchedule from "../components/PrintableSchedule.js";
+import { API_BASE_URL } from "../../../config.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useNavigate } from "react-router-dom";
-import LoginRegist from "../pages/LoginRegist/LoginRegist.js";
+import LoginRegist from "../../../pages/LoginRegist/LoginRegist.js";
 import { tr } from "date-fns/locale"; // (import itt jelenleg nincs használva)
-import "../styleComponents.css";
-import AuthFrostLock from "./AuthLock.js";
+import "../../../styleComponents.css";
+import AuthFrostLock from "../../../components/AuthLock.js";
+import ReservationHeader from "../components/ReservationHeader.jsx";
+import ReservationCalendarGrid from "../components/ReservationCalendarGrid.jsx";
 
 dayjs.extend(utc);
 
@@ -171,31 +175,49 @@ function WeeklyCalendar() {
   // Backend kommunikáció
   // -------------------------
 
-  /**
-   * fetchCourts:
-   * - Lekéri a pályák listáját
-   * - Beállítja a dropdownot (courts)
-   * - Default bookedCourt = első pálya id (data[0].id)
-   */
-  const fetchCourts = async () => {
+  async function loadReservations() {
     try {
-      const url = `${API_BASE_URL}/api/courts`;
-      console.log("?? Fetch URL:", url);
+      const data = await fetchReservations({ monday, bookedCourt });
+      setReservedDates(data);
 
-      const response = await fetch(`${API_BASE_URL}/api/courts`);
-      if (!response.ok) throw new Error("Hiba a pályák lekérésekor");
-
-      const data = await response.json();
-      setCourts(data);
-      setBookedCourt(data[0].id);
+      const own = data.filter((r) => Number(r.userId) === Number(userId));
+      pasteOwnReservations(own);
     } catch (err) {
-      console.error(err);
+      setModal(true);
+      setErrorModal(true);
+      setModalMessage("Hiba történt a foglalások lekérésekor.");
     }
-  };
+  }
+    /**
+     * pasteOwnReservations:
+     * A backend által visszaadott saját foglalások (Date) -> sync formátum (string)
+     * - Court_id: bookedCourt
+     * - startTime: 'YYYY-MM-DDTHH:mm:ss'
+     */
+    const pasteOwnReservations = (reservations) => {
+      const converted = reservations.map((res) => ({
+        Court_id: bookedCourt,
+        startTime: dayjs(res.startTime).format("YYYY-MM-DDTHH:mm:ss"),
+      }));
+
+      setOwnReservations(converted);
+    };
+    
+    const loadCourts = async () => {
+      try {
+        const data = await fetchCourts();
+        setCourts(data);
+        setBookedCourt(data[0].id)
+      } catch (err) {
+        setModal(true);
+        setErrorModal(true);
+        setModalMessage("Hiba történt a pályák lekérésekor.");
+      }
+    };
 
   /** Pályák betöltése egyszer (mount) */
   useEffect(() => {
-    fetchCourts();
+    loadCourts();
   }, []);
 
   
@@ -240,7 +262,8 @@ function WeeklyCalendar() {
         setModal(true);
         setErrorModal(false)
         setModalMessage("Változtatások sikeresen mentve!");
-        await fetchReservations();
+        await fetchReservations(monday, bookedCourt);
+        
       } else {
         console.error("Hiba a szinkronizáláskor:", result);
         setModal(true);
@@ -259,20 +282,6 @@ function WeeklyCalendar() {
     fetchReservations();
   };
 
-  /**
-   * pasteOwnReservations:
-   * A backend által visszaadott saját foglalások (Date) -> sync formátum (string)
-   * - Court_id: bookedCourt
-   * - startTime: 'YYYY-MM-DDTHH:mm:ss'
-   */
-  const pasteOwnReservations = (reservations) => {
-    const converted = reservations.map((res) => ({
-      Court_id: bookedCourt,
-      startTime: dayjs(res.startTime).format("YYYY-MM-DDTHH:mm:ss"),
-    }));
-
-    setOwnReservations(converted);
-  };
 
   /**
    * fetchReservations:
@@ -284,37 +293,7 @@ function WeeklyCalendar() {
    * - reservedDates = minden foglalás (minden user)
    * - own = szűrés userId alapján -> pasteOwnReservations(own)
    */
-  const fetchReservations = async () => {
-    const weekStart = dayjs(monday).format("YYYY-MM-DD");
-
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/reservations/by-court-week?courtId=${bookedCourt}&weekStart=${weekStart}`
-      );
-      if (!res.ok) throw new Error("Foglalások lekérése sikertelen");
-
-      const data = await res.json();
-      console.log("data: " + JSON.stringify(data));
-
-      const formatted = data.map((r) => ({
-        startTime: new Date(r.booked_time),
-        userId: r.user_id,
-        userName: r.username || "Ismeretlen",
-      }));
-
-      console.log("fetchelt: ", formatted);
-
-      setReservedDates(formatted);
-
-      const own = formatted.filter((r) => Number(r.userId) === Number(userId));
-      pasteOwnReservations(own);
-    } catch (err) {
-      console.error(err);
-      setModal(true);
-      setErrorModal(true)
-      setModalMessage("Hiba történt a foglalások lekérésekor.");
-    }
-  };
+  
 
   /**
    * fetchAllReservationsForPrint:
@@ -349,16 +328,11 @@ function WeeklyCalendar() {
    * - weekOffset (=> monday) változik
    * - userId változik
    */
-  useEffect(() => {
-    if (!bookedCourt || !userId) return;
-    fetchReservations();
+  useEffect(()=>{
+     loadReservations();
+
   }, [bookedCourt, weekOffset, userId]);
 
-  /** Debug log */
-  useEffect(() => {
-    console.log("Ownreservations: ", ownReservations);
-    console.log("reservedDates: ", reservedDates);
-  }, [ownReservations, reservedDates]);
 
   // -------------------------
   // UI eseménykezelők
@@ -588,227 +562,31 @@ function WeeklyCalendar() {
   // -------------------------
 
   return (
-  <div className="relative">
+    <>
+      <ReservationHeader
+        monday={monday}
+        sunday={sunday}
+        weekOffset={weekOffset}
+        setWeekOffset={setWeekOffset}
+        courts={courts}
+        bookedCourt={bookedCourt}
+        handleChangeCourt={handleChangeCourt}
+        handlePrint={handlePrint}
+        handleSubmit={handleSubmit}
+      />
 
-    <AuthFrostLock loggedIn={loggedIn}>
-
-
-      {/* ADMIN MODAL – más foglalás törlése */}
-      {adminModalVisible && adminSelectedSlot && adminConflict && (
-        <Modal>
-          <h2 className="mb-4 text-xl font-bold">Foglalás törlése</h2>
-
-          <p className="mb-2">
-            <strong>{adminConflict.userName}</strong> foglalt erre az időpontra:
-          </p>
-
-          <p className="mb-4">
-            {new Date(adminConflict.startTime).toLocaleString("hu-HU")}
-          </p>
-
-          <div className="flex gap-4">
-            <button
-              className="px-4 py-2 font-semibold rounded-lg bg-yellow"
-              onClick={async () => {
-                // időzóna miatti korrekció
-                const correctedStartTime = new Date(adminConflict.startTime);
-                correctedStartTime.setHours(correctedStartTime.getHours() + 2);
-
-                await fetch(`${API_BASE_URL}/api/reservations/delete-reservation`, {
-                  method: "DELETE",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    court_id: bookedCourt,
-                    startTime: correctedStartTime.toISOString(),
-                  }),
-                });
-
-                setModal(true);
-                setModalMessage("Foglalás törölve.");
-                setAdminModalVisible(false);
-
-                // frissítjük a heti foglalásokat
-                fetchReservations();
-              }}
-            >
-              Foglalás törlése
-            </button>
-
-            <button
-              className="px-4 py-2 bg-gray-200 rounded-lg"
-              onClick={() => setAdminModalVisible(false)}
-            >
-              Mégse
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {/* Általános információs / hiba modal */}
-      {modal && (
-        <Modal closeModal={() => setModal(false)}>
-          { errorModal&&<h4 className="title-base">Hiba</h4>}
-          <p className={errorModal?'desc-base':'title-base'}>{modalMessage}</p>
-          <button
-            className="btn-primary"
-            onClick={() => setModal(false)}
-          >
-            Rendben
-          </button>
-        </Modal>
-      )}
-
-      {/* NAVIGÁCIÓ – hétváltás, pályaválasztás, mentés */}
-      <div
-        className="
-          flex flex-col md:flex-row justify-between items-center gap-3
-          p-4 max-w-[960px] mx-auto my-5
-          bg-white border border-border rounded-card shadow-soft
-        "
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <strong>Heti nézet:</strong>
-          <span>
-            {formatDate(monday)} – {formatDate(sunday)}
-          </span>
-
-          {/* Előző / következő hét */}
-          <button
-            className="px-3 py-1 text-white transition rounded-lg bg-lightBlue hover:bg-yellow"
-            onClick={() => setWeekOffset(w => w - 1)}
-          >
-            Előző hét
-          </button>
-
-          <button
-            className="px-3 py-1 text-white transition rounded-lg bg-lightBlue hover:bg-yellow"
-            onClick={() => setWeekOffset(w => w + 1)}
-          >
-            Következő hét
-          </button>
-        </div>
-
-        {/* Pályaválasztó */}
-        <select
-          className="px-3 py-2 font-medium border rounded-lg border-border"
-          onChange={handleChangeCourt}
-          value={bookedCourt || ""}
-        >
-          {courts.map(court => (
-            <option key={court.id} value={court.id}>
-              {court.name}
-            </option>
-          ))}
-        </select>
-
-        {/* Nyomtatás + mentés */}
-        <div className="flex gap-2">
-          <button
-            className="px-4 py-2 text-white transition rounded-lg bg-lightBlue hover:bg-yellow"
-            onClick={handlePrint}
-          >
-            Nyomtatás
-          </button>
-
-          <button
-            className="px-4 py-2 font-semibold rounded-lg bg-yellow"
-            onClick={handleSubmit}
-          >
-            Mentés
-          </button>
-        </div>
-      </div>
-
-      {/* NAPTÁR KONTAINER */}
-      <div
-        className="
-          w-full max-w-[960px] mx-auto
-          bg-white border border-border
-          rounded-card overflow-hidden shadow-soft
-        "
-      >
-        {/* FEJLÉC – napok */}
-        <div
-          className="
-            grid grid-cols-[80px_repeat(7,1fr)]
-            bg-primaryLight font-semibold text-center text-sm
-            border-b border-border
-          "
-        >
-          <div></div>
-          {days.map(day => (
-            <div key={day} className="py-3">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* IDŐSOROK */}
-        {hours.map(hour => (
-          <div
-            key={hour}
-            className="grid grid-cols-[80px_repeat(7,1fr)] text-sm"
-          >
-            {/* Óra címke */}
-            <div className="py-2 text-center border-r bg-primaryLight border-border">
-              {hour}:00
-            </div>
-
-            {/* Nap cellák */}
-            {days.map((_, dayIndex) => {
-              // cella dátum kiszámítása
-              const cellDate = new Date(monday);
-              cellDate.setDate(monday.getDate() + dayIndex);
-              cellDate.setHours(hour, 0, 0, 0);
-
-              // saját foglalás?
-              const isOwn = ownReservations.some(r =>
-                isSameHour(new Date(r.startTime), cellDate)
-              );
-
-              // más foglalása?
-              const isOther = reservedDates.some(
-                r =>
-                  isSameHour(new Date(r.startTime), cellDate) &&
-                  r.userId !== userId
-              );
-
-              // alap cella stílus
-              let cellClass =
-                "h-12 m-0.5 rounded-md border border-gray-200 cursor-pointer transition";
-
-              // állapotok
-              if (isOwn) {
-                cellClass += " bg-yellow";
-              } else if (isOther && role) {
-                // admin látja, kattinthat
-                cellClass += " bg-lightBlue";
-              } else if (isOther) {
-                // user nem kattinthat
-                cellClass += " bg-lightBlue pointer-events-none cursor-not-allowed";
-              } else {
-                cellClass += " hover:bg-yellow";
-              }
-
-              return (
-                <div
-                  key={`${dayIndex}-${hour}`}
-                  className={cellClass}
-                  onClick={() => handleClick(dayIndex, hour)}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-            
-    </AuthFrostLock>
-  </div>
-);
-
+      <ReservationCalendarGrid
+        days={days}
+        hours={hours}
+        monday={monday}
+        ownReservations={ownReservations}
+        reservedDates={reservedDates}
+        userId={userId}
+        role={role}
+        handleClick={handleClick}
+      />
+    </>
+  );
 }
 
 export default WeeklyCalendar;

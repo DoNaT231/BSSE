@@ -1,5 +1,6 @@
 import { getBrevoTransactionalApi } from "./brevoClient.js";
 import { EMAIL_TEMPLATES } from "./templates.js";
+import { formatHungarianDate } from "../../utils/date.js";
 
 const DEFAULT_SENDER = {
   email: "almadistrandroplabda@gmail.com",
@@ -67,10 +68,13 @@ export async function sendTournamentRegistrationSuccessEmail({
   toEmail,
   toName,
   tournamentName,
-  detailsText, // opcionális: előre formázott, \n sortörésekkel
+  phoneNumber,
+  registrationDate,
+
+  tournamentDate,
+  entryFee,
 }) {
   const t = EMAIL_TEMPLATES.TOURNAMENT_REG_SUCCESS;
-
   return sendTemplateEmail({
     toEmail,
     toName,
@@ -78,7 +82,11 @@ export async function sendTournamentRegistrationSuccessEmail({
     subject: t.subject,
     params: {
       tournamentName: tournamentName || "",
-      details: detailsText || "",
+      phoneNumber: phoneNumber || "",
+      registrationDate: formatHungarianDate(registrationDate) || "",
+
+      tournamentDate: formatHungarianDate(tournamentDate) || "",
+      entryFee: entryFee || "",
     },
   });
 }

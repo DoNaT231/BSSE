@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL } from "../config";
-import { useAuth } from "../AuthContext";
-import Header from "../components/Header";
-import AuthFrostLock from "../components/AuthLock.js";
+import { API_BASE_URL } from "../../../config.js";
+import { useAuth } from "../../../AuthContext.js";
+import Header from "../../../components/Header.js";
+import AuthFrostLock from "../../../components/AuthLock.js";
 /**
  * TournamentSignupSection (Tailwind)
  * ------------------------------------------------------------
@@ -65,7 +65,7 @@ export default function TournamentSignupSection() {
 
   // form state
   const [teamName, setTeamName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(userEmail);
   const [telNumber, setTelNumber] = useState("");
   const [players, setPlayers] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -74,7 +74,6 @@ export default function TournamentSignupSection() {
   const [myRegistrations, setMyRegistrations] = useState([]); // lista
   const [regByTournamentId, setRegByTournamentId] = useState({}); // gyors lookup: { [tournamentId]: registration }
   const [activeRegistration, setActiveRegistration] = useState(null); // épp szerkesztett nevezés (ha van)
-
 
   const selectedTournament = useMemo(
     () => tournaments.find((t) => t.id === openTournamentId) || null,
@@ -271,8 +270,10 @@ export default function TournamentSignupSection() {
         team_name: teamName.trim() || null,
         user_id: userId,
         tel_number: telNumber.trim(),
+        contact_email: email.trim(),
         players: players.map((p) => p.trim()),
       };
+      console.log("payload: ",payload)
 
       const isEdit = Boolean(activeRegistration?.id);
 
@@ -383,6 +384,15 @@ export default function TournamentSignupSection() {
                     {t.description && (
                       <p className="mt-3 text-sm leading-relaxed text-slate-700 line-clamp-4">
                         {t.description}
+                      </p>
+                    )}
+
+                    {t.entry_fee !== null && t.entry_fee !== undefined && (
+                      <p className="mt-3 text-sm leading-relaxed text-slate-700 line-clamp-4">
+                        Nevezési díj:{" "}
+                        {Number(t.entry_fee) === 0
+                          ? "ingyenes"
+                          : `${t.entry_fee} Ft`}
                       </p>
                     )}
 
