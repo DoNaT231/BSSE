@@ -1,140 +1,53 @@
-/**
- * WeeklyCalendar (WeeklyTimeGrid)
- * --------------------------------
- * Heti naptár nézet pályafoglalásokhoz (9:00–20:00, hétfő–vasárnap).
- *
- * Fő funkciók:
- * - Pályák lekérése (courts) és kiválasztása (bookedCourt)
- * - Foglalások lekérése adott pályára + hétre (reservedDates)
- * - Saját foglalások elkülönítése és szerkesztése (ownReservations)
- * - Mentés (sync) a backend felé
- * - Admin jogosultság: ütközés (conflict) esetén foglalás törlés modalból
- * - Nyomtatás: összes pálya foglalásainak lekérése és PrintableSchedule render + window.print()
- *
- * Fontos megjegyzések / implicit szabályok:
-* - Múltbeli időpontra nem lehet foglalni
- * - A mai napra már nem lehet foglalni
- * - 18:00 után nem lehet a következő napra foglalni
- * - Limit: 1 nap max 2 óra foglalható (a kód számláló logikája alapján)
- * - Limit: 1 hét max 10 óra foglalható
- *
- * Használt kontextus:
- * - useAuth(): loggedIn, userId, role ("admin" esetén admin funkciók)
- *
- * Használt backend endpointok (API_BASE_URL):
- * - GET  /api/courts
- * - GET  /api/reservations/by-court-week?courtId=...&weekStart=YYYY-MM-DD
- * - POST /api/reservations/sync?courtIdFromQuery=...
- * - DELETE /api/reservations/delete-reservation
- *
- * Időkezelés:
- * - A cellák dátuma a hétfő (monday) alapján képződik.
- * - dayjs utc plugin be van húzva, de a cellDate -> utcISOString formázás itt inkább csak string formátum,
- *   nem explicit time-zone konverzió (nincs .utc()) – fontos lehet, ha backend UTC-t vár.
- */
-
-import fetchReservations from "../api/ReservationApi.js";
-import fetchCourts from "../api/CourtsApi.js";
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom"; // (Link import itt jelenleg nincs használva)
-import { useAuth } from "../../../AuthContext.js";
-import Modal from "../../../components/Modal.js";
-import PrintableSchedule from "../components/PrintableSchedule.js";
-import { API_BASE_URL } from "../../../config.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+
+import { useAuth } from "../../../AuthContext.js";
 import { useNavigate } from "react-router-dom";
-import LoginRegist from "../../../pages/LoginRegist/LoginRegist.js";
-import { tr } from "date-fns/locale"; // (import itt jelenleg nincs használva)
-import "../../../styleComponents.css";
 import AuthFrostLock from "../../../components/AuthLock.js";
+
+import fetchCourts from "../api/CourtsApi.js";
+import { getWeekReservationsSafe, syncReservationsSafe } from "../services/reservations.service.js";
+import { diffReservations } from "../utils/reservationDiff.js";
+
 import ReservationHeader from "../components/ReservationHeader.jsx";
 import ReservationCalendarGrid from "../components/ReservationCalendarGrid.jsx";
 
 dayjs.extend(utc);
 
-/** Magyar napnevek a fejlécben */
 const days = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
-
-/** Órák listája (12 slot): 9..20 */
 const hours = Array.from({ length: 12 }, (_, i) => i + 9);
 
 function WeeklyCalendar() {
-  // -------------------------
-  // Állapotok (state-ek)
-  // -------------------------
+  const { loggedIn, role } = useAuth();
+  const navigate = useNavigate();
 
-  /**
-   * selectedCourts:
-   * Nyomtatáshoz használt pályalista (print módban több pálya foglalásait tölti be).
-   */
-  const [selectedCourts, setSelectedCourts] = useState([]);
-
-  /**
-   * Admin törléshez:
-   * - adminSelectedSlot: a kattintott időpont (Date)
-   * - adminConflict: a foglalás adatai azon a sloton (userName, startTime, userId)
-   * - adminModalVisible: admin törlés modal láthatósága
-   */
-  const [adminSelectedSlot, setAdminSelectedSlot] = useState(null);
-  const [adminConflict, setAdminConflict] = useState(null);
-  const [adminModalVisible, setAdminModalVisible] = useState(false);
-
-  /**
-   * reservedDates:
-   * Az aktuálisan kiválasztott pálya + hét összes foglalása (mindenkié).
-   * Formátum (frontend): { startTime: Date, userId: ..., userName: ... }
-   */
-  const [reservedDates, setReservedDates] = useState([]);
-
-  /**
-   * ownReservations:
-   * A bejelentkezett user adott héten a kiválasztott pályára felvett foglalásai (szerkeszthető).
-   * Formátum (sync felé): { Court_id: bookedCourt, startTime: 'YYYY-MM-DDTHH:mm:ss' }
-   */
-  const [ownReservations, setOwnReservations] = useState([]);
-
-  /** Nyomtatás megjelenítésének kapcsolója */
-  const [showPrint, setShowPrint] = useState(false);
-
-  /** Aktuálisan kiválasztott pálya ID */
-  const [bookedCourt, setBookedCourt] = useState(null);
-
-  /** Auth adatok */
-  const { loggedIn, userId, role } = useAuth();
-
-  /** Pályák listája a dropdownhoz */
-  const [courts, setCourts] = useState([]);
-
-  /** Hétléptetés: 0 = jelen hét, -1 = előző hét, +1 = következő hét, stb. */
-  const [weekOffset, setWeekOffset] = useState(0);
-
-  /** Token a szinkronhoz/törléshez (Authorization header) */
   const token = localStorage.getItem("token");
 
-  /** Általános modal (információ/hiba) */
+  const [courts, setCourts] = useState([]);
+  const [bookedCourt, setBookedCourt] = useState(null);
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  // reservedDates: CSAK MÁSOK foglalásai (UI-hoz)
+  // [{ startTime: Date, isMine:false, courtId }]
+  const [reservedDates, setReservedDates] = useState([]);
+
+  // ownReservations: sync payload (aktuális szerkesztett)
+  // [{ Court_id, startTime: 'YYYY-MM-DDTHH:mm:ss' }]
+  const [ownReservations, setOwnReservations] = useState([]);
+
+  // snapshot: betöltéskori saját foglalások (sync payload formátum)
+  const [originalOwnReservations, setOriginalOwnReservations] = useState([]);
+
+  // modal
   const [modal, setModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [errorModal, setErrorModal] = useState(false);
 
-  /** Nem bejelentkezett felhasználónál foglalás trigger esetén login modal */
-  const [reservationModal, setReservationModal] = useState(false); // (state létezik, de UI-ban most nem renderelsz külön modalt, csak overlayt)
+  // admin conflict modal (itt csak minimál)
+  const [adminSelectedSlot, setAdminSelectedSlot] = useState(null);
+  const [adminModalVisible, setAdminModalVisible] = useState(false);
 
-  const navigate = useNavigate();
-
-  let cellName = ""; // (változó jelenleg nincs használva)
-
-  // -------------------------
-  // Hét kezdete (Hétfő) és vége (Vasárnap)
-  // -------------------------
-
-  /**
-   * monday:
-   * A weekOffset alapján kiszámolt hétfő (00:00:00.000).
-   * - JS Date getDay(): 0 = vasárnap ... 6 = szombat.
-   * - diff számítás: adott hét hétfője.
-   * - weekOffset * 7 nappal eltolva.
-   */
   const monday = useMemo(() => {
     const now = new Date();
     const day = now.getDay();
@@ -145,424 +58,217 @@ function WeeklyCalendar() {
     return mon;
   }, [weekOffset]);
 
-  /** sunday: monday + 6 nap */
   const sunday = useMemo(() => {
     const s = new Date(monday);
     s.setDate(monday.getDate() + 6);
     return s;
   }, [monday]);
 
-  // -------------------------
-  // Segédfüggvények
-  // -------------------------
-
-  /** Date -> "YYYY.MM.DD" HU formázás */
-  const formatDate = (date) =>
-    date.toLocaleDateString("hu-HU", { year: "numeric", month: "2-digit", day: "2-digit" });
-
-  /**
-   * isSameHour:
-   * Két Date ugyanarra az órára esik-e (év/hónap/nap/óra egyezés).
-   * A cellákhoz tartozó foglaltság ellenőrzésére használod.
-   */
-  const isSameHour = (d1, d2) =>
+  const isSameDay = (d1, d2) =>
     d1.getFullYear() === d2.getFullYear() &&
     d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate() &&
-    d1.getHours() === d2.getHours();
+    d1.getDate() === d2.getDate();
 
-  // -------------------------
-  // Backend kommunikáció
-  // -------------------------
+  const toSyncPayloadFromDates = (dateReservations) =>
+    (dateReservations || []).map((r) => ({
+      Court_id: Number(bookedCourt),
+      startTime: dayjs(r.startTime).format("YYYY-MM-DDTHH:mm:ss"),
+    }));
 
-  async function loadReservations() {
+  async function loadCourts() {
     try {
-      const data = await fetchReservations({ monday, bookedCourt });
-      setReservedDates(data);
-
-      const own = data.filter((r) => Number(r.userId) === Number(userId));
-      pasteOwnReservations(own);
+      const data = await fetchCourts();
+      setCourts(data);
+      if (data?.length) setBookedCourt(Number(data[0].id));
     } catch (err) {
       setModal(true);
       setErrorModal(true);
-      setModalMessage("Hiba történt a foglalások lekérésekor.");
+      setModalMessage("Hiba történt a pályák lekérésekor.");
     }
   }
-    /**
-     * pasteOwnReservations:
-     * A backend által visszaadott saját foglalások (Date) -> sync formátum (string)
-     * - Court_id: bookedCourt
-     * - startTime: 'YYYY-MM-DDTHH:mm:ss'
-     */
-    const pasteOwnReservations = (reservations) => {
-      const converted = reservations.map((res) => ({
-        Court_id: bookedCourt,
-        startTime: dayjs(res.startTime).format("YYYY-MM-DDTHH:mm:ss"),
-      }));
 
-      setOwnReservations(converted);
-    };
-    
-    const loadCourts = async () => {
-      try {
-        const data = await fetchCourts();
-        setCourts(data);
-        setBookedCourt(data[0].id)
-      } catch (err) {
-        setModal(true);
-        setErrorModal(true);
-        setModalMessage("Hiba történt a pályák lekérésekor.");
-      }
-    };
+  async function loadReservations() {
+    if (!bookedCourt) return;
 
-  /** Pályák betöltése egyszer (mount) */
+    const res = await getWeekReservationsSafe({
+      monday,
+      courtId: Number(bookedCourt),
+      token,
+    });
+
+    if (!res.ok) {
+      setModal(true);
+      setErrorModal(true);
+      setModalMessage(res.message);
+      return;
+    }
+
+    // data: [{startTime: Date, isMine, courtId}]
+    const others = res.data.filter((r) => !r.isMine);
+    const ownDates = res.data.filter((r) => r.isMine);
+
+    setReservedDates(others);
+
+    const ownSync = toSyncPayloadFromDates(ownDates);
+    setOwnReservations(ownSync);
+    setOriginalOwnReservations(ownSync);
+  }
+
   useEffect(() => {
     loadCourts();
   }, []);
 
-  
+  useEffect(() => {
+    loadReservations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookedCourt, weekOffset]); // userId nem kell többé az isMine miatt
 
-  /**
-   * syncReservations:
-   * Saját foglalások felküldése (POST) /api/reservations/sync endpointon.
-   *
-   * Speciális ág: ha reservations üres, akkor beleraksz egy { monday } objektumot.
-   * Valószínű: backendnek kell tudnia melyik hétre vonatkozik a sync.
-   *
-   * Siker:
-   * - modal: "Változtatások sikeresen mentve!"
-   * - fetchReservations újratölti a hetet
-   *
-   * Hiba:
-   * - modal: backend result.message vagy fallback üzenet
-   */
-  const syncReservations = async (reservations) => {
-    console.log("ezeket kuldi a backendre: ", reservations);
-
-    if (reservations.length === 0) {
-      reservations.push({ monday: monday });
-    }
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/reservations/sync?courtIdFromQuery=${bookedCourt}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(reservations),
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setModal(true);
-        setErrorModal(false)
-        setModalMessage("Változtatások sikeresen mentve!");
-        await fetchReservations(monday, bookedCourt);
-        
-      } else {
-        console.error("Hiba a szinkronizáláskor:", result);
-        setModal(true);
-        setErrorModal(true)
-        setModalMessage(result.message || "Hiba történt a szinkronizálás során.");
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      setModal(true);
-      setErrorModal(true)
-      setModalMessage("Hálózati hiba vagy szerverhiba.");
-    }
-
-    // Dupla fetch: a fenti ágakban már hívsz fetchReservations()-t,
-    // itt a végén még egyszer meghívod.
-    fetchReservations();
-  };
-
-
-  /**
-   * fetchReservations:
-   * Lekéri a kiválasztott pálya (bookedCourt) foglalásait az adott hétfő (weekStart) alapján.
-   * A backend r.booked_time mezőből Date-et csinál.
-   * A userName fallback: "Ismeretlen".
-   *
-   * Ezután:
-   * - reservedDates = minden foglalás (minden user)
-   * - own = szűrés userId alapján -> pasteOwnReservations(own)
-   */
-  
-
-  /**
-   * fetchAllReservationsForPrint:
-   * Nyomtatáskor minden pályára lekéri az adott heti foglalásokat (Promise.all).
-   * A reservedDates-et "flattenelt" listára állítja, és selectedCourts = courts.
-   */
-  const fetchAllReservationsForPrint = async () => {
-    const weekStart = monday.toISOString().split("T")[0];
-
-    const results = await Promise.all(
-      courts.map(async (court) => {
-        const res = await fetch(
-          `${API_BASE_URL}/api/reservations/by-court-week?courtId=${court.id}&weekStart=${weekStart}`
-        );
-        const data = await res.json();
-        return data.map((r) => ({
-          courtId: court.id,
-          courtName: court.name,
-          ...r,
-        }));
-      })
-    );
-
-    console.log(results.flat());
-    setReservedDates(results.flat());
-    setSelectedCourts(courts);
-  };
-
-  /**
-   * Foglalások újratöltése, ha:
-   * - bookedCourt változik
-   * - weekOffset (=> monday) változik
-   * - userId változik
-   */
-  useEffect(()=>{
-     loadReservations();
-
-  }, [bookedCourt, weekOffset, userId]);
-
-
-  // -------------------------
-  // UI eseménykezelők
-  // -------------------------
-
-  /** Pálya váltás dropdown */
   const handleChangeCourt = (e) => {
     e.preventDefault();
-    setBookedCourt(e.target.value);
+    setBookedCourt(Number(e.target.value));
   };
 
-  /**
-   * Nyomtatás:
-   * - Lekéri az összes pályára a heti foglalásokat
-   * - showPrint=true => PrintableSchedule renderelődik
-   * - rövid timeout után window.print()
-   * - print után visszatölti az aktuális pálya foglalásait (fetchReservations)
-   */
-  const handlePrint = async () => {
-    await fetchAllReservationsForPrint();
-    setShowPrint(true);
+  const prettySlot = (t) => dayjs(t).format("YYYY.MM.DD. HH:mm");
 
-    setTimeout(() => {
-      window.print();
-      fetchReservations();
-    }, 100);
-  };
-
-  const handleGuestBooking = () => {
-    console.log("bejelentkezett"); // (jelenleg nem használt)
-  };
-
-  /**
-   * Mentés (Save):
-   * - ha loggedIn:
-   *    - ha nincs ownReservations: modal "Erre a pályára és hétre nincs foglalása"
-   *    - syncReservations(ownReservations)
-   * - ha nincs login: reservationModal = true (de UI-ban most overlayvel takarsz)
-   */
   const handleSubmit = async () => {
-    if (loggedIn) {
-      if (ownReservations.lengt===0) {
-        setModal(true);
-        setModalMessage("Erre a pályára és hétre nincs foglalása");
-        await syncReservations(ownReservations);
-      }
-      await syncReservations(ownReservations);
-    } else setReservationModal(true);
+    if (!loggedIn) {
+      navigate("/bejelentkezes");
+      return;
+    }
+
+    const { added, removed, changed } = diffReservations(originalOwnReservations, ownReservations);
+
+    if (!changed) {
+      setModal(true);
+      setErrorModal(false);
+      setModalMessage("Nem változtatott semmit.");
+      return;
+    }
+
+    // Összefoglaló modal (szöveges)
+    const lines = [];
+    lines.push(`Változások ezen a héten:`);
+    if (added.length) {
+      lines.push(`\nHozzáadva (${added.length}):`);
+      added.forEach((t) => lines.push(`- ${prettySlot(t)}`));
+    }
+    if (removed.length) {
+      lines.push(`\nTörölve (${removed.length}):`);
+      removed.forEach((t) => lines.push(`- ${prettySlot(t)}`));
+    }
+
+    setModal(true);
+    setErrorModal(false);
+    setModalMessage(lines.join("\n"));
+
+    // Mentés
+    const saveRes = await syncReservationsSafe({
+      monday,
+      courtId: Number(bookedCourt),
+      token,
+      reservations: ownReservations,
+    });
+
+    if (!saveRes.ok) {
+      setModal(true);
+      setErrorModal(true);
+      setModalMessage(saveRes.message);
+      return;
+    }
+
+    // siker: snapshot frissít + újratölt
+    setOriginalOwnReservations(ownReservations);
+    await loadReservations();
   };
 
-  /** Login gomb callback (ha lenne login modal) */
-  const handleLoginButton = () => {
-    setReservationModal(false);
-    navigate("/bejelentkezes");
-  };
-
-  /**
-   * Cellakattintás:
-   * - cellDate létrehozása monday + dayIndex + hour alapján
-   * - validációk:
-   *    - múltbeli időpont tiltás
-   *    - mai nap tiltás
-   *    - holnapra 18 óra után tiltás
-   *    - max/nap = 2 óra; max/hét = 10 óra (saját foglalások alapján)
-   * - admin eset:
-   *    - ha a cellDate ütközik meglévő reservedDates-szel => adminModalVisible + conflict adatok
-   * - user eset:
-   *    - ha saját foglalásra kattint => törli ownReservations-ből és reservedDates-ből az adott slotot
-   *    - különben hozzáadja/eltávolítja toggle módon ownReservations-ből
-   */
   const handleClick = (dayIndex, hour) => {
-    // Cellához tartozó dátum
+    if (!bookedCourt) return;
+
     const cellDate = new Date(monday);
     cellDate.setDate(monday.getDate() + dayIndex);
     cellDate.setHours(hour, 0, 0, 0);
 
-    // A cellDate stringgé alakítása (backend szinkronhoz)
-    const utcISOString = dayjs(cellDate).format("YYYY-MM-DDTHH:mm:ss");
-
     const today = new Date();
+    const tomorrow = new Date(new Date().setDate(today.getDate() + 1));
 
-    const isSameDay = (day1, day2) => {
-      return (
-        day1.getFullYear() === day2.getFullYear() &&
-        day1.getMonth() === day2.getMonth() &&
-        day1.getDate() === day2.getDate()
-      );
-    };
+    const cellKey = dayjs(cellDate).format("YYYY-MM-DDTHH:mm:ss");
 
-    /**Szabad a hely? */
-    let freeToBook = true;
-    reservedDates.forEach(date => {
-     
-      const resDate = new Date(date.startTime)
-       console.log(resDate + " es a masik " + cellDate)
-      if(resDate.getTime() == cellDate.getTime()){
-        freeToBook = false;
-        console.log("mar nem szabad")
+    // 1) foglalt-e más által?
+    const occupiedByOthers = reservedDates.some(
+      (r) => new Date(r.startTime).getTime() === cellDate.getTime()
+    );
+
+    if (occupiedByOthers) {
+      if (role === "admin") {
+        setAdminSelectedSlot(cellDate);
+        setAdminModalVisible(true);
+        return;
       }
-    });
+      setModal(true);
+      setErrorModal(true);
+      setModalMessage("Ezt már valaki lefoglalta.");
+      return;
+    }
 
-    /** ha szabad */
-    if(freeToBook){
-      // 1) múlt tiltás
+    // 2) idő szabályok (csak ha “foglalni” akarunk)
+    // ha már benne van a saját listában, akkor ez egy törlés toggle -> engedjük
+    const alreadySelected = ownReservations.some((r) => r.startTime === cellKey);
+
+    if (!alreadySelected) {
       if (cellDate < today) {
         setModal(true);
-        setErrorModal(true)
-        setModalMessage("Múltbeli időpontokra nem lehet foglalni");
+        setErrorModal(true);
+        setModalMessage("Múltbeli időpontokra nem lehet foglalni.");
         return;
       }
 
-      // 2) mai nap tiltás
       if (isSameDay(today, cellDate)) {
         setModal(true);
-        setErrorModal(true)
-        setModalMessage("A mai napra már nem lehet foglalani");
+        setErrorModal(true);
+        setModalMessage("A mai napra már nem lehet foglalni.");
         return;
       }
 
-       // 3) holnap 18 után tiltás
-        let tomorrow = today;
-        tomorrow = new Date(tomorrow.setDate(tomorrow.getDate() + 1));
-        if (isSameDay(tomorrow, cellDate) && today.getHours() > 18) {
-          setModal(true);
-          setErrorModal(true)
-          setModalMessage("18 óra után már nem lehet a következő napra foglalni");
-          return;
-        }
-        // 4) napi/heti limit számolás (saját foglalások alapján)
-      let maxReservationInaWeek = 0;
-      let maxReservationInaDay = 0;
-
-      for (let i = 0; i < ownReservations.length; i++) {
-        const resDate = new Date(ownReservations[i].startTime);
-
-        if (
-          isSameDay(cellDate, new Date(ownReservations[i].startTime)) &&
-          cellDate.getTime() !== resDate.getTime()
-        )
-          maxReservationInaDay++;
-
-        if (monday < cellDate && cellDate < sunday && cellDate.getTime() !== resDate.getTime())
-          maxReservationInaWeek++;
-
-        if (maxReservationInaDay >= 2) {
-          setModal(true);
-        setErrorModal(true)
-          setModalMessage("Egy nap maximum két óra foglalható");
-          maxReservationInaDay--;
-          return;
-        }
-        if (maxReservationInaWeek >= 10) {
-          setModal(true);
-          setErrorModal(true)
-          setModalMessage("Egy héten maximum 10 óra foglalható");
-          maxReservationInaDay--;
-          return;
-        }
-      }
-    }
-    else{ /**Ha nem szabad -> Valakié */
-
-       // ADMIN: ütközés esetén törlési modal
-      if (role === "admin") {
-        const conflict = reservedDates.find(
-          (r) => new Date(r.startTime).getTime() === cellDate.getTime()
-        );
-        if (conflict) {
-          setAdminSelectedSlot(cellDate);
-          setAdminConflict(conflict);
-          setAdminModalVisible(true);
-        }
-        return;
-      }
-
-      // Normál user: saját foglalás-e?
-      const isOwnReserved = ownReservations.some((r) => {
-        const rDate = new Date(r.startTime);
-        return rDate.getTime() === cellDate.getTime();
-      });
-
-      console.log("own? : " + isOwnReserved)
-      // Ha saját foglalásra kattint -> törlés ownReservations + reservedDates listából
-      if (isOwnReserved) {
-        console.log("sajat reservatiionre nyomtál");
-
-        setOwnReservations((prev) =>
-          prev.filter((r) => new Date(r.startTime).getTime() !== cellDate.getTime())
-        );
-
-        setReservedDates((prev) =>
-          prev.filter(
-            (r) =>
-              !(
-                new Date(r.startTime).getTime() === cellDate.getTime() &&
-                Number(r.userId) === Number(userId)
-              )
-          )
-        );
-        return;
-      }
-      else{
+      if (isSameDay(tomorrow, cellDate) && today.getHours() >= 18) {
         setModal(true);
-        setErrorModal(true)
-        setModalMessage("Ezt már valaki lefoglalta");
+        setErrorModal(true);
+        setModalMessage("18 óra után már nem lehet a következő napra foglalni.");
+        return;
+      }
+
+      // 3) napi/heti limit (a saját listából)
+      const ownDates = ownReservations.map((r) => new Date(r.startTime));
+
+      const dayCount = ownDates.filter((d) => isSameDay(d, cellDate)).length;
+      if (dayCount >= 2) {
+        setModal(true);
+        setErrorModal(true);
+        setModalMessage("Egy nap maximum két óra foglalható.");
+        return;
+      }
+
+      const weekCount = ownDates.filter((d) => d >= monday && d <= sunday).length;
+      if (weekCount >= 10) {
+        setModal(true);
+        setErrorModal(true);
+        setModalMessage("Egy héten maximum 10 óra foglalható.");
         return;
       }
     }
 
-    
-
-   
-
-    // Egyébként toggle: hozzáadás / eltávolítás ownReservations-ben
+    // 4) toggle
     setOwnReservations((prev) => {
-      const exists = prev.some((r) => r.startTime === utcISOString);
-      if (exists) {
-        return prev.filter((r) => r.startTime !== utcISOString);
-      } else {
-        return [...prev, { Court_id: bookedCourt, startTime: utcISOString }];
-      }
+      const exists = prev.some((r) => r.startTime === cellKey);
+      if (exists) return prev.filter((r) => r.startTime !== cellKey);
+      return [...prev, { Court_id: Number(bookedCourt), startTime: cellKey }];
     });
   };
 
-  // -------------------------
-  // Render
-  // -------------------------
-
   return (
     <>
+    <AuthFrostLock
+              loggedIn={loggedIn}
+        >
       <ReservationHeader
         monday={monday}
         sunday={sunday}
@@ -571,8 +277,13 @@ function WeeklyCalendar() {
         courts={courts}
         bookedCourt={bookedCourt}
         handleChangeCourt={handleChangeCourt}
-        handlePrint={handlePrint}
+        handlePrint={() => {
+          setModal(true);
+          setErrorModal(true);
+          setModalMessage("A nyomtatás részt külön szedjük (print service + endpoint).");
+        }}
         handleSubmit={handleSubmit}
+        // ha akarsz: pass isDirty is, és disable a save gomb
       />
 
       <ReservationCalendarGrid
@@ -581,10 +292,26 @@ function WeeklyCalendar() {
         monday={monday}
         ownReservations={ownReservations}
         reservedDates={reservedDates}
-        userId={userId}
         role={role}
         handleClick={handleClick}
       />
+
+      {/* Modal komponensedet nem látom, ezért csak jelzem:
+          - modalMessage-ben \n van, ha a Modal nem tördel, akkor <pre>-t vagy replace-et használj. */}
+      {modal && (
+        <div>
+          {/* ha van saját Modal komponensed, ide tedd vissza */}
+          {/* <Modal .../> */}
+        </div>
+      )}
+
+      {adminModalVisible && (
+        <div>
+          {/* ide jön az admin delete / manage modal */}
+          {/* adminSelectedSlot: Date */}
+        </div>
+      )}
+      </AuthFrostLock>
     </>
   );
 }

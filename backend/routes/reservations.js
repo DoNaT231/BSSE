@@ -3,6 +3,7 @@ import db from '../db.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { formatBookings } from '../utils/formatBookings.js';
 import { sendReservationSyncConfirmationEmail } from '../services/email/service.js';
+import authOptionalMiddleware from '../middleware/authOptionalMiddleware.js';
 
 const router = express.Router();
 
@@ -128,25 +129,49 @@ async function afterSuccessfulReservationSave({ userId, bookings }) {
 }
 
 // Foglalások lekérése adott hétre és pályára
-router.get('/by-court-week', async (req, res) => {
+router.get("/by-court-week", authOptionalMiddleware, async (req, res) => {
   const { courtId, weekStart } = req.query;
 
-  const start = new Date(weekStart);
+  // basic validation
+  const courtIdNum = Number(courtId);
+  if (!courtIdNum || !weekStart) {
+    return res.status(400).json({ message: "Hiányzó vagy hibás paraméter" });
+  }
+
+  const start = new Date(weekStart); // expected: YYYY-MM-DD
+  if (isNaN(start.getTime())) {
+    return res.status(400).json({ message: "Hibás weekStart dátum" });
+  }
+
   const end = new Date(start);
-  end.setDate(start.getDate() + 8);
+  end.setDate(start.getDate() + 7); // 7 napos intervallum (hétfő 00:00 -> következő hétfő 00:00)
+
+  const loggedInUserId = req.user?.id ?? null;
 
   try {
     const result = await db.query(
-      `SELECT r.id, r.booked_time, u.id AS user_id, u.username
-       FROM reservations r
-       LEFT JOIN users u ON r.user_id = u.id
-       WHERE r.court_id = $1 AND r.booked_time >= $2 AND r.booked_time < $3`,
-      [parseInt(courtId), start, end]
+      `
+      SELECT
+        r.court_id AS "courtId",
+        r.booked_time AS "startAt",
+        CASE
+          WHEN $4::int IS NULL THEN FALSE
+          ELSE (r.user_id = $4::int)
+        END AS "isMine"
+      FROM reservations r
+      WHERE r.court_id = $1
+        AND r.booked_time >= $2
+        AND r.booked_time < $3
+      ORDER BY r.booked_time ASC
+      `,
+      [courtIdNum, start, end, loggedInUserId]
     );
-    res.json(result.rows);
+
+    // minimal response
+    return res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Hiba a foglalások lekérdezésekor' });
+    return res.status(500).json({ message: "Hiba a foglalások lekérdezésekor" });
   }
 });
 
@@ -168,27 +193,6 @@ router.delete('/delete-reservation', authMiddleware, async (req, res) => {
   } catch {
     console.error('Szinkronizálási hiba2:', err);
     res.status(500).json({ message: 'Hiba a törlés során' });
-  }
-});
-
-// Vendég foglalás Regisztráció vagy bejelentkezes
-router.post('/guest', async (req, res) => {
-  const { user_name, user_email, court_id, start_time } = req.body;
-
-  if (!user_name || !user_email || !court_id || !start_time) {
-    return res.status(400).json({ message: 'Hiányzó mezők' });
-  }
-
-  try {
-    const result = await db.query(
-      `INSERT INTO reservations (user_id, user_name, user_email, court_id, booked_time, status, reservation_date)
-       VALUES (NULL, $1, $2, $3, $4, 'Pending', NOW()) RETURNING *`,
-      [user_name, user_email, court_id, start_time]
-    );
-    res.status(201).json({ message: 'Foglalás sikeres', reservation: result.rows[0] });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Hiba a foglalás során' });
   }
 });
 
