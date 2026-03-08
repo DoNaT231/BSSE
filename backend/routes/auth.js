@@ -1,143 +1,139 @@
-import express from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import db from '../db.js';
-import dotenv from 'dotenv';
-import dns from 'dns/promises';
+import express from "express";
+import * as authService from "../services/authService.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import { generateAccessToken } from "../utils/jwt.js";
 
-dotenv.config();
+function loginResponse(res, user) {
+  const token = generateAccessToken(user);
+  console.log(token + " " + res + " " + user)
+  res.json({
+    token,
+    user
+  });
+}
 
 const router = express.Router();
 
-// Helper: Generate JWT Token
-const generateToken = (user) => {
-  return jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      role: user.user_type,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: '12h' }
-  );
-};
-
-// Checking if user exists
-router.post('/check-email', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ error: 'Email megadása kötelező.' });
-  }
-
-  const domain = email.split('@')[1];
+router.post("/start", async (req, res) => {
   try {
-    const mx = await dns.resolveMx(domain);
-    if (!mx || mx.length === 0) {
-      return res.status(400).json({ error: 'Ez a domain nem tud e-mailt fogadni (hiányzó MX rekord).' });
-    }
-  } catch (err) {
-    return res.status(400).json({ error: 'Érvénytelen domain vagy nem elérhető e-mail szolgáltatás.' });
-  }
+    const { email } = req.body;
 
-  try {
-    const result = await db.query('SELECT id, email, username, password, user_type FROM users WHERE email = $1', [email]);
+    const result = await authService.startAuthFlow(email);
+    console.log("waaaaaa", result)
+    if (result.action === "LOGIN_WITHOUT_PASSWORD") {
+      const token = generateAccessToken(result.user);
 
-    if (result.rows.length === 0) {
       return res.status(200).json({
-        status: 'name_required',
-        message: 'Nincs ilyen felhasználó, kérjük, adja meg a nevét a regisztrációhoz.'
+        action: result.action,
+        token,
+        user: result.user,
       });
     }
 
-    const user = result.rows[0];
-
-    if (user.password) {
-      return res.status(200).json({
-        status: 'password_required',
-        message: 'Ehhez a fiókhoz jelszó szükséges.'
-      });
-    } else {
-
-      const token = generateToken(user)
-
-      return res.status(200).json({
-        status: 'ok',
-        message: 'Felhasználó létezik, jelszó nélkül be lehet lépni.',
-        token
-      });
-    }
-  } catch (err) {
-    console.error('Hiba az email ellenőrzésekor:', err);
-    return res.status(500).json({ error: 'Szerverhiba.' });
-  }
-});
-
-// regisztralas email és nevvel
-router.post('/register', async (req, res) => {
-  const { email, name } = req.body;
-
-  if (!email || !name) {
-    return res.status(400).json({ status: 'missing_fields', error: 'Név és email szükséges.' });
-  }
-
-  const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
-  if (existing.rows.length > 0) {
-    return res.status(409).json({ status: 'user_exists', error: 'Ez az email már regisztrálva van.' });
-  }
-
-  try {
-    const insert = await db.query(
-      'INSERT INTO users (username, email, user_type, created_at) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, email, 'user-without-password', new Date() ]
-    );
-    const user = insert.rows[0];
-    const token = generateToken(user);
-
-    return res.status(201).json({
-      status: 'success',
-      message: 'Sikeres regisztráció',
-      token
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
     });
-  } catch (err) {
-    console.error('Regisztrációs hiba:', err);
-    return res.status(500).json({ status: 'server_error', error: 'Szerverhiba történt.' });
   }
 });
 
-// belepes ha van password
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+/**
+ * Új user létrehozása
+ */
+router.post("/register", async (req, res) => {
+  try {
+    const { email, username, isLocal, phone } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ status: 'missing_fields', error: 'Email és jelszó szükséges.' });
+    const user = await authService.registerUser({
+      email,
+      username,
+      isLocal,
+      phone,
+    });
+    console.log("elkeszult user: ",user)
+
+    loginResponse(res, user)
+
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
   }
+});
 
-  const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+/**
+ * Belépés jelszó nélkül
+ */
+router.post("/login-without-password", async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  if (result.rows.length === 0) {
-    return res.status(404).json({ status: 'not_found', error: 'Nincs ilyen felhasználó.' });
+    const user = await authService.loginWithoutPassword(email);
+
+    loginResponse({res, user})
+
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
   }
+});
 
-  const user = result.rows[0];
+/**
+ * Belépés jelszóval
+ */
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  if (!user.password) {
-    return res.status(403).json({ status: 'no_password_set', error: 'Ehhez a fiókhoz nincs jelszó beállítva.' });
+    const user = await authService.loginWithPassword(email, password);
+
+    loginResponse({res, user})
+  
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
   }
+});
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    return res.status(401).json({ status: 'invalid_password', error: 'Hibás jelszó.' });
+/**
+ * Jelszó beállítása
+ */
+router.post("/set-password", authMiddleware, async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    const user = await authService.setPassword(req.user.id, password);
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
   }
+});
 
-  const token = generateToken(user);
+/**
+ * Saját jelszó módosítása
+ */
+router.post("/change-password", authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
 
-  return res.json({
-    status: 'success',
-    message: 'Sikeres bejelentkezés',
-    token
-  });
+    const user = await authService.changePassword({
+      userId: req.user.id,
+      currentPassword,
+      newPassword,
+    });
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
 });
 
 export default router;

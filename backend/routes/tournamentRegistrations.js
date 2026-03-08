@@ -26,7 +26,7 @@
 
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
-import adminOnly from "../middleware/adminGuard.js";
+import adminOnly from "../middleware/adminOnly.js";
 import db from "../db.js";
 import { sendTournamentRegistrationSuccessEmail } from "../services/email/service.js";
 import { start } from "repl";

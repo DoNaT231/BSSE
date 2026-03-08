@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../../../config.js";
-import { useAuth } from "../../../AuthContext.js";
+import { useAuth } from "../../../contexts/AuthContext.js";
 import Header from "../../../components/Header.js";
 import AuthFrostLock from "../../../components/AuthLock.js";
 /**

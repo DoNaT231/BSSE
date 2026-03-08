@@ -20,6 +20,7 @@ import { fileURLToPath } from 'url';
 // API route-ok
 import authRoutes from './routes/auth.js';
 import courtRoutes from './routes/courts.js';
+import adminUsersRoutes from "./routes/adminUsers.js";
 import userRoutes from './routes/users.js';
 import reservationRoutes from './routes/reservations.js';
 import tournaments from './routes/tournaments.js';
@@ -46,6 +47,7 @@ app.use('/api/courts', courtRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/tournaments/', tournaments);
+app.use("/api/admin/users", adminUsersRoutes);
 app.use('/api/tournament-registrations', tournamentRegistrations);
 
 console.log('Routerek bekötve: auth, courts, users, reservations');

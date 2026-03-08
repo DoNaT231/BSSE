@@ -10,7 +10,7 @@ router.get('/', authMiddleware, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin kérheti le a felhasználókat' });
 
   try {
-    const result = await db.query('SELECT id, username, email, user_type, created_at FROM users');
+    const result = await db.query('SELECT id, username, email, user_type, created_at, is_local FROM users');
     res.json(result.rows);
   } catch {
     res.status(500).json({ message: 'Hiba a felhasználók lekérésekor' });

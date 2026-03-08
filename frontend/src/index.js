@@ -10,7 +10,7 @@ import Booking from './pages/Booking.js';
 import SmashSPT from './pages/SmashSPT.js';
 import 'leaflet/dist/leaflet.css';
 import AdminDashboard from './pages/Admin/AdminDashboard.js';
-import { AuthProvider } from './AuthContext.js';
+import { AuthProvider } from './contexts/AuthContext.js';
 import TournamentSignupSection from './features/tournament/page/TournamentSignupSection.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

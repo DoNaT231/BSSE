@@ -1,119 +1,65 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import Modal from "./Modal";
-import LoginRegist from "../pages/LoginRegist/LoginRegist";
-import AddPasswordForm from "../pages/LoginRegist/SettingPassword";
-import { useNavigate } from "react-router-dom";
+import LoginModal from "../features/auth/components/LoginModal";
+import LogoutModal from "../features/auth/components/LogoutModal";
 
 /**
  * Header komponens
  * ----------------
- * Fix fejléc navigációval.
- * - Reszponzív (600px breakpoint)
- * - Mobilon hamburger menü
- * - Modalos login / logout / jelszóbeállítás
+ * - Reszponzív navigáció
+ * - Mobil hamburger menü
+ * - Bejelentkezés modal
+ * - Kijelentkezés megerősítő modal
  * - AuthContext alapján feltételes linkek
  */
 function Header() {
-  /**
-   * Menü nyitottsága
-   * - desktop (>600px): mindig nyitva
-   * - mobil: toggle-elhető
-   */
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate()
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
-  /**
-   * Aktív modal típusa:
-   * - ""           → nincs modal
-   * - "login"      → bejelentkezés
-   * - "logout"     → kijelentkezés megerősítés
-   * - "setPassword"→ jelszó beállítás
-   */
-  const [modal, setModal] = useState("");
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const closeModal = () =>{
-    setModal("")
-  }
+  const isAdmin = user?.user_type === "ADMIN";
 
-  const { loggedIn, username, role, logout } = useAuth();
-
-  /**
-   * Menü nyit/zár mobilon
-   */
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
   };
 
-  /**
-   * Kijelentkezés kezelése
-   */
-  const handleLogOut = () => {
-    logout();
-    setModal("");
+  const handleNavClick = (page) => {
+    setIsOpen(false);
+    navigate(page);
   };
-  const handleNavClick = (page) =>{
-    setIsOpen(false)
-    navigate(page)
-  }
 
   return (
     <header
-      className={`
+      className="
         fixed top-0 left-0 right-0 z-[200]
+        flex justify-center
         transition-all duration-300
-        flex
-        justify-center
-      `}
+      "
     >
-      {/* ===================== MODALOK ===================== */}
+      {/* ===================== LOGIN MODAL ===================== */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+      />
 
-      {/* KIJELENTKEZÉS MODAL */}
-      {modal === "logout" && (
-        <Modal closeModal={()=>setModal("")}>
-          <h1 className="mb-4 text-xl font-bold">
-            Biztosan kijelentkezel?
-          </h1>
-          <div className="flex flex-row justify-center gap-4">
-            <button
-              className="px-4 py-2 font-semibold rounded-lg bg-yellow"
-              onClick={handleLogOut}
-            >
-              Kijelentkezés
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {/* LOGIN MODAL */}
-      {modal === "login" && !loggedIn && (
-        <Modal closeModal={closeModal}>
-          <LoginRegist/>
-        </Modal>
-      )}
-
-      {/* JELSZÓ BEÁLLÍTÁS MODAL */}
-      {modal === "setPassword" && (
-        <Modal>
-          <AddPasswordForm exit={() => setModal("")} />
-          <button
-            className="px-4 py-2 mt-4 bg-gray-200 rounded-lg"
-            onClick={() => setModal("")}
-          >
-            Mégse
-          </button>
-        </Modal>
-      )}
+      {/* ===================== KIJELENTKEZÉS MODAL ===================== */}
+      <LogoutModal
+        isOpen={showLogout}
+        onClose={() => setShowLogout(false)}
+      />
 
       {/* ===================== LOGÓ ===================== */}
-      <div
-        className="fixed z-30 w-20 h-20 overflow-hidden transition-transform duration-300 rounded-full cursor-pointer top-2 left-[50%-40px] md:left-2 hover:scale-105 md:left-2"
-      >
+      <div className="fixed z-30 w-20 h-20 overflow-hidden transition-transform duration-300 rounded-full cursor-pointer top-2 left-[calc(50%-40px)] md:left-2 hover:scale-105">
         <img
           src="./images/Képernyőkép 2025-06-11 200633.png"
           alt="BSSE logo"
           className="object-cover w-full h-full"
+          onClick={() => handleNavClick("/")}
         />
       </div>
 
@@ -133,68 +79,76 @@ function Header() {
       </div>
 
       {/* ===================== NAVBAR ===================== */}
-      <div className={`            
-        flex
-        w-full
-        bg-lightBlue
-        shadow-lg
-        items-center md:items-end
-        transition
-        h-100 md:h-24
-        md:translate-y-0
-        md:justify-end justify-center
-        ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%-108px)] "}`}>
+      <div
+        className={`
+          flex w-full
+          bg-lightBlue shadow-lg
+          items-center md:items-end
+          transition
+          h-100 md:h-24
+          md:translate-y-0
+          md:justify-end justify-center
+          ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%-108px)]"}
+        `}
+      >
         <nav
-          className={`
-            w-fit
-            items-center
-            pt-28 md:pt-0
-            flex flex-col md:flex-row
-            gap-8 md:gap-11
-            text-white
-            mb-16 md:mr-3 md:mb-2
-            text-center md:text-end`}  
+          className="flex flex-col items-center gap-8 mb-16 text-center text-white w-fit md:flex-row md:gap-11 pt-28 md:pt-0 md:mr-3 md:mb-2 md:text-end"
         >
-          {/* Navigációs linkek */}
-          <p className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" onClick={()=>handleNavClick("/")}>
+          <p
+            className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+            onClick={() => handleNavClick("/")}
+          >
             Kezdőlap
           </p>
 
-          <p className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" onClick={()=>handleNavClick("/palyafoglalas")}>
+          <p
+            className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+            onClick={() => handleNavClick("/palyafoglalas")}
+          >
             Foglalás
           </p>
 
-          <p className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" onClick={()=>handleNavClick("/versenyek")}>
+          <p
+            className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+            onClick={() => handleNavClick("/versenyek")}
+          >
             Versenyek
           </p>
 
-          {!loggedIn && (
-            <span
-              className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
-              onClick={() => setModal("login")}
+          {isAdmin && (
+            <Link
+              className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+              to="/admin"
+              onClick={() => setIsOpen(false)}
             >
-              Bejelentkezés
-            </span>
-          )}
-
-          {role === "admin" && (
-            <Link className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all" to="/admin">
               Admin felület
             </Link>
           )}
 
-          {loggedIn && (
-            <span
-              className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
-              onClick={() => setModal("logout")}
+          {user ? (
+            <div>
+                <button
+                  className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+                  onClick={() => setShowLogout(true)}
+                >
+                  Kijelentkezés
+                </button>
+            </div>
+          ) : (
+            <button
+              className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+              onClick={() => {
+                setIsLoginOpen(true);
+                setIsOpen(false);
+              }}
             >
-              Kijelentkezés
-            </span>
+              Bejelentkezés
+            </button>
           )}
         </nav>
       </div>
 
-      {/* ===================== HAMBURGER IKON (MOBIL) ===================== */}
+      {/* ===================== HAMBURGER IKON ===================== */}
       <div
         className="fixed z-30 w-10 h-10 cursor-pointer md:hidden top-2 right-2"
         onClick={toggleMenu}
@@ -202,7 +156,7 @@ function Header() {
         <img
           src="./5402398_list_menu_options_settings_checklist_icon.png"
           alt="menu"
-          className="w-full h-full md:"
+          className="w-full h-full"
         />
       </div>
     </header>

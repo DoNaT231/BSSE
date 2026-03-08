@@ -14,6 +14,7 @@
  */
 
 export default function adminOnly(req, res, next) {
+
   // nincs bejelentkezve
   if (!req.user) {
     return res.status(401).json({
@@ -23,13 +24,12 @@ export default function adminOnly(req, res, next) {
   }
 
   // nem admin
-  if (req.user.role !== "admin") {
+  if (req.user.user_type !== "ADMIN") {
     return res.status(403).json({
       message: "Nincs jogosultság (admin szükséges).",
       code: "NOT_AUTHORIZED",
     });
   }
 
-  // minden ok
   next();
 }

@@ -28,7 +28,7 @@ const LocationMap = () => {
         <Popup>Balatonalmádi Strand Sport Egyesület</Popup>
       </Marker>
       <div className="pointer-events-none absolute inset-0 z-20 w-full h-[400px]
-                  bg-black/80 backdrop-blur-[1px]  border-10 border-red-50" />
+                  bg-black/80 backdrop-blur-[1px] " />
     </MapContainer>
   );
 };

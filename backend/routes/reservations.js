@@ -1,198 +1,104 @@
-import express from 'express';
-import db from '../db.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import { formatBookings } from '../utils/formatBookings.js';
-import { sendReservationSyncConfirmationEmail } from '../services/email/service.js';
-import authOptionalMiddleware from '../middleware/authOptionalMiddleware.js';
+import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import adminOnly from "../middleware/adminOnly.js";
+import * as reservationsService from "../services/reservationsService.js";
 
 const router = express.Router();
 
-// Foglalások szinkronizálása (felülírja a meglévőket az adott héten)
-router.post('/sync', authMiddleware, async (req, res) => {
-  
-  const userId = req.user.id;
-  const reservations = req.body;
-
-  console.log("==> Szinkronizálás indul");
-  console.log("userId:", userId);
-  console.log("received reservations:", reservations);
-
-  if (!Array.isArray(reservations)) {
-    return res.status(400).json({ message: 'Hibás adatformátum' });
-  }
-  if (reservations[0].monday) {
-    const weekStart = new Date(reservations[0].monday);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 7);
-    try {
-      const del = await db.query(
-        'DELETE FROM reservations WHERE user_id = $1 AND booked_time >= $2 AND booked_time < $3',
-        [userId, weekStart, weekEnd]
-      );
-      return res.json({ message: `${del.rowCount} foglalás törölve (üres lista).` });
-    } catch(err) {
-      console.error('Szinkronizálási hiba3:', err);
-      return res.status(500).json({ message: 'Hiba a törlés során' });
-    }
-  }
-
-  const courtId = reservations[0].Court_id;
-  const times = reservations
-  .map(r => {
-    const dateStr = r.startTime?.replace(' ', 'T');
-    const parsed = new Date(dateStr);
-    return isNaN(parsed.getTime()) ? null : parsed;
-  })
-  .filter(t => t !== null);
-
-  const times1 = reservations.map(r => {
-    const time = new Date(r.startTime);
-    if (isNaN(time.getTime())) {
-      console.error('Hibás dátumformátum:', r.startTime);
-      throw new Error('Érvénytelen időpont formátum: ' + r.startTime);
-    }
-    return time;
-  });
-  
-  const weekStart = new Date(Math.min(...times.map(t => t.getTime())));
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-  weekStart.setHours(0, 0, 0, 0);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
-
+/**
+ * User heti foglalásainak szinkronizálása adott pályára
+ *
+ * body:
+ * {
+ *   courtId,
+ *   weekStart,
+ *   weekEnd,
+ *   slots: [
+ *     { startTime, endTime }
+ *   ]
+ * }
+ */
+router.post("/sync-week", authMiddleware, async (req, res) => {
   try {
-    const existing = await db.query(
-      'SELECT * FROM reservations WHERE user_id = $1 AND court_id = $2 AND booked_time >= $3 AND booked_time < $4',
-      [userId, courtId, weekStart, weekEnd]
-    );
+    const { courtId, weekStart, weekEnd, slots } = req.body;
 
-    const existingTimes = new Set(existing.rows.map(r => r.booked_time));
-    const incomingTimes = new Set(reservations.map(r => r.startTime));
+    const result = await reservationsService.syncWeeklyReservations(req.user, {
+      courtId,
+      weekStart,
+      weekEnd,
+      slots,
+    });
 
-    const conflicts = await db.query(
-      `SELECT booked_time, user_id FROM reservations
-       WHERE court_id = $1 AND booked_time = ANY($2::timestamp[]) AND user_id != $3`,
-      [courtId, Array.from(incomingTimes), userId]
-    );
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+});
 
-    if (conflicts.rowCount > 0) {
-      return res.status(409).json({
-        message: 'Már foglalt időpont(ok)',
-        conflicts: conflicts.rows
+/**
+ * Heti foglalások lekérése adott pályára
+ *
+ * query:
+ * /week?courtId=1&weekStart=2026-03-09T00:00:00.000Z&weekEnd=2026-03-16T00:00:00.000Z
+ */
+router.get("/week", async (req, res) => {
+  try {
+    const { courtId, weekStart, weekEnd } = req.query;
+
+    const reservations =
+      await reservationsService.getReservationsByWeekAndCourt({
+        courtId: Number(courtId),
+        weekStart,
+        weekEnd,
       });
-    }
 
-    const toDelete = Array.from(existingTimes).filter(t => !incomingTimes.has(t));
-    await db.query(
-      'DELETE FROM reservations WHERE user_id = $1 AND court_id = $2 AND booked_time = ANY($3::timestamp[])',
-      [userId, courtId, toDelete]
-    );
-	
-    const toInsert = Array.from(incomingTimes).filter(t => !existingTimes.has(t));
-    for (const t of toInsert) {
-      await db.query(
-        `INSERT INTO reservations (user_id, court_id, booked_time, created_at)
-        VALUES ($1, $2, $3, NOW())`,
-        [userId, courtId, t] // t = string, pl. "2025-07-20 10:00"
-      );
-    }
-
-    res.json({
-      message: `Sikeres szinkronizálás. Hozzáadva: ${toInsert.length}, törölve: ${toDelete.length}`
+    return res.status(200).json(reservations);
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
     });
-    afterSuccessfulReservationSave({ userId, bookings: reservations })
-  .catch(err => console.error("Email task failed:", err));
-
-  } catch (err) {
-    console.error('Szinkronizálási hiba1:', err);
-    res.status(500).json({ message: 'Hiba a szinkronizálás során' });
   }
 });
 
-async function afterSuccessfulReservationSave({ userId, bookings }) {
-  const userRes = await db.query("SELECT email, username FROM users WHERE id = $1", [userId]);
-  if (!userRes.rows.length) return;
-
-  const { email, username } = userRes.rows[0];
-  const bookingsText = await formatBookings(bookings);
-
-  // Ne bukjon el a foglalás, ha az email hibázik
+/**
+ * Admin: egy foglalás részletes adatainak lekérése
+ */
+router.get("/:eventId", authMiddleware, adminOnly, async (req, res) => {
   try {
-    await sendReservationSyncConfirmationEmail({
-      toEmail: email,
-      toName: username,
-      bookingsText,
-    });
-  } catch (e) {
-    console.error("Reservation email failed:", e);
-  }
-}
+    const eventId = Number(req.params.eventId);
 
-// Foglalások lekérése adott hétre és pályára
-router.get("/by-court-week", authOptionalMiddleware, async (req, res) => {
-  const { courtId, weekStart } = req.query;
-
-  // basic validation
-  const courtIdNum = Number(courtId);
-  if (!courtIdNum || !weekStart) {
-    return res.status(400).json({ message: "Hiányzó vagy hibás paraméter" });
-  }
-
-  const start = new Date(weekStart); // expected: YYYY-MM-DD
-  if (isNaN(start.getTime())) {
-    return res.status(400).json({ message: "Hibás weekStart dátum" });
-  }
-
-  const end = new Date(start);
-  end.setDate(start.getDate() + 7); // 7 napos intervallum (hétfő 00:00 -> következő hétfő 00:00)
-
-  const loggedInUserId = req.user?.id ?? null;
-
-  try {
-    const result = await db.query(
-      `
-      SELECT
-        r.court_id AS "courtId",
-        r.booked_time AS "startAt",
-        CASE
-          WHEN $4::int IS NULL THEN FALSE
-          ELSE (r.user_id = $4::int)
-        END AS "isMine"
-      FROM reservations r
-      WHERE r.court_id = $1
-        AND r.booked_time >= $2
-        AND r.booked_time < $3
-      ORDER BY r.booked_time ASC
-      `,
-      [courtIdNum, start, end, loggedInUserId]
+    const reservation = await reservationsService.getReservationAdminDetails(
+      req.user,
+      eventId
     );
 
-    // minimal response
-    return res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Hiba a foglalások lekérdezésekor" });
+    return res.status(200).json(reservation);
+  } catch (error) {
+    return res.status(404).json({
+      message: error.message,
+    });
   }
 });
 
-// Admin: Foglalás törlése időpont alapján
-router.delete('/delete-reservation', authMiddleware, async (req, res) => {
-	console.log('?? DELETE /delete-reservation h�v�s �rkezett');
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin törölhet' });
-
-  const { court_id, startTime } = req.body;
-
+/**
+ * Admin: foglalás cancelálása
+ */
+router.patch("/:eventId/cancel", authMiddleware, adminOnly, async (req, res) => {
   try {
-    const result = await db.query(
-      'DELETE FROM reservations WHERE court_id = $1 AND booked_time = $2 RETURNING *',
-      [court_id, startTime]
-    );
-    if (result.rowCount === 0) return res.status(404).json({ message: 'Nem található foglalás' });
+    const eventId = Number(req.params.eventId);
 
-    res.json({ message: 'Foglalás törölve' });
-  } catch {
-    console.error('Szinkronizálási hiba2:', err);
-    res.status(500).json({ message: 'Hiba a törlés során' });
+    const result = await reservationsService.adminCancelReservation(
+      req.user,
+      eventId
+    );
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
   }
 });
 

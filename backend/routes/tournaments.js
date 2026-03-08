@@ -19,7 +19,7 @@
 import express from "express";
 import db from "../db.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import adminOnly from "../middleware/adminGuard.js";
+import adminOnly from "../middleware/adminOnly.js";
 
 const router = express.Router();
 

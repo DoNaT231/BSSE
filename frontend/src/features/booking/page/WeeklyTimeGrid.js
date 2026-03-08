@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-import { useAuth } from "../../../AuthContext.js";
+import { useAuth } from "../../../contexts/AuthContext.js";
 import { useNavigate } from "react-router-dom";
 import AuthFrostLock from "../../../components/AuthLock.js";
 

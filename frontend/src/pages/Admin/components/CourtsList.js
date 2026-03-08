@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { API_BASE_URL } from "../../../config";
-import { useAuth } from "../../../AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 /**
  * CourtsList (Admin)
