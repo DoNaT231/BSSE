@@ -2,9 +2,10 @@ export default function ReservationSlot({
   dayIndex,
   hour,
   monday,
-  ownReservations,
-  reservedDates,
+  draftReservations = [],
+  calendarSlots = [],
   role,
+  currentUserId,
   handleClick,
 }) {
   const cellDate = new Date(monday);
@@ -17,36 +18,70 @@ export default function ReservationSlot({
     d1.getDate() === d2.getDate() &&
     d1.getHours() === d2.getHours();
 
-  // Saját: ownReservations startTime string -> Date
-  const isOwn = ownReservations.some((r) =>
-    isSameHour(new Date(r.startTime), cellDate)
+  const safeDraftReservations = Array.isArray(draftReservations)
+    ? draftReservations
+    : [];
+
+  const safeCalendarSlots = Array.isArray(calendarSlots)
+    ? calendarSlots
+    : [];
+
+  const isDraftSelected = safeDraftReservations.some((reservation) =>
+    isSameHour(new Date(reservation.startTime), cellDate)
   );
 
-  // Másé: reservedDates elemei nálunk UI DTO-k:
-  // { startTime: Date, isMine: boolean, ... }
-  // Ha te reservedDates-be már eleve csak "másokat" teszel, akkor elég a sameHour check.
-  // Biztonságból itt még r.isMine === false-t is figyelembe vesszük, ha benne lenne minden.
-  const isOther = reservedDates.some((r) => {
-    const t = r.startTime instanceof Date ? r.startTime : new Date(r.startTime);
-    return isSameHour(t, cellDate) && (r.isMine === undefined ? true : r.isMine === false);
-  });
+  const existingCalendarSlot = safeCalendarSlots.find((slot) =>
+    isSameHour(new Date(slot.startTime), cellDate)
+  );
+
+  const isOwnExistingReservation =
+    existingCalendarSlot?.eventType === "reservation" &&
+    Number(existingCalendarSlot?.createdByUserId) === Number(currentUserId);
+
+  const isBlockedByOtherReservation =
+    existingCalendarSlot?.eventType === "reservation" &&
+    Number(existingCalendarSlot?.createdByUserId) !== Number(currentUserId);
+
+  const isTournamentSlot = existingCalendarSlot?.eventType === "tournament";
+  const isMaintenanceSlot = existingCalendarSlot?.eventType === "maintenance";
+  const isTrainingSlot = existingCalendarSlot?.eventType === "training";
 
   let cellClass =
     "h-12 m-0.5 rounded-md border border-gray-200 cursor-pointer transition";
 
-  if (isOwn) {
+  if (isDraftSelected || isOwnExistingReservation) {
     cellClass += " bg-amber-500 hover:bg-yellow";
-  } else if (isOther && role === "admin") {
-    // admin tud kattintani más foglalására is (pl. törlés)
+  } else if (isTournamentSlot) {
+    cellClass += " bg-violet-600 text-white";
+  } else if (isMaintenanceSlot) {
+    cellClass += " bg-yellow-400 border-black";
+  } else if (isTrainingSlot) {
+    cellClass += " bg-emerald-500 text-white";
+  } else if (isBlockedByOtherReservation && role === "admin") {
     cellClass += " bg-lightBlue";
-  } else if (isOther) {
-    // user ne tudjon rákattintani más foglalására
+  } else if (isBlockedByOtherReservation) {
     cellClass += " bg-lightBlue pointer-events-none cursor-not-allowed";
   } else {
     cellClass += " hover:bg-yellow";
   }
 
   return (
-    <div className={cellClass} onClick={() => handleClick(dayIndex, hour)} />
+    <div
+      className={cellClass}
+      onClick={() => handleClick(dayIndex, hour)}
+      title={
+        isTournamentSlot
+          ? "Tournament"
+          : isMaintenanceSlot
+          ? "Karbantartás"
+          : isTrainingSlot
+          ? "Edzés"
+          : isBlockedByOtherReservation
+          ? "Foglalt"
+          : isDraftSelected || isOwnExistingReservation
+          ? "Saját foglalás"
+          : "Szabad időpont"
+      }
+    />
   );
 }

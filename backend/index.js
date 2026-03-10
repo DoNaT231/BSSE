@@ -22,9 +22,15 @@ import authRoutes from './routes/auth.js';
 import courtRoutes from './routes/courts.js';
 import adminUsersRoutes from "./routes/adminUsers.js";
 import userRoutes from './routes/users.js';
-import reservationRoutes from './routes/reservations.js';
+import calendarRoutes from "./routes/calendarRoutes.js";
+import reservationRoutes from "./routes/reservationRoutes.js";
+import tournamentRoutes from "./routes/tournamentRoutes.js";
 import tournaments from './routes/tournaments.js';
 import tournamentRegistrations from './routes/tournamentRegistrations.js';
+
+// MiddleWarek
+import authMiddleware from './middleware/authMiddleware.js';
+import adminOnly from './middleware/adminOnly.js';
 
 // Adatbázis kapcsolat inicializálása (side-effect import)
 import './db.js';
@@ -45,7 +51,9 @@ app.use(express.json());           // JSON body parsing
 app.use('/api/auth', authRoutes);
 app.use('/api/courts', courtRoutes);
 app.use('/api/user', userRoutes);
-app.use('/api/reservations', reservationRoutes);
+app.use("/api/calendar", calendarRoutes);
+app.use("/api/tournaments", authMiddleware, adminOnly, tournamentRoutes);
+app.use("/api/reservations", authMiddleware, reservationRoutes);
 app.use('/api/tournaments/', tournaments);
 app.use("/api/admin/users", adminUsersRoutes);
 app.use('/api/tournament-registrations', tournamentRegistrations);

@@ -29,20 +29,10 @@ import { useAuth } from "../contexts/AuthContext";
  * ki a user állapotot.
  */
 
-export default function AuthFrostLock({ loggedIn, children }) {
+export default function AuthFrostLock({children }) {
 
-  /**
-   * showModal
-   * ------------------------
-   * Meghatározza, hogy a login modal
-   * látható-e.
-   *
-   * Alapértelmezés:
-   * ha nincs bejelentkezve → modal nyitva
-   */
-  const [showModal, setShowModal] = useState(!loggedIn);
 
-  /**
+    /**
    * AuthContext
    * ------------------------
    * A globális auth állapot elérése.
@@ -52,6 +42,18 @@ export default function AuthFrostLock({ loggedIn, children }) {
    * - object → bejelentkezett user
    */
   const { user } = useAuth();
+  
+  /**
+   * showModal
+   * ------------------------
+   * Meghatározza, hogy a login modal
+   * látható-e.
+   *
+   * Alapértelmezés:
+   * ha nincs bejelentkezve → modal nyitva
+   */
+  const [showModal, setShowModal] = useState(!user);
+
 
   /**
    * closeModal

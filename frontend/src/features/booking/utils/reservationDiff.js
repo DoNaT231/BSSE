@@ -1,9 +1,27 @@
-export function diffReservations(originalList, currentList) {
-  const origSet = new Set((originalList || []).map((r) => r.startTime));
-  const currSet = new Set((currentList || []).map((r) => r.startTime));
+export function diffReservations(originalList = [], currentList = []) {
 
-  const added = [...currSet].filter((t) => !origSet.has(t));
-  const removed = [...origSet].filter((t) => !currSet.has(t));
+  const origMap = new Map(
+    originalList.map((r) => [r.startTime, r])
+  );
+
+  const currMap = new Map(
+    currentList.map((r) => [r.startTime, r])
+  );
+
+  const added = [];
+  const removed = [];
+
+  for (const [startTime, reservation] of currMap) {
+    if (!origMap.has(startTime)) {
+      added.push(reservation);
+    }
+  }
+
+  for (const [startTime, reservation] of origMap) {
+    if (!currMap.has(startTime)) {
+      removed.push(reservation);
+    }
+  }
 
   return {
     added,

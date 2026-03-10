@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 /**
  * AuthContext
@@ -59,14 +60,12 @@ export function AuthProvider({ children }) {
 
     if (!token) return;
 
-    fetch("/api/auth/me", {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    })
-      .then(r => r.json())
-      .then(data => setUser(data.user))
-      .catch(() => logout());
+    try {
+      const decoded = jwtDecode(token);
+      setUser(decoded);
+    } catch (err) {
+      logout();
+    }
   }, []);
 
   /**

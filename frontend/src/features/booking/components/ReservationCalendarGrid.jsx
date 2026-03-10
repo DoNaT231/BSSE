@@ -1,14 +1,23 @@
 import ReservationSlot from "./ReservationSlot";
+
 export default function ReservationCalendarGrid({
   days,
   hours,
   monday,
-  ownReservations,
-  reservedDates,
-  userId,
+  draftReservations,
+  calendarSlots,
+  currentUserId,
   role,
   handleClick
 }) {
+
+  const safeDraftReservations = Array.isArray(draftReservations)
+    ? draftReservations
+    : [];
+
+  const safeCalendarSlots = Array.isArray(calendarSlots)
+    ? calendarSlots
+    : [];
 
   return (
     <div className="w-full max-w-[960px] mx-auto bg-white border border-border rounded-card overflow-hidden shadow-soft">
@@ -37,10 +46,13 @@ export default function ReservationCalendarGrid({
               dayIndex={dayIndex}
               hour={hour}
               monday={monday}
-              ownReservations={ownReservations}
-              reservedDates={reservedDates}
-              userId={userId}
+
+              draftReservations={safeDraftReservations}
+              calendarSlots={safeCalendarSlots}
+
+              currentUserId={currentUserId}
               role={role}
+
               handleClick={handleClick}
             />
 
