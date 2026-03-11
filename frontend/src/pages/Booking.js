@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import WaveDivider from "../components/WaveDevider";
-import WeeklyCalendar from "../features/booking/page/WeeklyTimeGrid";
+import WeeklyCalendar from "../features/booking/pages/WeeklyCalendar";
 
 export default function Booking(){
     return(

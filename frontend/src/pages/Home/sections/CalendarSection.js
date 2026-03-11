@@ -1,5 +1,5 @@
 import React from "react";
-import WeeklyCalendar from "../../../features/booking/page/WeeklyTimeGrid";
+import WeeklyCalendar from "../../../features/booking/pages/WeeklyCalendar";
 
 /**
  * CalendarSection

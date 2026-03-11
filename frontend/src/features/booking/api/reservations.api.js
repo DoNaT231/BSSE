@@ -150,6 +150,8 @@ export async function apiSyncWeekReservations({
     weekStart: formatWeekStart(monday),
     slots: Array.isArray(reservations) ? reservations : [],
   };
+   
+  console.log(payload)
 
   const res = await fetch(`${API_BASE_URL}/api/reservations/sync`, {
     method: "POST",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './AdminDashboard.css';
 import { useNavigate, Link} from 'react-router-dom';
-import WeeklyCalendar from '../../features/booking/page/WeeklyTimeGrid';
+import WeeklyCalendar from '../../features/booking/pages/WeeklyCalendar';
 import { useAuth } from '../../contexts/AuthContext';
 import UserList from './components/UserList';
 import { API_BASE_URL } from "../../config";
