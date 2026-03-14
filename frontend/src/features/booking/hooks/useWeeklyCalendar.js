@@ -460,6 +460,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
     sunday,
     calendarSlots,
     draftReservations,
+    initialReservations,
 
     isModalOpen,
     modalMessage,

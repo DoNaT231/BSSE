@@ -54,8 +54,7 @@ app.use('/api/user', userRoutes);
 app.use("/api/calendar", calendarRoutes);
 app.use("/api/tournaments", authMiddleware, adminOnly, tournamentRoutes);
 app.use("/api/reservations", authMiddleware, reservationRoutes);
-app.use('/api/tournaments/', tournaments);
-app.use("/api/admin/users", adminUsersRoutes);
+app.use("/api/admin/users", authMiddleware,adminOnly, adminUsersRoutes);
 app.use('/api/tournament-registrations', tournamentRegistrations);
 
 console.log('Routerek bekötve: auth, courts, users, reservations');

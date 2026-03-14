@@ -25,7 +25,7 @@ const UserList = () => {
    * Felhasználók lekérése (GET /api/user/)
    */
   const fetchUsers = () => {
-    fetch(`${API_BASE_URL}/api/user/`, {
+    fetch(`${API_BASE_URL}/api/admin/users/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -34,6 +34,7 @@ const UserList = () => {
         if (!response.ok) {
           throw new Error("Hiba a felhasználók lekérésekor");
         }
+        console.log("response: ", response)
         return response.json();
       })
       .then((data) => setUsers(data))
@@ -49,7 +50,7 @@ const UserList = () => {
    * Felhasználó törlése
    */
   const deleteUser = (id) => {
-    fetch(`${API_BASE_URL}/api/user/${id}`, {
+    fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

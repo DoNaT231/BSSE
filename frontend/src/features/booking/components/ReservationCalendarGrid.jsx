@@ -7,6 +7,7 @@ export default function ReservationCalendarGrid({
   draftReservations,
   calendarSlots,
   currentUserId,
+  initialReservations,
   role,
   handleClick
 }) {
@@ -49,6 +50,7 @@ export default function ReservationCalendarGrid({
 
               draftReservations={safeDraftReservations}
               calendarSlots={safeCalendarSlots}
+              initialReservations={initialReservations}
 
               currentUserId={currentUserId}
               role={role}

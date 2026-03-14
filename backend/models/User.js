@@ -4,7 +4,7 @@ export default class User {
     username,
     email,
     passwordHashed,
-    is_admin,
+    user_type,
     is_active,
     is_local,
     phone,
@@ -15,7 +15,7 @@ export default class User {
     this.username = username;
     this.email = email;
     this.passwordHashed = passwordHashed;
-    this.is_admin = is_admin;
+    this.user_type = user_type;
     this.is_active = is_active;
     this.is_local = is_local;
     this.phone = phone;

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { jwtDecode } from "jwt-decode";
 
 /**
@@ -7,53 +7,30 @@ import { jwtDecode } from "jwt-decode";
  * Globális autentikációs állapot kezelése React Context
  * segítségével.
  *
- * A context a következő adatokat és függvényeket teszi
- * elérhetővé az alkalmazás bármely komponenséből:
- *
- * - user   → a bejelentkezett felhasználó adatai
- * - login  → bejelentkeztetés (token + user mentése)
- * - logout → kijelentkeztetés
- *
- * Használat:
- *
- * <AuthProvider>
- *   <App />
- * </AuthProvider>
- *
- * majd komponensben:
- *
- * const { user, login, logout } = useAuth();
+ * Elérhető értékek:
+ * - user
+ * - isLoggedIn
+ * - isAdmin
+ * - login()
+ * - logout()
  */
-
 const AuthContext = createContext();
 
 /**
  * AuthProvider
  * ----------------------------------------------------
- * A teljes alkalmazást körülölelő provider komponens.
- *
- * Feladata:
- * - user állapot tárolása
- * - token kezelés
- * - automatikus bejelentkezés refresh után
+ * A teljes alkalmazás auth állapotát biztosítja.
  */
 export function AuthProvider({ children }) {
-
   /**
-   * user state
-   * ------------------------------------------------
-   * null → nincs bejelentkezve
-   * object → bejelentkezett felhasználó
+   * Bejelentkezett user adatai.
+   * null esetén nincs aktív bejelentkezés.
    */
   const [user, setUser] = useState(null);
 
   /**
-   * Auto-login ellenőrzés
-   * ------------------------------------------------
-   * Amikor az alkalmazás betöltődik:
-   * - megnézi van-e token a localStorage-ben
-   * - ha van → lekéri a user adatokat az API-tól
-   * - ha hiba történik → logout
+   * Első betöltéskor megpróbáljuk visszaállítani
+   * a bejelentkezett állapotot a localStorage-ben tárolt tokenből.
    */
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -62,23 +39,22 @@ export function AuthProvider({ children }) {
 
     try {
       const decoded = jwtDecode(token);
+      console.log(token)
+      console.log(decoded)
       setUser(decoded);
+      console.log(decoded)
     } catch (err) {
       logout();
     }
   }, []);
 
   /**
-   * login()
-   * ------------------------------------------------
-   * Sikeres login után hívódik.
-   *
-   * Feladata:
-   * - token mentése localStorage-be
+   * Sikeres login után:
+   * - token mentése
    * - user state frissítése
    *
-   * Ez automatikusan frissíti az egész alkalmazást
-   * (React re-render).
+   * @param {string} token
+   * @param {Object} userData
    */
   function login(token, userData) {
     localStorage.setItem("token", token);
@@ -86,13 +62,9 @@ export function AuthProvider({ children }) {
   }
 
   /**
-   * logout()
-   * ------------------------------------------------
-   * Kijelentkezteti a felhasználót.
-   *
-   * Feladata:
+   * Kijelentkeztetés:
    * - token törlése
-   * - user state null-ra állítása
+   * - user törlése state-ből
    */
   function logout() {
     localStorage.removeItem("token");
@@ -100,29 +72,40 @@ export function AuthProvider({ children }) {
   }
 
   /**
-   * Context provider
-   * ------------------------------------------------
-   * A value objektum lesz elérhető az alkalmazás
-   * összes komponensében a useAuth hook segítségével.
+   * Származtatott auth állapotok
    */
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+  const isLoggedIn = !!user;
+
+  /**
+   * Itt igazítsd ahhoz, amit a backend ténylegesen küld.
+   * Lehet pl.:
+   * - user?.role === "admin"
+   * - user?.user_type === "ADMIN"
+   */
+  const isAdmin = user?.user_type === "admin" || user?.user_type === "ADMIN";
+
+  /**
+   * A provider value objektuma.
+   * useMemo nem kötelező, de tisztább.
+   */
+  const value = useMemo(
+    () => ({
+      user,
+      isLoggedIn,
+      isAdmin,
+      login,
+      logout,
+    }),
+    [user, isLoggedIn, isAdmin]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 /**
  * useAuth()
  * ----------------------------------------------------
- * Custom hook az AuthContext egyszerű használatához.
- *
- * Használat:
- *
- * const { user, login, logout } = useAuth();
- *
- * Előny:
- * - nem kell mindenhol useContext(AuthContext)-et írni
+ * Kényelmes hook az AuthContext használatához.
  */
 export function useAuth() {
   return useContext(AuthContext);

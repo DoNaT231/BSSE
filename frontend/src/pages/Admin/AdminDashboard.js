@@ -7,6 +7,7 @@ import UserList from './components/UserList';
 import { API_BASE_URL } from "../../config";
 import CourtsList from './components/CourtsList';
 import TournamentsAdminSection from './components/TournamentsAdmin';
+import UsersSection from './users/components/UsersSection';
 
 
 const AdminDashboard = () => {
@@ -56,7 +57,7 @@ const AdminDashboard = () => {
               <WeeklyCalendar/>
           </section>
           <section className='admin-user-list'>
-               <UserList />
+               <UsersSection />
           </section>
           <section className='admin-court-list'>
             <CourtsList />

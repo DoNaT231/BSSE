@@ -20,9 +20,7 @@ function Header() {
   const [showLogout, setShowLogout] = useState(false);
 
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  const isAdmin = user?.user_type === "ADMIN";
+  const { user, logout, isAdmin, isLoggedIn } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
@@ -125,7 +123,7 @@ function Header() {
             </Link>
           )}
 
-          {user ? (
+          {isLoggedIn ? (
             <div>
                 <button
                   className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"

@@ -2,6 +2,7 @@ export default function ReservationSlot({
   dayIndex,
   hour,
   monday,
+  initialReservations = [],
   draftReservations = [],
   calendarSlots = [],
   role,
@@ -18,6 +19,10 @@ export default function ReservationSlot({
     d1.getDate() === d2.getDate() &&
     d1.getHours() === d2.getHours();
 
+  const safeInitialReservations = Array.isArray(initialReservations)
+    ? initialReservations
+    : [];
+
   const safeDraftReservations = Array.isArray(draftReservations)
     ? draftReservations
     : [];
@@ -26,25 +31,42 @@ export default function ReservationSlot({
     ? calendarSlots
     : [];
 
+  const isInitiallyOwnReservation = safeInitialReservations.some((reservation) =>
+    isSameHour(new Date(reservation.startTime), cellDate)
+  );
+
   const isDraftSelected = safeDraftReservations.some((reservation) =>
     isSameHour(new Date(reservation.startTime), cellDate)
   );
+
+  const wasRemovedFromOwnReservations =
+    isInitiallyOwnReservation && !isDraftSelected;
 
   const existingCalendarSlot = safeCalendarSlots.find((slot) =>
     isSameHour(new Date(slot.startTime), cellDate)
   );
 
   const isOwnExistingReservation =
+    !wasRemovedFromOwnReservations &&
     existingCalendarSlot?.eventType === "reservation" &&
     Number(existingCalendarSlot?.createdByUserId) === Number(currentUserId);
 
   const isBlockedByOtherReservation =
+    !wasRemovedFromOwnReservations &&
     existingCalendarSlot?.eventType === "reservation" &&
     Number(existingCalendarSlot?.createdByUserId) !== Number(currentUserId);
 
-  const isTournamentSlot = existingCalendarSlot?.eventType === "tournament";
-  const isMaintenanceSlot = existingCalendarSlot?.eventType === "maintenance";
-  const isTrainingSlot = existingCalendarSlot?.eventType === "training";
+  const isTournamentSlot =
+    !wasRemovedFromOwnReservations &&
+    existingCalendarSlot?.eventType === "tournament";
+
+  const isMaintenanceSlot =
+    !wasRemovedFromOwnReservations &&
+    existingCalendarSlot?.eventType === "maintenance";
+
+  const isTrainingSlot =
+    !wasRemovedFromOwnReservations &&
+    existingCalendarSlot?.eventType === "training";
 
   let cellClass =
     "h-12 m-0.5 rounded-md border border-gray-200 cursor-pointer transition";

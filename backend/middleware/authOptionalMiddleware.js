@@ -1,5 +1,25 @@
 import jwt from "jsonwebtoken";
 
+/**
+ * middleware/authOptionalMiddleware.js
+ * --------------------------------------------------
+ * Opcionális authentikáció.
+ *
+ * Feladata:
+ * - ha van token → dekódolja
+ * - ha nincs token → req.user = null
+ * - ha token hibás → req.user = null
+ *
+ * A request NEM áll le hibával.
+ *
+ * Így a route eldöntheti:
+ * - vendég
+ * - bejelentkezett user
+ *
+ * Használat:
+ * router.get("/events", authOptionalMiddleware, handler)
+ */
+
 export default function authOptionalMiddleware(req, res, next) {
   try {
     const auth = req.headers.authorization || "";

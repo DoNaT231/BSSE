@@ -24,6 +24,7 @@ function WeeklyCalendar() {
     sunday,
     calendarSlots,
     draftReservations,
+    initialReservations,
 
     isModalOpen,
     modalMessage,
@@ -69,6 +70,7 @@ function WeeklyCalendar() {
         monday={monday}
         draftReservations={draftReservations}
         calendarSlots={calendarSlots}
+        initialReservations={initialReservations}
         role={role}
         handleClick={handleClick}
       />

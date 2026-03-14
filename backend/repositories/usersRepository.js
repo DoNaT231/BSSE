@@ -4,6 +4,7 @@ import User from "../models/User.js";
 function mapRowToUser(row) {
   if (!row) return null;
 
+  console.log("eez a row: ", row)
   return new User(
     row.id,
     row.username,
@@ -78,6 +79,8 @@ export async function findAll(client = pool) {
       ORDER BY created_at DESC
     `
   );
+
+  console.log("sql query: ", rows)
 
   return rows.map(mapRowToUser);
 }

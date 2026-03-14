@@ -4,22 +4,14 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-function adminGuard(req, res, next) {
-  if (!req.user || req.user.user_type !== "ADMIN") {
-    return res.status(403).json({
-      message: "Nincs jogosultság ehhez a művelethez.",
-    });
-  }
-
-  next();
-}
-
 /**
  * Összes user listázása
  */
-router.get("/", authMiddleware, adminGuard, async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
+    console.log("router")
     const users = await usersService.getAllUsers(req.user);
+    console.log("router", users)
 
     res.status(200).json(users);
   } catch (error) {
@@ -32,7 +24,7 @@ router.get("/", authMiddleware, adminGuard, async (req, res) => {
 /**
  * Egy user lekérése admin nézetre
  */
-router.get("/:id", authMiddleware, adminGuard, async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const user = await usersService.getUserByIdForAdmin(
       req.user,
@@ -50,7 +42,7 @@ router.get("/:id", authMiddleware, adminGuard, async (req, res) => {
 /**
  * User módosítása admin által
  */
-router.patch("/:id", authMiddleware, adminGuard, async (req, res) => {
+router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const { username, email, userType, isLocal, phone, isActive } = req.body;
 
@@ -78,7 +70,7 @@ router.patch("/:id", authMiddleware, adminGuard, async (req, res) => {
 /**
  * User deaktiválása admin által
  */
-router.patch("/:id/deactivate", authMiddleware, adminGuard, async (req, res) => {
+router.patch("/:id/deactivate", authMiddleware, async (req, res) => {
   try {
     const updatedUser = await usersService.adminDeactivateUser(
       req.user,
@@ -96,7 +88,7 @@ router.patch("/:id/deactivate", authMiddleware, adminGuard, async (req, res) => 
 /**
  * User aktiválása admin által
  */
-router.patch("/:id/activate", authMiddleware, adminGuard, async (req, res) => {
+router.patch("/:id/activate", authMiddleware, async (req, res) => {
   try {
     const updatedUser = await usersService.adminActivateUser(
       req.user,
@@ -114,7 +106,7 @@ router.patch("/:id/activate", authMiddleware, adminGuard, async (req, res) => {
 /**
  * User végleges törlése admin által
  */
-router.delete("/:id", authMiddleware, adminGuard, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const deletedUser = await usersService.adminDeleteUser(
       req.user,

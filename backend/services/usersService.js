@@ -67,9 +67,6 @@ export async function updateOwnProfile(
  * Admin: összes user listázása
  */
 export async function getAllUsers(currentUser) {
-  if (!currentUser || currentUser.user_type !== "ADMIN") {
-    throw new Error("Nincs jogosultság ehhez a művelethez.");
-  }
 
   return usersRepository.findAll();
 }
@@ -78,9 +75,6 @@ export async function getAllUsers(currentUser) {
  * Admin: egy user lekérése
  */
 export async function getUserByIdForAdmin(currentUser, targetUserId) {
-  if (!currentUser || currentUser.user_type !== "ADMIN") {
-    throw new Error("Nincs jogosultság ehhez a művelethez.");
-  }
 
   const user = await usersRepository.findById(targetUserId);
 
@@ -106,9 +100,6 @@ export async function adminUpdateUser(
     isActive,
   }
 ) {
-  if (!currentUser || currentUser.user_type !== "ADMIN") {
-    throw new Error("Nincs jogosultság ehhez a művelethez.");
-  }
 
   const existingUser = await usersRepository.findById(targetUserId);
 
@@ -154,9 +145,6 @@ export async function adminUpdateUser(
  * Ezt inkább ajánlom a fizikai törlés helyett
  */
 export async function adminDeactivateUser(currentUser, targetUserId) {
-  if (!currentUser || currentUser.user_type !== "ADMIN") {
-    throw new Error("Nincs jogosultság ehhez a művelethez.");
-  }
 
   const existingUser = await usersRepository.findById(targetUserId);
 
@@ -171,9 +159,6 @@ export async function adminDeactivateUser(currentUser, targetUserId) {
  * Admin: user újraaktiválása
  */
 export async function adminActivateUser(currentUser, targetUserId) {
-  if (!currentUser || currentUser.user_type !== "ADMIN") {
-    throw new Error("Nincs jogosultság ehhez a művelethez.");
-  }
 
   const existingUser = await usersRepository.findById(targetUserId);
 
@@ -189,9 +174,6 @@ export async function adminActivateUser(currentUser, targetUserId) {
  * Csak akkor használd, ha tényleg biztosan ezt akarod
  */
 export async function adminDeleteUser(currentUser, targetUserId) {
-  if (!currentUser || currentUser.user_type !== "ADMIN") {
-    throw new Error("Nincs jogosultság ehhez a művelethez.");
-  }
 
   const existingUser = await usersRepository.findById(targetUserId);
 
