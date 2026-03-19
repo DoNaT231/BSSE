@@ -25,8 +25,7 @@ import userRoutes from './routes/users.js';
 import calendarRoutes from "./routes/calendarRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import tournamentRoutes from "./routes/tournamentRoutes.js";
-import tournaments from './routes/tournaments.js';
-import tournamentRegistrations from './routes/tournamentRegistrations.js';
+import tournamentRegistrations from './routes/tournamentRegistrationRoutes.js';
 
 // MiddleWarek
 import authMiddleware from './middleware/authMiddleware.js';
@@ -52,10 +51,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courts', courtRoutes);
 app.use('/api/user', userRoutes);
 app.use("/api/calendar", calendarRoutes);
-app.use("/api/tournaments", authMiddleware, adminOnly, tournamentRoutes);
+// Tournament route-ok:
+// - minden /api/tournaments kéréshez kell bejelentkezés
+// - adminOnly middleware-t a routeren belül, csak admin végpontokra tesszük
+app.use("/api/tournaments", authMiddleware, tournamentRoutes);
 app.use("/api/reservations", authMiddleware, reservationRoutes);
 app.use("/api/admin/users", authMiddleware,adminOnly, adminUsersRoutes);
-app.use('/api/tournament-registrations', tournamentRegistrations);
+app.use('/api/tournament-registrations', authMiddleware, tournamentRegistrations);
 
 console.log('Routerek bekötve: auth, courts, users, reservations');
 

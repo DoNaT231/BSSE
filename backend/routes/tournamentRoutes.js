@@ -1,4 +1,6 @@
 import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import adminOnly from "../middleware/adminOnly.js";
 import * as tournamentRegistrationService from "../services/tournamentRegistrationService.js";
 import * as tournamentService from "../services/tournamentService.js";
 
@@ -18,7 +20,8 @@ const router = express.Router();
  *   "organizerLogoUrl": "https://...",
  *   "registrationDeadline": "2026-07-10T18:00:00.000Z",
  *   "maxTeams": 16,
- *   "format": "2v2",
+ *   "entry_fee": 1000,
+ *   "team_size": "2",
  *   "notes": "Nevezési díj a helyszínen",
  *   "slots": [
  *     {
@@ -29,7 +32,7 @@ const router = express.Router();
  *   ]
  * }
  */
-router.post("/tournaments", async (req, res) => {
+router.post("/", adminOnly, async (req, res) => {
   try {
     const userId = req.user?.id;
 
@@ -44,18 +47,18 @@ router.post("/tournaments", async (req, res) => {
       description,
       organizerName,
       organizerEmail,
-      organizerLogoUrl,
       registrationDeadline,
       maxTeams,
-      format,
+      team_size,
+      entry_fee,
       notes,
       slots,
     } = req.body;
 
-    if (!title || !organizerName || !organizerEmail || !Array.isArray(slots)) {
+    if (!title || !Array.isArray(slots)) {
       return res.status(400).json({
         message:
-          "A title, organizerName, organizerEmail és slots mezők megadása kötelező.",
+          "A title és slots mezők megadása kötelező.",
       });
     }
 
@@ -65,10 +68,10 @@ router.post("/tournaments", async (req, res) => {
       createdByUserId: Number(userId),
       organizerName,
       organizerEmail,
-      organizerLogoUrl,
       registrationDeadline,
       maxTeams,
-      format,
+      team_size,
+      entry_fee,
       notes,
       slots,
     });
@@ -82,11 +85,11 @@ router.post("/tournaments", async (req, res) => {
 });
 
 /**
- * GET /api/tournaments
+ * GET /api/
  *
  * Összes tournament listázása
  */
-router.get("/tournaments", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const tournaments = await tournamentService.getAllTournaments();
     return res.status(200).json(tournaments);
@@ -98,11 +101,11 @@ router.get("/tournaments", async (req, res) => {
 });
 
 /**
- * GET /api/tournaments/:id
+ * GET /api/tournament/:id
  *
  * Egy tournament részletes lekérése
  */
-router.get("/tournaments/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -126,7 +129,7 @@ router.get("/tournaments/:id", async (req, res) => {
  * - nem módosít slotokat
  * - nem módosít event title/description mezőket
  */
-router.put("/tournaments/:id", async (req, res) => {
+router.put("/:id", adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -148,7 +151,7 @@ router.put("/tournaments/:id", async (req, res) => {
  *
  * Tournament teljes törlése
  */
-router.delete("/tournaments/:id", async (req, res) => {
+router.delete("/:id", adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -162,6 +165,75 @@ router.delete("/tournaments/:id", async (req, res) => {
     return res.status(400).json({
       message: error.message,
     });
+  }
+});
+
+/**
+ * POST /api/tournaments/:id/slots
+ *
+ * Új slot hozzáadása a versenyhez
+ * Body: { courtId, startTime, endTime }
+ */
+router.post("/:id/slots", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { courtId, startTime, endTime } = req.body;
+
+    const slot = await tournamentService.addTournamentSlot(Number(id), {
+      courtId,
+      startTime,
+      endTime,
+    });
+
+    return res.status(201).json(slot);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
+/**
+ * PUT /api/tournaments/:id/slots/:slotId
+ *
+ * Slot módosítása
+ * Body: { courtId, startTime, endTime }
+ */
+router.put("/:id/slots/:slotId", async (req, res) => {
+  try {
+    const { id, slotId } = req.params;
+    const { courtId, startTime, endTime } = req.body;
+
+    const slot = await tournamentService.updateTournamentSlot(
+      Number(id),
+      Number(slotId),
+      { courtId, startTime, endTime }
+    );
+
+    return res.status(200).json(slot);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
+/**
+ * DELETE /api/tournaments/:id/slots/:slotId
+ *
+ * Slot törlése
+ */
+router.delete("/:id/slots/:slotId", async (req, res) => {
+  try {
+    const { id, slotId } = req.params;
+
+    const deleted = await tournamentService.deleteTournamentSlot(
+      Number(id),
+      Number(slotId)
+    );
+
+    return res.status(200).json({
+      message: "Slot törölve.",
+      deleted,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
 });
 
@@ -182,7 +254,7 @@ router.delete("/tournaments/:id", async (req, res) => {
  * - authMiddleware ajánlott
  * - userId a tokenből jön
  */
-router.post("/tournaments/:id/register", async (req, res) => {
+router.post("/:id/register", async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id ?? null;
@@ -220,7 +292,7 @@ router.post("/tournaments/:id/register", async (req, res) => {
  * Megjegyzés:
  * - ezt érdemes adminMiddleware mögé rakni
  */
-router.get("/:id/registrations", async (req, res) => {
+router.get("/:id/registrations", adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { API_BASE_URL } from "../../../config";
-import { useAuth } from "../../../contexts/AuthContext";
 
 /**
  * CourtsList (Admin)
@@ -29,17 +28,8 @@ export default function CourtsList() {
   const [newCourtName, setNewCourtName] = useState("");
   const [newCourtNumber, setNewCourtNumber] = useState("");
 
-  // Megjegyzés: useAuth import bent van, de a jelenlegi logika localStorage tokennel működik.
-  // (A kéréseid alapján ezt nem változtatom.)
   const token = localStorage.getItem("token");
 
-  /**
-   * fetchCourts()
-   * --------------------------------------------------------------
-   * Pályák lekérése (GET)
-   * - Siker esetén: setCourts(data)
-   * - Hiba esetén: console.error
-   */
   const fetchCourts = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/courts`, {
@@ -57,15 +47,6 @@ export default function CourtsList() {
     }
   };
 
-  /**
-   * handleAddCourt()
-   * --------------------------------------------------------------
-   * Új pálya létrehozása (POST)
-   * - Validáció: üres név esetén nem küld requestet
-   * - Body: { name, number }
-   * - Siker esetén: név reset + lista frissítés (fetchCourts)
-   * - Hiba esetén: console.error
-   */
   const handleAddCourt = async () => {
     if (!newCourtName.trim()) return;
 
@@ -91,14 +72,6 @@ export default function CourtsList() {
     }
   };
 
-  /**
-   * handleDeleteCourt(id)
-   * --------------------------------------------------------------
-   * Pálya törlése (DELETE)
-   * - Endpoint: /api/courts/:id
-   * - Siker esetén: lista frissítés (fetchCourts)
-   * - Hiba esetén: console.error
-   */
   const handleDeleteCourt = async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/courts/${id}`, {
@@ -116,9 +89,6 @@ export default function CourtsList() {
     }
   };
 
-  /**
-   * Mount: kezdeti lista betöltés
-   */
   useEffect(() => {
     fetchCourts();
     console.log("courts: " + courts);
@@ -127,7 +97,6 @@ export default function CourtsList() {
 
   return (
     <section className="w-full p-4 bg-white shadow rounded-2xl md:p-6">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-xl font-semibold md:text-2xl">🏐 Pályák kezelése</h3>
@@ -145,7 +114,6 @@ export default function CourtsList() {
         </button>
       </div>
 
-      {/* Create card */}
       <div className="p-4 mt-6 border rounded-2xl md:p-5">
         <h4 className="font-semibold">Új pálya létrehozása</h4>
 
@@ -188,7 +156,6 @@ export default function CourtsList() {
         </p>
       </div>
 
-      {/* List */}
       <div className="mt-6">
         <h4 className="font-semibold">Meglévő pályák</h4>
 
@@ -228,3 +195,4 @@ export default function CourtsList() {
     </section>
   );
 }
+

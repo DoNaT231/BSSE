@@ -13,6 +13,7 @@ function mapRowToCalendarSlot(row) {
     startTime: row.start_time,
     endTime: row.end_time,
     slotStatus: row.slot_status,
+    allDay: row.all_day,
     eventType: row.event_type,
     title: row.title,
     createdByUserId: row.created_by_user_id,
@@ -42,6 +43,7 @@ export async function getWeeklyCalendarSlotsByCourt(
         es.start_time,
         es.end_time,
         es.slot_status,
+        es.all_day,
         e.type AS event_type,
         e.title,
         e.created_by_user_id,
@@ -80,6 +82,7 @@ export async function getAdminWeeklySlotsByCourt(
         es.start_time,
         es.end_time,
         es.slot_status,
+        es.all_day,
         e.type AS event_type,
         e.title,
         e.description,
@@ -118,7 +121,6 @@ export async function getAdminWeeklySlotsByCourt(
     tournamentId: row.tournament_id,
     organizerName: row.organizer_name,
     organizerEmail: row.organizer_email,
-    organizerLogoUrl: row.organizer_logo_url,
   }));
 }
 
@@ -139,12 +141,47 @@ export async function getEventSlotsByEventId(eventId, client = pool) {
         court_id,
         start_time,
         end_time,
-        slot_status
+        slot_status,
+        all_day
       FROM event_slots
       WHERE event_id = $1
       ORDER BY start_time ASC, end_time ASC
     `,
     [eventId]
+  );
+
+  return rows.map((row) => ({
+    slotId: row.slot_id,
+    eventId: row.event_id,
+    courtId: row.court_id,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    slotStatus: row.slot_status,
+  }));
+}
+
+/**
+ * Több event slotjainak lekérése egyszerre (pl. tournament lista slotokhoz)
+ */
+export async function getEventSlotsByEventIds(eventIds, client = pool) {
+  if (!Array.isArray(eventIds) || eventIds.length === 0) {
+    return [];
+  }
+
+  const { rows } = await client.query(
+    `
+      SELECT
+        id AS slot_id,
+        event_id,
+        court_id,
+        start_time,
+        end_time,
+        slot_status
+      FROM event_slots
+      WHERE event_id = ANY($1::bigint[])
+      ORDER BY event_id, start_time ASC, end_time ASC
+    `,
+    [eventIds]
   );
 
   return rows.map((row) => ({

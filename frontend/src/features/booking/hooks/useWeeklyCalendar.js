@@ -12,11 +12,13 @@ import {
   getWeekEndExclusive,
   getCellDate,
   getCellEndDate,
+  isSameDay,
   toIso,
 } from "../utils/reservationDate.utils.js";
 import {
   toDraftReservation,
   findCalendarSlotAtCell,
+  findSlotsOverlappingCell,
   isDraftSelected,
 } from "../utils/reservationMapper.utils.js";
 import {
@@ -94,6 +96,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [isErrorModal, setIsErrorModal] = useState(false);
+  const [modalTournamentId, setModalTournamentId] = useState(null);
 
   /**
    * Admin modalhoz kiválasztott blokkolt slot
@@ -154,6 +157,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
     setIsModalOpen(true);
     setIsErrorModal(true);
     setModalMessage(message);
+    setModalTournamentId(null);
   }
 
   /**
@@ -165,6 +169,14 @@ export default function useWeeklyCalendar({ user, role, token }) {
     setIsModalOpen(true);
     setIsErrorModal(false);
     setModalMessage(message);
+    setModalTournamentId(null);
+  }
+
+  function openTournamentInfoModal(message, tournamentId) {
+    setIsModalOpen(true);
+    setIsErrorModal(false);
+    setModalMessage(message);
+    setModalTournamentId(tournamentId ?? null);
   }
 
   /**
@@ -174,6 +186,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
     setIsModalOpen(false);
     setModalMessage("");
     setIsErrorModal(false);
+    setModalTournamentId(null);
   }
 
   /**
@@ -372,7 +385,28 @@ export default function useWeeklyCalendar({ user, role, token }) {
     console.log("celldatend ", cellEndDate)
 
     const existingSlot = findCalendarSlotAtCell(calendarSlots, cellDate);
+    const overlappingSlots = findSlotsOverlappingCell(calendarSlots, cellDate);
+    const blockingTournament = overlappingSlots.find(
+      (s) => s.eventType === "tournament"
+    );
+
+    const tournamentSlotThatDay = calendarSlots.find(
+      (s) =>
+        s.eventType === "tournament" &&
+        isSameDay(new Date(s.startTime), cellDate) &&
+        s.tournamentId != null
+    );
+    const hasTournamentThatDay = Boolean(tournamentSlotThatDay);
     const alreadySelected = isDraftSelected(draftReservations, cellDate);
+
+    // Ha az adott napon bármikor verseny van, a teljes nap nem foglalható
+    if (hasTournamentThatDay) {
+      openTournamentInfoModal(
+        "Ezen a napon verseny van, nem foglalható.",
+        tournamentSlotThatDay?.tournamentId
+      );
+      return;
+    }
 
     /**
      * Ha a cellához már tartozik slot,
@@ -465,6 +499,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
     isModalOpen,
     modalMessage,
     isErrorModal,
+    modalTournamentId,
     closeBaseModal,
 
     isAdminModalVisible,

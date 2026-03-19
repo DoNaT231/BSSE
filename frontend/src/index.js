@@ -11,7 +11,7 @@ import SmashSPT from './pages/SmashSPT.js';
 import 'leaflet/dist/leaflet.css';
 import AdminDashboard from './pages/Admin/AdminDashboard.js';
 import { AuthProvider } from './contexts/AuthContext.js';
-import TournamentSignupSection from './features/tournament/page/TournamentSignupSection.js';
+import TournamentSignupSection from './features/tournamentRegistration/page/TournamentSignupSection';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const apiUrl = "http://localhost:5000";

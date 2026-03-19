@@ -43,6 +43,9 @@ export async function createEvent(
 
 /**
  * Új event slot létrehozása
+ *
+ * Megjegyzés:
+ * - az allDay flag opcionális, default: false
  */
 export async function createEventSlot(
   {
@@ -51,6 +54,7 @@ export async function createEventSlot(
     startTime,
     endTime,
     slotStatus = "active",
+    allDay = false,
   },
   client = pool
 ) {
@@ -62,16 +66,89 @@ export async function createEventSlot(
         start_time,
         end_time,
         slot_status,
+        all_day,
         created_at,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *
     `,
-    [eventId, courtId, startTime, endTime, slotStatus]
+    [eventId, courtId, startTime, endTime, slotStatus, allDay]
   );
 
   return rows[0];
+}
+
+/**
+ * Egy event slot módosítása id alapján
+ */
+export async function updateEventSlotById(
+  slotId,
+  { courtId, startTime, endTime, slotStatus = "active", allDay = false },
+  client = pool
+) {
+  const { rows } = await client.query(
+    `
+      UPDATE event_slots
+      SET court_id = $2,
+          start_time = $3,
+          end_time = $4,
+          slot_status = $5,
+          all_day = $6,
+          updated_at = NOW()
+      WHERE id = $1
+      RETURNING id, event_id, court_id, start_time, end_time, slot_status, all_day
+    `,
+    [slotId, courtId, startTime, endTime, slotStatus, allDay]
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    slotId: row.id,
+    eventId: row.event_id,
+    courtId: row.court_id,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    slotStatus: row.slot_status,
+    allDay: row.all_day,
+  };
+}
+
+/**
+ * Egy event slot törlése id alapján
+ */
+export async function deleteEventSlotById(slotId, client = pool) {
+  const { rows } = await client.query(
+    `
+      DELETE FROM event_slots
+      WHERE id = $1
+      RETURNING id, event_id, court_id, start_time, end_time, slot_status
+    `,
+    [slotId]
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    slotId: row.id,
+    eventId: row.event_id,
+    courtId: row.court_id,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    slotStatus: row.slot_status,
+  };
+}
+
+/**
+ * Event slotok törlése event_id alapján
+ */
+export async function deleteEventSlotsByEventId(eventId, client = pool) {
+  await client.query(
+    `
+      DELETE FROM event_slots
+      WHERE event_id = $1
+    `,
+    [eventId]
+  );
 }
 
 /**
@@ -79,7 +156,8 @@ export async function createEventSlot(
  *
  * Fontos:
  * akkor ideális, ha az event_slots foreign key
- * ON DELETE CASCADE módon van beállítva
+ * ON DELETE CASCADE módon van beállítva.
+ * Ha nincs CASCADE, hívjuk meg előbb deleteEventSlotsByEventId-et.
  */
 export async function deleteEventById(id, client = pool) {
   const { rows } = await client.query(

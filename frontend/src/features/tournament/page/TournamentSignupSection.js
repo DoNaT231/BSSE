@@ -80,6 +80,16 @@ export default function TournamentSignupSection() {
     [tournaments, openTournamentId]
   );
 
+  function getTournamentStart(t) {
+    if (!t?.slots || !Array.isArray(t.slots) || t.slots.length === 0) return null;
+    const dates = t.slots
+      .map((s) => new Date(s.startTime))
+      .filter((d) => !Number.isNaN(d.getTime()));
+    if (dates.length === 0) return null;
+    const min = new Date(Math.min(...dates.map((d) => d.getTime())));
+    return min.toISOString();
+  }
+
 
   useEffect(() => {
     console.log("us" + userEmail)
@@ -89,7 +99,7 @@ export default function TournamentSignupSection() {
   useEffect(() => {
     if (!selectedTournament) return;
 
-    const n = Number(selectedTournament.number_of_players ?? 0);
+    const n = Number(selectedTournament.team_size ?? 0);
     const safeN = Number.isFinite(n) && n > 0 ? n : 0;
 
     setPlayers((prev) => Array.from({ length: safeN }, (_, i) => prev[i] ?? ""));
@@ -239,7 +249,7 @@ export default function TournamentSignupSection() {
     if (!selectedTournament) return "Nincs kiválasztott verseny.";
     if (!telNumber.trim()) return "A telefonszám kötelező.";
 
-    const required = Number(selectedTournament.number_of_players ?? 0);
+    const required = Number(selectedTournament.team_size ?? 0);
     if (Number.isFinite(required) && required > 0) {
       if (!Array.isArray(players) || players.length !== required) {
         return `Pontosan ${required} játékos nevet kell megadni.`;
@@ -358,6 +368,7 @@ export default function TournamentSignupSection() {
           <div className="grid grid-cols-1 gap-5 mt-6 md:grid-cols-2 xl:grid-cols-3">
             {tournaments.map((t) => {
               const alreadyRegistered = Boolean(regByTournamentId?.[t.id]?.id);
+              const startIso = getTournamentStart(t);
 
               return (
                 <div
@@ -372,13 +383,15 @@ export default function TournamentSignupSection() {
                           {t.title}
                         </h3>
                         <p className="mt-1 text-sm text-slate-600">
-                          {t.category} • {formatDateTime(t.start_at)}
+                          {startIso ? `Kezdés: ${formatDateTime(startIso)}` : "Kezdés: nincs megadva"}
                         </p>
                       </div>
 
-                      <div className="px-3 py-1 text-xs font-extrabold border shrink-0 rounded-2xl bg-slate-50 border-slate-200 text-slate-700">
-                        {t.number_of_players} fő/csapat
-                      </div>
+                      {t.team_size != null && (
+                        <div className="px-3 py-1 text-xs font-extrabold border shrink-0 rounded-2xl bg-slate-50 border-slate-200 text-slate-700">
+                          {t.team_size} fő/csapat
+                        </div>
+                      )}
                     </div>
 
                     {t.description && (
@@ -456,7 +469,7 @@ export default function TournamentSignupSection() {
                     {selectedTournament.number_of_players} fő/csapat
                   </p>
                 </div>
-
+do 
                 <button
                   onClick={closeForm}
                   className="px-3 py-2 text-sm font-extrabold text-white transition shrink-0 rounded-2xl bg-white/20 hover:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/30"
@@ -493,7 +506,7 @@ export default function TournamentSignupSection() {
 
                 <div className="space-y-2">
                   <div className="text-sm font-extrabold text-slate-900">
-                    Játékosok ({selectedTournament.number_of_players} fő) *
+                    Játékosok ({selectedTournament.team_size} fő) *
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

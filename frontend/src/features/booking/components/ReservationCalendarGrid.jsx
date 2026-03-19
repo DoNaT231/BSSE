@@ -41,7 +41,6 @@ export default function ReservationCalendarGrid({
           </div>
 
           {days.map((_, dayIndex) => (
-
             <ReservationSlot
               key={`${dayIndex}-${hour}`}
               dayIndex={dayIndex}

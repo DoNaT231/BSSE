@@ -35,7 +35,7 @@ export default function adminOnly(req, res, next) {
   }
 
   // nem admin
-  if (req.user.user_type !== 'admin'){
+  if (req.user.user_type !== 'ADMIN'){
     console.log("adminOnly: nem admin")
     return res.status(403).json({
       message: "Nincs jogosultság (admin szükséges).",

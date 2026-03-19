@@ -3,11 +3,9 @@ import './AdminDashboard.css';
 import { useNavigate, Link} from 'react-router-dom';
 import WeeklyCalendar from '../../features/booking/pages/WeeklyCalendar';
 import { useAuth } from '../../contexts/AuthContext';
-import UserList from './components/UserList';
-import { API_BASE_URL } from "../../config";
-import CourtsList from './components/CourtsList';
-import TournamentsAdminSection from './components/TournamentsAdmin';
 import UsersSection from './users/components/UsersSection';
+import CourtsList from '../../features/courts/components/CourtsList';
+import TournamentsAdminSection from '../../features/tournament/components/TournamentsAdminSection';
 
 
 const AdminDashboard = () => {

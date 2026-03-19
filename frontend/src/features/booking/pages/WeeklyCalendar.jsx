@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "../../../contexts/AuthContext.js";
+import { useNavigate } from "react-router-dom";
 import AuthFrostLock from "../../../components/AuthLock.js";
 
 import { DAYS, HOURS } from "../constants/reservation.constants.js";
@@ -13,6 +14,7 @@ import ReservationAdminModal from "../components/ReservationAdminModal.jsx";
 
 function WeeklyCalendar() {
   const { role, user } = useAuth();
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   const {
@@ -29,6 +31,7 @@ function WeeklyCalendar() {
     isModalOpen,
     modalMessage,
     isErrorModal,
+    modalTournamentId,
     closeBaseModal,
 
     isAdminModalVisible,
@@ -49,6 +52,13 @@ function WeeklyCalendar() {
     role,
     token,
   });
+
+  function handleTournamentRegistration(tournamentId) {
+    if (tournamentId == null) return;
+
+    closeBaseModal();
+    navigate("/versenyek");
+  }
 
   return (
     <AuthFrostLock>
@@ -87,6 +97,8 @@ function WeeklyCalendar() {
         isOpen={isModalOpen}
         isError={isErrorModal}
         message={modalMessage}
+        tournamentId={modalTournamentId}
+        onTournamentRegistration={handleTournamentRegistration}
         onClose={closeBaseModal}
       />
 

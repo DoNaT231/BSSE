@@ -2,6 +2,8 @@ function ReservationInfoModal({
   isOpen,
   isError,
   message,
+  tournamentId,
+  onTournamentRegistration,
   onClose,
 }) {
   if (!isOpen) return null;
@@ -17,7 +19,16 @@ function ReservationInfoModal({
           {message}
         </p>
 
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end gap-3 mt-6">
+          {!isError && tournamentId != null && (
+            <button
+              type="button"
+              onClick={() => onTournamentRegistration?.(tournamentId)}
+              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
+            >
+              Versenyjelentkezés
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}

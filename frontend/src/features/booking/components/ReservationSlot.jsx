@@ -1,3 +1,6 @@
+import { findSlotsOverlappingCell } from "../utils/reservationMapper.utils.js";
+import { isSameDay } from "../utils/reservationDate.utils.js";
+
 export default function ReservationSlot({
   dayIndex,
   hour,
@@ -46,6 +49,20 @@ export default function ReservationSlot({
     isSameHour(new Date(slot.startTime), cellDate)
   );
 
+  // Minden, a cellával átfedő slot (több is lehet)
+  const overlappingSlots = findSlotsOverlappingCell(safeCalendarSlots, cellDate);
+
+  // Van-e bármely tournament ezen a napon (bármely időpontban)
+  const hasTournamentThatDay = safeCalendarSlots.some(
+    (slot) =>
+      slot.eventType === "tournament" &&
+      isSameDay(new Date(slot.startTime), cellDate)
+  );
+
+  const overlappingTournament = overlappingSlots.find(
+    (slot) => slot.eventType === "tournament"
+  );
+
   const isOwnExistingReservation =
     !wasRemovedFromOwnReservations &&
     existingCalendarSlot?.eventType === "reservation" &&
@@ -57,8 +74,7 @@ export default function ReservationSlot({
     Number(existingCalendarSlot?.createdByUserId) !== Number(currentUserId);
 
   const isTournamentSlot =
-    !wasRemovedFromOwnReservations &&
-    existingCalendarSlot?.eventType === "tournament";
+    !wasRemovedFromOwnReservations && (hasTournamentThatDay || !!overlappingTournament);
 
   const isMaintenanceSlot =
     !wasRemovedFromOwnReservations &&
@@ -74,7 +90,7 @@ export default function ReservationSlot({
   if (isDraftSelected || isOwnExistingReservation) {
     cellClass += " bg-amber-500 hover:bg-yellow";
   } else if (isTournamentSlot) {
-    cellClass += " bg-violet-600 text-white";
+    cellClass += " text-white";
   } else if (isMaintenanceSlot) {
     cellClass += " bg-yellow-400 border-black";
   } else if (isTrainingSlot) {
@@ -87,9 +103,19 @@ export default function ReservationSlot({
     cellClass += " hover:bg-yellow";
   }
 
+  const style = isTournamentSlot
+    ? {
+        backgroundImage: "url('/logos/smash_by_melodiak_final.png')",
+        backgroundSize: "contain",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : undefined;
+
   return (
     <div
       className={cellClass}
+      style={style}
       onClick={() => handleClick(dayIndex, hour)}
       title={
         isTournamentSlot

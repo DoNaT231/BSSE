@@ -1,102 +1,147 @@
-/**
- * Event módosítása id alapján
- *
- * Csak az átadott mezőket frissíti.
- */
-export async function updateEventById(
-  id,
+import pool from "../db.js";
+
+function mapRow(row) {
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    tournamentId: row.tournament_id,
+    userId: row.user_id,
+    telNumber: row.tel_number,
+    players: row.players,
+    teamName: row.team_name,
+    contactEmail: row.contact_email,
+    createdAt: row.created_at,
+  };
+}
+
+export async function create(
   {
-    title,
-    description,
-    status,
-    visibility,
+    tournamentId,
+    userId,
+    telNumber,
+    players = null,
+    teamName = null,
+    contactEmail = null,
   },
   client = pool
 ) {
-  const fields = [];
-  const values = [];
-  let index = 1;
-
-  if (title !== undefined) {
-    fields.push(`title = $${index++}`);
-    values.push(title);
-  }
-
-  if (description !== undefined) {
-    fields.push(`description = $${index++}`);
-    values.push(description);
-  }
-
-  if (status !== undefined) {
-    fields.push(`status = $${index++}`);
-    values.push(status);
-  }
-
-  if (visibility !== undefined) {
-    fields.push(`visibility = $${index++}`);
-    values.push(visibility);
-  }
-
-  if (fields.length === 0) {
-    const { rows } = await client.query(
-      `
-        SELECT *
-        FROM events
-        WHERE id = $1
-      `,
-      [id]
-    );
-
-    return rows[0];
-  }
-
-  fields.push(`updated_at = NOW()`);
-  values.push(id);
-
   const { rows } = await client.query(
     `
-      UPDATE events
-      SET ${fields.join(", ")}
-      WHERE id = $${index}
+      INSERT INTO tournament_registrations (
+        tournament_id,
+        user_id,
+        tel_number,
+        players,
+        team_name,
+        contact_email,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
       RETURNING *
     `,
-    values
+    [tournamentId, userId, telNumber, players, teamName, contactEmail]
   );
 
-  return rows[0];
+  return mapRow(rows[0]);
 }
-/**
- * Tournament nevezés módosítása id alapján
- *
- * Csak az átadott mezőket frissíti.
- */
+
+export async function findById(id, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT *
+      FROM tournament_registrations
+      WHERE id = $1
+    `,
+    [id]
+  );
+
+  return mapRow(rows[0]);
+}
+
+export async function findByTournamentIdAndUserId(tournamentId, userId, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT *
+      FROM tournament_registrations
+      WHERE tournament_id = $1
+        AND user_id = $2
+      LIMIT 1
+    `,
+    [tournamentId, userId]
+  );
+
+  return mapRow(rows[0]);
+}
+
+export async function findByTournamentIdAndTeamName(tournamentId, teamName, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT *
+      FROM tournament_registrations
+      WHERE tournament_id = $1
+        AND LOWER(team_name) = LOWER($2)
+      LIMIT 1
+    `,
+    [tournamentId, teamName]
+  );
+
+  return mapRow(rows[0]);
+}
+
+export async function findAllByUserId(userId, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT *
+      FROM tournament_registrations
+      WHERE user_id = $1
+      ORDER BY created_at DESC
+    `,
+    [userId]
+  );
+
+  return rows.map(mapRow);
+}
+
+export async function findAllByTournamentId(tournamentId, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT *
+      FROM tournament_registrations
+      WHERE tournament_id = $1
+      ORDER BY created_at DESC
+    `,
+    [tournamentId]
+  );
+
+  return rows.map(mapRow);
+}
+
+export async function countByTournamentId(tournamentId, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT COUNT(*)::int AS count
+      FROM tournament_registrations
+      WHERE tournament_id = $1
+    `,
+    [tournamentId]
+  );
+
+  return rows[0]?.count ?? 0;
+}
+
 export async function updateById(
   id,
-  {
-    teamName,
-    telNumber,
-    contactEmail,
-    players,
-  },
+  { telNumber, players, teamName, contactEmail },
   client = pool
 ) {
   const fields = [];
   const values = [];
   let index = 1;
-
-  if (teamName !== undefined) {
-    fields.push(`team_name = $${index++}`);
-    values.push(teamName);
-  }
 
   if (telNumber !== undefined) {
     fields.push(`tel_number = $${index++}`);
     values.push(telNumber);
-  }
-
-  if (contactEmail !== undefined) {
-    fields.push(`contact_email = $${index++}`);
-    values.push(contactEmail);
   }
 
   if (players !== undefined) {
@@ -104,11 +149,20 @@ export async function updateById(
     values.push(players);
   }
 
+  if (teamName !== undefined) {
+    fields.push(`team_name = $${index++}`);
+    values.push(teamName);
+  }
+
+  if (contactEmail !== undefined) {
+    fields.push(`contact_email = $${index++}`);
+    values.push(contactEmail);
+  }
+
   if (fields.length === 0) {
     return findById(id, client);
   }
 
-  fields.push(`updated_at = NOW()`);
   values.push(id);
 
   const { rows } = await client.query(
@@ -121,12 +175,9 @@ export async function updateById(
     values
   );
 
-  return mapRowToTournamentRegistration(rows[0]);
+  return mapRow(rows[0]);
 }
 
-/**
- * Tournament nevezés törlése id alapján
- */
 export async function deleteById(id, client = pool) {
   const { rows } = await client.query(
     `
@@ -137,5 +188,32 @@ export async function deleteById(id, client = pool) {
     [id]
   );
 
-  return mapRowToTournamentRegistration(rows[0]);
+  return mapRow(rows[0]);
+}
+
+export async function findAllDetailedByTournamentId(tournamentId, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT
+        tr.id,
+        tr.tournament_id,
+        tr.user_id,
+        tr.contact_email,
+        tr.tel_number,
+        tr.team_name,
+        tr.players,
+        tr.created_at,
+        u.email AS user_email
+      FROM tournament_registrations tr
+      LEFT JOIN users u ON u.id = tr.user_id
+      WHERE tr.tournament_id = $1
+      ORDER BY tr.created_at DESC
+    `,
+    [tournamentId]
+  );
+
+  return rows.map((row) => ({
+    ...mapRow(row),
+    userEmail: row.user_email ?? null,
+  }));
 }

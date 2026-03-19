@@ -8,7 +8,8 @@ export default class TournamentDetails{
         organizer_email,
         registration_deadline,
         max_teams,
-        format,
+        team_size,
+        entry_fee,
         notes,
         created_at,
         updated_at
@@ -19,7 +20,8 @@ export default class TournamentDetails{
         this.organizer_email = organizer_email
         this.registration_deadline = registration_deadline
         this.max_teams = max_teams;
-        this.format = format;
+        this.team_size = team_size;
+        this.entry_fee = entry_fee;
         this.notes = notes;
         this.created_at = created_at;
         this.updated_at = updated_at;

@@ -1,170 +1,167 @@
+import * as tournamentRegistrationRepository from "../repositories/tournamentRegistrationRepository.js";
+import * as tournamentRepository from "../repositories/tournamentRepository.js";
+import { sendTournamentRegistrationSuccessEmail } from "./email/service.js";
 import pool from "../db.js";
 
-/**
- * Tournament registration row átalakítása
- */
-function mapRowToTournamentRegistration(row) {
-  if (!row) return null;
-
-  return {
-    id: row.id,
-    tournamentId: row.tournament_id,
-    userId: row.user_id,
-    teamName: row.team_name,
-    telNumber: row.tel_number,
-    contactEmail: row.contact_email,
-    players: row.players,
-    updatedAt: row.updated_at,
-    createdAt: row.created_at,
-  };
+function isNonEmptyString(v) {
+  return typeof v === "string" && v.trim().length > 0;
 }
 
-/**
- * Új tournament nevezés létrehozása
- */
-export async function create(
-  {
-    tournamentId,
-    userId = null,
-    teamName,
-    telNumber,
-    contactEmail,
-    players = [],
-  },
-  client = pool
-) {
+async function getTournamentStartFromSlots(eventId, client = pool) {
   const { rows } = await client.query(
     `
-      INSERT INTO tournament_registrations (
-        tournament_id,
-        user_id,
-        team_name,
-        tel_number,
-        contact_email,
-        players,
-        created_at,
-        updated_at
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-      RETURNING *
+      SELECT MIN(start_time) AS start_at
+      FROM event_slots
+      WHERE event_id = $1
     `,
-    [tournamentId, userId, teamName, telNumber, contactEmail, players]
+    [eventId]
   );
 
-  return mapRowToTournamentRegistration(rows[0]);
+  return rows[0]?.start_at ?? null;
 }
 
-/**
- * Egy nevezés lekérése id alapján
- */
-export async function findById(id, client = pool) {
-  const { rows } = await client.query(
-    `
-      SELECT *
-      FROM tournament_registrations
-      WHERE id = $1
-    `,
-    [id]
-  );
-
-  return mapRowToTournamentRegistration(rows[0]);
-}
-
-/**
- * Egy user nevezése adott tournamentre
- *
- * Mire jó:
- * - duplikált nevezés ellenőrzése
- */
-export async function findByTournamentIdAndUserId(
+async function sendSuccessEmailSafe({
   tournamentId,
   userId,
-  client = pool
-) {
-  const { rows } = await client.query(
-    `
-      SELECT *
-      FROM tournament_registrations
-      WHERE tournament_id = $1
-        AND user_id = $2
-      LIMIT 1
-    `,
-    [tournamentId, userId]
-  );
+  telNumber,
+  registrationDate,
+  contactEmail,
+}) {
+  if (!contactEmail) return;
 
-  return mapRowToTournamentRegistration(rows[0]);
+  try {
+    const tournament = await tournamentRepository.findDetailedById(tournamentId);
+    if (!tournament) return;
+
+    const { rows } = await pool.query(
+      `SELECT username FROM users WHERE id = $1`,
+      [userId]
+    );
+
+    if (!rows.length) return;
+
+    const username = rows[0].username;
+    const tournamentStart = await getTournamentStartFromSlots(tournament.eventId);
+
+    await sendTournamentRegistrationSuccessEmail({
+      toEmail: contactEmail,
+      toName: username,
+      tournamentName: tournament.title,
+      phoneNumber: telNumber,
+      registrationDate,
+      tournamentDate: tournamentStart
+        ? new Date(tournamentStart).toLocaleString("hu-HU")
+        : "Nincs megadva",
+      entryFee:
+        tournament.entry_fee == null || Number(tournament.entry_fee) === 0
+          ? "Ingyenes"
+          : `${tournament.entry_fee} Ft`,
+    });
+  } catch (e) {
+    console.error("Tournament registration email failed:", e);
+  }
 }
 
-/**
- * Egy csapatnév létezik-e már adott tournamenten belül
- *
- * Mire jó:
- * - teamName duplikáció ellenőrzése
- */
-export async function findByTournamentIdAndTeamName(
+export async function registerToTournament({
   tournamentId,
+  userId,
   teamName,
-  client = pool
-) {
-  const { rows } = await client.query(
-    `
-      SELECT *
-      FROM tournament_registrations
-      WHERE tournament_id = $1
-        AND LOWER(team_name) = LOWER($2)
-      LIMIT 1
-    `,
-    [tournamentId, teamName]
+  telNumber,
+  contactEmail,
+  players = [],
+}) {
+  if (!userId) {
+    throw new Error("Nincs bejelentkezve.");
+  }
+
+  if (!tournamentId || !isNonEmptyString(telNumber)) {
+    throw new Error("Hiányzó mezők: tournamentId és telNumber kötelező.");
+  }
+
+  if (players !== undefined && !Array.isArray(players)) {
+    throw new Error("A players mezőnek tömbnek kell lennie.");
+  }
+
+  const tournament = await tournamentRepository.findDetailedById(tournamentId);
+  if (!tournament) {
+    throw new Error("Nincs ilyen verseny.");
+  }
+
+  if (tournament.registrationDeadline) {
+    const now = new Date();
+    const deadline = new Date(tournament.registrationDeadline);
+    if (now > deadline) {
+      throw new Error("A nevezési határidő lejárt.");
+    }
+  }
+
+  const existing = await tournamentRegistrationRepository.findByTournamentIdAndUserId(
+    tournamentId,
+    userId
   );
 
-  return mapRowToTournamentRegistration(rows[0]);
+  if (existing) {
+    throw new Error("Erre a versenyre már van nevezésed.");
+  }
+
+  if (teamName && teamName.trim()) {
+    const existingTeam =
+      await tournamentRegistrationRepository.findByTournamentIdAndTeamName(
+        tournamentId,
+        teamName.trim()
+      );
+
+    if (existingTeam) {
+      throw new Error("Ez a csapatnév már foglalt ennél a versenynél.");
+    }
+  }
+
+  if (tournament.team_size && Array.isArray(players)) {
+    if (players.length !== Number(tournament.team_size)) {
+      throw new Error(
+        `Pontosan ${tournament.team_size} játékost kell megadni.`
+      );
+    }
+  }
+
+  if (tournament.maxTeams) {
+    const currentCount = await tournamentRegistrationRepository.countByTournamentId(
+      tournamentId
+    );
+
+    if (currentCount >= Number(tournament.maxTeams)) {
+      throw new Error("A verseny betelt.");
+    }
+  }
+
+  const created = await tournamentRegistrationRepository.create({
+    tournamentId,
+    userId,
+    telNumber: telNumber.trim(),
+    players: players ?? null,
+    teamName: teamName?.trim() || null,
+    contactEmail: contactEmail?.trim() || null,
+  });
+
+  await sendSuccessEmailSafe({
+    tournamentId,
+    userId,
+    telNumber: created.telNumber,
+    registrationDate: created.createdAt,
+    contactEmail: created.contactEmail,
+  });
+
+  return created;
 }
 
-/**
- * Egy tournament összes nevezése
- */
-export async function findAllByTournamentId(tournamentId, client = pool) {
-  const { rows } = await client.query(
-    `
-      SELECT *
-      FROM tournament_registrations
-      WHERE tournament_id = $1
-      ORDER BY created_at DESC
-    `,
-    [tournamentId]
-  );
+export async function getMyTournamentRegistrations(userId) {
+  if (!userId) {
+    throw new Error("Nincs bejelentkezve.");
+  }
 
-  return rows.map(mapRowToTournamentRegistration);
+  return tournamentRegistrationRepository.findAllByUserId(userId);
 }
 
-/**
- * Nevezések száma egy tournamenthez
- *
- * Mire jó:
- * - maxTeams ellenőrzés
- */
-export async function countByTournamentId(tournamentId, client = pool) {
-  const { rows } = await client.query(
-    `
-      SELECT COUNT(*)::int AS count
-      FROM tournament_registrations
-      WHERE tournament_id = $1
-    `,
-    [tournamentId]
-  );
-
-  return rows[0]?.count ?? 0;
-}
-/**
- * Saját tournament jelentkezés módosítása
- *
- * Logika:
- * - a registration létezzen
- * - a user legyen a tulajdonosa
- * - a tournament létezzen
- * - a nevezési határidő még ne járjon le
- * - ha változik a teamName, ne legyen duplikált ugyanazon a tournamenten belül
- */
 export async function updateOwnTournamentRegistration({
   registrationId,
   userId,
@@ -173,108 +170,110 @@ export async function updateOwnTournamentRegistration({
   contactEmail,
   players,
 }) {
-  const registration = await tournamentRegistrationRepository.findById(
-    registrationId
-  );
+  const registration = await tournamentRegistrationRepository.findById(registrationId);
 
   if (!registration) {
     throw new Error("A jelentkezés nem található.");
-  }
-
-  if (!registration.userId) {
-    throw new Error("Ez a jelentkezés nem felhasználóhoz kötött.");
   }
 
   if (Number(registration.userId) !== Number(userId)) {
     throw new Error("Nincs jogosultságod módosítani ezt a jelentkezést.");
   }
 
-  const tournament = await tournamentRepository.findById(
-    registration.tournamentId
-  );
-
+  const tournament = await tournamentRepository.findById(registration.tournamentId);
   if (!tournament) {
-    throw new Error("A tournament nem található.");
+    throw new Error("A verseny nem található.");
   }
 
   if (tournament.registrationDeadline) {
     const now = new Date();
     const deadline = new Date(tournament.registrationDeadline);
-
     if (now > deadline) {
-      throw new Error("A nevezési határidő lejárt, a jelentkezés már nem módosítható.");
+      throw new Error("A nevezési határidő lejárt.");
     }
   }
 
+  if (players !== undefined && !Array.isArray(players)) {
+    throw new Error("A players mezőnek tömbnek kell lennie.");
+  }
+
+  const nextTeamName = teamName?.trim();
   if (
-    teamName !== undefined &&
-    teamName !== null &&
-    teamName.trim() !== "" &&
-    teamName.toLowerCase() !== registration.teamName.toLowerCase()
+    nextTeamName &&
+    nextTeamName.toLowerCase() !== String(registration.teamName || "").toLowerCase()
   ) {
-    const existingTeamName =
+    const existingTeam =
       await tournamentRegistrationRepository.findByTournamentIdAndTeamName(
         registration.tournamentId,
-        teamName
+        nextTeamName
       );
 
-    if (existingTeamName && Number(existingTeamName.id) !== Number(registrationId)) {
-      throw new Error("Ez a csapatnév már létezik ennél a tournamentnél.");
+    if (existingTeam && Number(existingTeam.id) !== Number(registrationId)) {
+      throw new Error("Ez a csapatnév már foglalt ennél a versenynél.");
+    }
+  }
+
+  if (players !== undefined && tournament.team_size) {
+    if (players.length !== Number(tournament.team_size)) {
+      throw new Error(
+        `Pontosan ${tournament.team_size} játékost kell megadni.`
+      );
     }
   }
 
   return tournamentRegistrationRepository.updateById(registrationId, {
-    teamName,
-    telNumber,
-    contactEmail,
+    telNumber: telNumber !== undefined ? telNumber?.trim() || null : undefined,
     players,
+    teamName: teamName !== undefined ? teamName?.trim() || null : undefined,
+    contactEmail:
+      contactEmail !== undefined ? contactEmail?.trim() || null : undefined,
   });
 }
 
-/**
- * Saját tournament jelentkezés törlése
- *
- * Logika:
- * - a registration létezzen
- * - a user legyen a tulajdonosa
- * - a nevezési határidő még ne járjon le
- */
 export async function deleteOwnTournamentRegistration({
   registrationId,
   userId,
 }) {
-  const registration = await tournamentRegistrationRepository.findById(
-    registrationId
-  );
+  const registration = await tournamentRegistrationRepository.findById(registrationId);
 
   if (!registration) {
     throw new Error("A jelentkezés nem található.");
-  }
-
-  if (!registration.userId) {
-    throw new Error("Ez a jelentkezés nem felhasználóhoz kötött.");
   }
 
   if (Number(registration.userId) !== Number(userId)) {
     throw new Error("Nincs jogosultságod törölni ezt a jelentkezést.");
   }
 
-  const tournament = await tournamentRepository.findById(
-    registration.tournamentId
-  );
-
+  const tournament = await tournamentRepository.findById(registration.tournamentId);
   if (!tournament) {
-    throw new Error("A tournament nem található.");
+    throw new Error("A verseny nem található.");
   }
 
   if (tournament.registrationDeadline) {
     const now = new Date();
     const deadline = new Date(tournament.registrationDeadline);
-
     if (now > deadline) {
-      throw new Error("A nevezési határidő lejárt, a jelentkezés már nem törölhető.");
+      throw new Error("A nevezési határidő lejárt.");
     }
   }
 
   return tournamentRegistrationRepository.deleteById(registrationId);
+}
+
+export async function getTournamentRegistrations(tournamentId) {
+  const tournament = await tournamentRepository.findDetailedById(tournamentId);
+  if (!tournament) {
+    throw new Error("Nincs ilyen verseny.");
+  }
+
+  const registrations =
+    await tournamentRegistrationRepository.findAllDetailedByTournamentId(tournamentId);
+
+  return {
+    tournament: {
+      id: tournament.id,
+      title: tournament.title,
+    },
+    registrations,
+  };
 }

@@ -49,6 +49,48 @@ export function findCalendarSlotAtCell(calendarSlots, cellDate) {
 }
 
 /**
+ * Megnézi, hogy egy slot átfed-e egy naptárcellával.
+ * A cella intervalluma: [cellDate, cellDate + 1 óra).
+ *
+ * @param {Object} slot - { startTime, endTime }
+ * @param {Date} cellDate - cella kezdőidőpontja
+ * @returns {boolean}
+ */
+export function slotOverlapsCell(slot, cellDate) {
+  const cellStart = cellDate.getTime();
+  const cellEnd = cellStart + 60 * 60 * 1000;
+
+  const slotStart = new Date(slot.startTime).getTime();
+  const slotEnd = new Date(slot.endTime).getTime();
+
+  if (Number.isNaN(slotStart) || Number.isNaN(slotEnd)) return false;
+
+  // Egész napos esemény: a teljes napot blokkolja,
+  // azaz minden, ugyanarra a napra eső cellával átfed.
+  if (slot.allDay) {
+    const slotDate = new Date(slot.startTime);
+    return (
+      slotDate.getFullYear() === cellDate.getFullYear() &&
+      slotDate.getMonth() === cellDate.getMonth() &&
+      slotDate.getDate() === cellDate.getDate()
+    );
+  }
+
+  return slotStart < cellEnd && slotEnd > cellStart;
+}
+
+/**
+ * Visszaadja az összes olyan slotot, ami átfed a megadott cellával.
+ *
+ * @param {Array<Object>} calendarSlots
+ * @param {Date} cellDate
+ * @returns {Array<Object>}
+ */
+export function findSlotsOverlappingCell(calendarSlots, cellDate) {
+  return (calendarSlots || []).filter((slot) => slotOverlapsCell(slot, cellDate));
+}
+
+/**
  * Ellenőrzi, hogy a user draft foglalásai között
  * szerepel-e a megadott cella.
  *
