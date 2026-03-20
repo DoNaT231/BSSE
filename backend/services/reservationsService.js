@@ -231,6 +231,7 @@ export async function getReservationsByWeekAndCourt({
   courtId,
   weekStart,
   weekEnd,
+  userType,
 }) {
   if (!courtId) {
     throw new Error("A courtId kötelező.");
@@ -244,6 +245,7 @@ export async function getReservationsByWeekAndCourt({
     courtId,
     weekStart,
     weekEnd,
+    userType,
   });
 }
 

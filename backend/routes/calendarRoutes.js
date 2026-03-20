@@ -1,5 +1,7 @@
 import express from "express";
 import * as calendarService from "../services/calendarService.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import * as reservationService from "../services/reservationService.js";
 
 const router = express.Router();
 
@@ -117,6 +119,32 @@ router.get("/slot/:slotId", async (req, res) => {
     return res.status(400).json({
       message: error.message,
     });
+  }
+});
+
+/**
+ * GET /api/calendar/print?courtId=1&weekStart=2026-03-09&userType=USER
+ *
+ * Nyomtatási célra visszaadja a "reservation" (eventType) jellegű heti eseményeket
+ * user_type szűréssel.
+ */
+router.get("/print", authMiddleware, async (req, res) => {
+  try {
+    const { courtId, weekStart, userType } = req.query;
+
+    const reservations = await reservationService.getPrintableReservationsForPrint(
+      {
+        currentUser: req.user,
+        courtId: Number(courtId),
+        weekStart,
+        userType,
+      }
+    );
+
+    return res.status(200).json(reservations);
+  } catch (error) {
+    const status = error?.status || 400;
+    return res.status(status).json({ message: error.message });
   }
 });
 

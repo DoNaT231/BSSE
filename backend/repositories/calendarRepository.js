@@ -243,3 +243,40 @@ export async function getSlotWithEventBySlotId(slotId, client = pool) {
     createdByUserId: rows[0].created_by_user_id,
   };
 }
+
+/**
+ * Nyomtatási célra (reservation -> event_slots) heti események lekérése
+ * user_type szerint szűrve.
+ *
+ * A frontend a következő mezőket várja:
+ * - court_id
+ * - start_time
+ * - username (fallback: email)
+ */
+export async function getPrintableReservationsByCourtAndWeekAndUserType(
+  { courtId, weekStart, weekEnd, userType },
+  client = pool
+) {
+  const { rows } = await client.query(
+    `
+      SELECT
+        es.court_id AS court_id,
+        es.start_time AS start_time,
+        COALESCE(u.username, u.email) AS username
+      FROM event_slots es
+      INNER JOIN events e ON e.id = es.event_id
+      LEFT JOIN users u ON u.id = e.created_by_user_id
+      WHERE es.court_id = $1
+        AND es.start_time >= $2
+        AND es.start_time < $3
+        AND e.type = 'reservation'
+        AND e.status <> 'cancelled'
+        AND es.slot_status = 'active'
+        AND LOWER(u.user_type) = LOWER($4)
+      ORDER BY es.start_time ASC
+    `,
+    [courtId, weekStart, weekEnd, userType]
+  );
+
+  return rows;
+}

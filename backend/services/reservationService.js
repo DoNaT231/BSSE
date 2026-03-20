@@ -274,3 +274,76 @@ export async function deleteOwnReservationBySlotId({ slotId, userId }) {
   const deletedEvent = await eventWriteRepository.deleteEventById(slot.eventId);
   return deletedEvent;
 }
+
+function buildWeekRange(weekStart) {
+  const start = new Date(weekStart);
+
+  if (Number.isNaN(start.getTime())) {
+    throw new Error("Érvénytelen weekStart dátum.");
+  }
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 7);
+
+  return { weekStart: start, weekEnd: end };
+}
+
+/**
+ * Nyomtatási célra: reservation típusú event_slots lekérése user_type szerint.
+ *
+ * Fontos: a "reservation" itt a DB-ben a reservation event típus.
+ */
+export async function getPrintableReservationsForPrint({
+  currentUser,
+  courtId,
+  weekStart,
+  userType,
+}) {
+  if (!courtId) {
+    throw new Error("A courtId kötelező.");
+  }
+
+  if (!weekStart) {
+    throw new Error("A weekStart kötelező.");
+  }
+
+  const requestedType = (userType || "").toString().trim();
+  if (!requestedType) {
+    throw new Error("A userType megadása kötelező.");
+  }
+
+  // DB-ben a stranddolgozók valószínűleg STRAND_WORKER-ként vannak tárolva,
+  // de a UI-ban két opció is lehet (STRAND / STRAND_WORKER). Normalizáljuk.
+  function normalizeUserTypeForQuery(type) {
+    const t = (type || "").toString().trim().toUpperCase();
+    if (t === "STRAND") return "STRAND_WORKER";
+    return t;
+  }
+
+  const normalizedRequestedType = normalizeUserTypeForQuery(requestedType);
+  const normalizedCurrentType = normalizeUserTypeForQuery(
+    currentUser?.user_type
+  );
+
+  const isAdmin =
+    normalizedCurrentType.toLowerCase() === "admin";
+  const currentTypeLower = normalizedCurrentType.toLowerCase();
+  const requestedTypeLower = normalizedRequestedType.toLowerCase();
+
+  if (!isAdmin && currentTypeLower !== requestedTypeLower) {
+    const err = new Error("Nincs jogosultságod a kért user_type-hoz.");
+    err.status = 403;
+    throw err;
+  }
+
+  const { weekStart: start, weekEnd } = buildWeekRange(weekStart);
+
+  return calendarRepository.getPrintableReservationsByCourtAndWeekAndUserType(
+    {
+      courtId: Number(courtId),
+      weekStart: start,
+      weekEnd,
+      userType: normalizedRequestedType,
+    }
+  );
+}

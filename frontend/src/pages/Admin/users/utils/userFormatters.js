@@ -4,6 +4,8 @@ export function formatUserType(userType) {
       return "Admin";
     case "USER":
       return "Felhasználó";
+    case "STRAND_WORKER":
+      return "Stranddolgozó";
     default:
       return userType || "—";
   }

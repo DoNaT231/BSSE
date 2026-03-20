@@ -123,7 +123,7 @@ export async function adminUpdateUser(
   }
 
   if (userType !== undefined) {
-    const allowedUserTypes = ["USER", "ADMIN"];
+    const allowedUserTypes = ["USER", "ADMIN", "STRAND_WORKER"];
 
     if (!allowedUserTypes.includes(userType)) {
       throw new Error("Érvénytelen user_type.");

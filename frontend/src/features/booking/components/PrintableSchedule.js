@@ -21,8 +21,15 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
     return reservations
       .filter(
         (r) =>
-          r.courtId === courtId &&
-          new Date(r.booked_time).toDateString() === day.toDateString()
+          Number(r.courtId) === Number(courtId) &&
+          (() => {
+            const rd = new Date(r.booked_time);
+            return (
+              rd.getFullYear() === day.getFullYear() &&
+              rd.getMonth() === day.getMonth() &&
+              rd.getDate() === day.getDate()
+            );
+          })()
       )
       .sort(
         (a, b) => new Date(a.booked_time).getTime() - new Date(b.booked_time).getTime()
@@ -59,7 +66,7 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}{' '}
-                        - {res.username || 'Ismeretlen'}
+                        - {res.username || res.guestName || 'Ismeretlen'}
                       </div>
                     ))}
                   </td>

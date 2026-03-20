@@ -41,6 +41,7 @@ export default function UserEditForm({
           >
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>
+            <option value="STRAND_WORKER">STRAND_WORKER</option>
           </select>
         </div>
 

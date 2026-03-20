@@ -174,3 +174,46 @@ export async function apiSyncWeekReservations({
 
   return json;
 }
+
+/**
+ * GET /api/calendar/print?courtId=...&weekStart=...&userType=...
+ *
+ * Nyomtatási célra visszaadja a reservation típusú event_slots-ot
+ * user_type szűréssel.
+ */
+export async function apiGetPrintableReservations({
+  courtId,
+  monday,
+  token,
+  userType,
+}) {
+  const weekStart = formatWeekStart(monday);
+
+  const query = new URLSearchParams({
+    courtId: String(courtId),
+    weekStart,
+    userType: String(userType),
+  });
+
+  const res = await fetch(
+    `${API_BASE_URL}/api/calendar/print?${query.toString()}`,
+    {
+    method: "GET",
+    headers: {
+      ...buildAuthHeaders(token),
+    },
+    }
+  );
+
+  const json = await parseJsonSafe(res);
+
+  if (!res.ok) {
+    const msg = json?.message || "Nyomtatási adatok lekérése sikertelen.";
+    const err = new Error(msg);
+    err.status = res.status;
+    err.data = json;
+    throw err;
+  }
+
+  return json;
+}
