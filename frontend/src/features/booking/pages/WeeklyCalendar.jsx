@@ -12,7 +12,9 @@ import ReservationChangeConfirmModal from "../components/ReservationChangeConfir
 import ReservationInfoModal from "../components/ReservationInfoModal.jsx";
 import ReservationAdminModal from "../components/ReservationAdminModal.jsx";
 import PrintableSchedule from "../components/PrintableSchedule.js";
-import { apiGetPrintableReservations } from "../api/reservations.api.js";
+import {
+  apiGetPrintableReservationsAll,
+} from "../api/reservations.api.js";
 
 function WeeklyCalendar() {
   const { role, user } = useAuth();
@@ -66,31 +68,33 @@ function WeeklyCalendar() {
 
   async function handlePrint() {
     try {
-      if (!selectedCourtId) return;
       if (!token) throw new Error("Hiányzó token.");
 
-      const rows = await apiGetPrintableReservations({
-        courtId: Number(selectedCourtId),
+      const courtList = Array.isArray(courts) ? courts : [];
+      if (courtList.length === 0) throw new Error("Nincs pálya betöltve.");
+
+      const userTypeParam = user?.user_type
+        ? String(user.user_type).toUpperCase()
+        : "USER";
+
+      const rows = await apiGetPrintableReservationsAll({
         monday,
         token,
-        userType: user?.user_type ? String(user.user_type).toUpperCase() : "USER",
+        userType: userTypeParam,
       });
-
-      const selectedCourts = Array.isArray(courts)
-        ? courts.filter((c) => Number(c.id) === Number(selectedCourtId))
-        : [];
 
       const reservations = Array.isArray(rows)
         ? rows.map((r) => ({
             courtId: Number(r.court_id),
             booked_time: r.start_time,
             username: r.username,
+            eventType: r.event_type,
           }))
         : [];
 
       setPrintData({
         reservations,
-        courts: selectedCourts,
+        courts: courtList,
         weekStart: monday,
       });
 

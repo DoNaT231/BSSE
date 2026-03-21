@@ -347,3 +347,51 @@ export async function getPrintableReservationsForPrint({
     }
   );
 }
+
+/**
+ * Nyomtatási célra: heti események lekérése AZ ÖSSZES pályára user_type szerint.
+ */
+export async function getPrintableReservationsForPrintAll({
+  currentUser,
+  weekStart,
+  userType,
+}) {
+  if (!weekStart) {
+    throw new Error("A weekStart kötelező.");
+  }
+
+  const requestedType = (userType || "").toString().trim();
+  if (!requestedType) {
+    throw new Error("A userType megadása kötelező.");
+  }
+
+  function normalizeUserTypeForQuery(type) {
+    const t = (type || "").toString().trim().toUpperCase();
+    if (t === "STRAND") return "STRAND_WORKER";
+    return t;
+  }
+
+  const normalizedRequestedType = normalizeUserTypeForQuery(requestedType);
+  const normalizedCurrentType = normalizeUserTypeForQuery(
+    currentUser?.user_type
+  );
+
+  const isAdmin =
+    normalizedCurrentType.toLowerCase() === "admin";
+  const currentTypeLower = normalizedCurrentType.toLowerCase();
+  const requestedTypeLower = normalizedRequestedType.toLowerCase();
+
+  if (!isAdmin && currentTypeLower !== requestedTypeLower) {
+    const err = new Error("Nincs jogosultságod a kért user_type-hoz.");
+    err.status = 403;
+    throw err;
+  }
+
+  const { weekStart: start, weekEnd } = buildWeekRange(weekStart);
+
+  return calendarRepository.getPrintableReservationsByWeekAndUserType({
+    weekStart: start,
+    weekEnd,
+    userType: normalizedRequestedType,
+  });
+}

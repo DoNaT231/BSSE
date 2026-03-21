@@ -12,57 +12,79 @@
   padding: 20px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.calendar {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-.court-block {
+.print-court-block {
   min-height: 450px;
   page-break-inside: avoid;
+  page-break-after: always;
+  margin-bottom: 24px;
 }
 
-table {
-  margin-top: 4rem;
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+.print-court-block:last-child {
+  page-break-after: auto;
 }
-thead th {
+
+.print-court-title {
+  font-size: 16pt;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.print-calendar {
+  width: 100%;
+  border: 1px solid #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.print-header-cell {
+  border-bottom: 1px solid #000;
+  padding: 8px 0;
   font-size: 11pt;
   font-weight: bold;
   text-align: center;
-  height: 30px;
-  background: #fff; /* fehér háttér, hogy ne vesszen el */
-  vertical-align: middle;
+  background: #f3f7ff;
 }
-th,
-td {
-  border: 1px solid #000;
-  padding: 6px;
-  font-size: 10pt;
-  width: 14.28%;
-  vertical-align: top;
+
+.print-row {
+  border-top: 1px solid #000;
+}
+
+.print-hour-cell {
+  border-right: 1px solid #000;
+  padding: 6px 0;
+  font-size: 10.5pt;
+  background: #f3f7ff;
+  text-align: center;
+}
+
+.print-cell {
+  height: 48px;
+  border-right: 1px solid #000;
+  border-bottom: 1px solid #000;
+  font-size: 10.5pt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
   word-break: break-word;
 }
-th
 
-.res-box {
-  background: #e6f7ff;
-  padding: 4px;
-  margin-bottom: 4px;
-  font-size: 9pt;
-  border-radius: 3px;
+.print-cell--free {
+  background: #fff;
+  color: #000;
 }
 
-.page-break {
-  page-break-after: always;
+.print-cell--reserved {
+  background: #f59e0b; /* amber-500 */
+  color: #fff;
+  font-weight: 700;
+}
+
+.print-cell--tournament {
+  background: #3b82f6; /* blue-500 */
+  color: #fff;
+  font-weight: 700;
 }
 
 

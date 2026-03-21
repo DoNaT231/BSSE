@@ -148,4 +148,28 @@ router.get("/print", authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/calendar/print/all?weekStart=2026-03-09&userType=USER
+ *
+ * Nyomtatási célra az összes pálya heti eseményeit adja vissza.
+ */
+router.get("/print/all", authMiddleware, async (req, res) => {
+  try {
+    const { weekStart, userType } = req.query;
+
+    const reservations = await reservationService.getPrintableReservationsForPrintAll(
+      {
+        currentUser: req.user,
+        weekStart,
+        userType,
+      }
+    );
+
+    return res.status(200).json(reservations);
+  } catch (error) {
+    const status = error?.status || 400;
+    return res.status(status).json({ message: error.message });
+  }
+});
+
 export default router;

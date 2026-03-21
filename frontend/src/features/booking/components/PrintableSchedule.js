@@ -1,83 +1,113 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./PrintableSchedule.css"; // ebben van a @media print
+import { DAYS, HOURS } from "../constants/reservation.constants.js";
 
 const PrintableSchedule = ({ reservations, courts, weekStart }) => {
+  const safeReservations = Array.isArray(reservations) ? reservations : [];
+  const safeCourts = Array.isArray(courts) ? courts : [];
+
+  const weekStartDate = new Date(weekStart);
+  weekStartDate.setHours(0, 0, 0, 0);
+
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
+    const d = new Date(weekStartDate);
     d.setDate(d.getDate() + i);
     return d;
   });
-  const weekEnd = () => {
-    const weekend = new Date(weekStart)
-    weekend.setDate(weekend.getDate()+7) 
-    return weekend
+
+  function isSameDay(d1, d2) {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
   }
 
-  console.log("reses:", reservations);
-  console.log("courts:", courts);
-  console.log("weekstart:", weekStart);
-  const getReservations = (courtId, day) => {
-    return reservations
-      .filter(
-        (r) =>
-          Number(r.courtId) === Number(courtId) &&
-          (() => {
-            const rd = new Date(r.booked_time);
-            return (
-              rd.getFullYear() === day.getFullYear() &&
-              rd.getMonth() === day.getMonth() &&
-              rd.getDate() === day.getDate()
-            );
-          })()
-      )
-      .sort(
-        (a, b) => new Date(a.booked_time).getTime() - new Date(b.booked_time).getTime()
+  function getCellEvent(courtId, day, hour) {
+    // Calendar UI-ban a tournament az egész napot blokkolli,
+    // ezért a printben is: ha van tournament ezen a napon, akkor minden óracellába ezt írjuk.
+    const tournamentForDay = safeReservations.find((r) => {
+      const rd = new Date(r.booked_time);
+      return (
+        r.eventType === "tournament" &&
+        Number(r.courtId) === Number(courtId) &&
+        isSameDay(rd, day)
       );
-  };
+    });
+
+    if (tournamentForDay?.username) {
+      return { kind: "tournament", text: tournamentForDay.username };
+    }
+
+    // Reservationeknél marad a "pont abban az órában" logika.
+    const reservationForCell = safeReservations.find((r) => {
+      const rd = new Date(r.booked_time);
+      return (
+        r.eventType === "reservation" &&
+        Number(r.courtId) === Number(courtId) &&
+        isSameDay(rd, day) &&
+        rd.getHours() === hour
+      );
+    });
+
+    if (reservationForCell?.username) {
+      return { kind: "reservation", text: reservationForCell.username };
+    }
+
+    return { kind: "free", text: "" };
+  }
 
   return ReactDOM.createPortal(
     <div className="print-container">
-      <h1>Heti Foglalási Táblázat ({weekStart.toLocaleDateString()} - {weekEnd().toLocaleDateString()})</h1>
-      {courts.map((court) => (
-        <div key={court.id} className="court-block">
-          <h2>{court.name}</h2>
-          <table>
-            <thead>
-              <tr>
-                {days.map((day, idx) => (
-                  <th key={idx}>
-                    {day.toLocaleDateString('hu-HU', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {days.map((day, idx) => (
-                  <td key={idx}>
-                    {getReservations(court.id, day).map((res, index) => (
-                      <div key={index}>
-                        {new Date(res.booked_time).toLocaleTimeString('hu-HU', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}{' '}
-                        - {res.username || res.guestName || 'Ismeretlen'}
-                      </div>
-                    ))}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+      {safeCourts.map((court) => (
+        <div key={court.id} className="print-court-block">
+          <div className="print-court-title">{court.name}</div>
+
+          <div className="print-calendar">
+            <div className="print-header grid grid-cols-[80px_repeat(7,1fr)]">
+              <div />
+              {DAYS.map((dayLabel) => (
+                <div key={dayLabel} className="print-header-cell">
+                  {dayLabel}
+                </div>
+              ))}
+            </div>
+
+            {HOURS.map((hour) => (
+              <div
+                key={hour}
+                className="print-row grid grid-cols-[80px_repeat(7,1fr)]"
+              >
+                <div className="print-hour-cell">{hour}:00</div>
+
+                {days.map((day, dayIndex) => {
+                  const cell = getCellEvent(court.id, day, hour);
+                  const hasEvent = cell.kind !== "free";
+
+                  return (
+                    <div
+                      key={`${dayIndex}-${hour}`}
+                      className={
+                        "print-cell " +
+                        (cell.kind === "reservation"
+                          ? "print-cell--reserved"
+                          : cell.kind === "tournament"
+                          ? "print-cell--tournament"
+                          : "print-cell--free")
+                      }
+                    >
+                      {cell.text}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>,
-    document.getElementById('print-root')
+    document.getElementById("print-root")
   );
 };
 

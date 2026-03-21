@@ -262,20 +262,60 @@ export async function getPrintableReservationsByCourtAndWeekAndUserType(
       SELECT
         es.court_id AS court_id,
         es.start_time AS start_time,
-        COALESCE(u.username, u.email) AS username
+        e.type AS event_type,
+        CASE
+          WHEN e.type = 'reservation' THEN COALESCE(u.username, u.email)
+          ELSE e.title
+        END AS username
       FROM event_slots es
       INNER JOIN events e ON e.id = es.event_id
       LEFT JOIN users u ON u.id = e.created_by_user_id
       WHERE es.court_id = $1
         AND es.start_time >= $2
         AND es.start_time < $3
-        AND e.type = 'reservation'
-        AND e.status <> 'cancelled'
-        AND es.slot_status = 'active'
-        AND LOWER(u.user_type) = LOWER($4)
+        AND (e.type = 'tournament'
+          OR (e.type = 'reservation' AND LOWER(u.user_type) = LOWER($4)))
       ORDER BY es.start_time ASC
     `,
     [courtId, weekStart, weekEnd, userType]
+  );
+
+  return rows;
+}
+
+/**
+ * Nyomtatási célra: heti események lekérése AZ ÖSSZES pályára user_type szerint.
+ *
+ * A frontend a következő mezőket várja:
+ * - court_id
+ * - start_time
+ * - event_type
+ * - username
+ */
+export async function getPrintableReservationsByWeekAndUserType(
+  { weekStart, weekEnd, userType },
+  client = pool
+) {
+  const { rows } = await client.query(
+    `
+      SELECT
+        es.court_id AS court_id,
+        es.start_time AS start_time,
+        e.type AS event_type,
+        CASE
+          WHEN e.type = 'reservation' THEN COALESCE(u.username, u.email)
+          ELSE e.title
+        END AS username
+      FROM event_slots es
+      INNER JOIN events e ON e.id = es.event_id
+      LEFT JOIN users u ON u.id = e.created_by_user_id
+      WHERE es.start_time >= $1
+        AND es.start_time < $2
+        AND (e.type = 'tournament'
+          OR (e.type = 'reservation' AND LOWER(u.user_type) = LOWER($3)))
+      ORDER BY es.start_time ASC
+    `,
+    [weekStart, weekEnd, userType]
   );
 
   return rows;

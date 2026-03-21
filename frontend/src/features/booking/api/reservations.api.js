@@ -217,3 +217,43 @@ export async function apiGetPrintableReservations({
 
   return json;
 }
+
+/**
+ * GET /api/calendar/print/all?weekStart=...&userType=...
+ *
+ * Nyomtatási célra visszaadja AZ ÖSSZES pályára a heti eseményeket.
+ */
+export async function apiGetPrintableReservationsAll({
+  monday,
+  token,
+  userType,
+}) {
+  const weekStart = formatWeekStart(monday);
+
+  const query = new URLSearchParams({
+    weekStart,
+    userType: String(userType),
+  });
+
+  const res = await fetch(
+    `${API_BASE_URL}/api/calendar/print/all?${query.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        ...buildAuthHeaders(token),
+      },
+    }
+  );
+
+  const json = await parseJsonSafe(res);
+
+  if (!res.ok) {
+    const msg = json?.message || "Nyomtatási adatok lekérése sikertelen.";
+    const err = new Error(msg);
+    err.status = res.status;
+    err.data = json;
+    throw err;
+  }
+
+  return json;
+}
