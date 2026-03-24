@@ -14,6 +14,7 @@ import TournamentModal from "../components/TournamentModal.jsx";
 import useTournamentRegistrations from "../hooks/useTournamenRegistrations.js";
 import useTournamentSignupForm from "../hooks/useTournamentSignupForm.js";
 import { validateTournamentRegistrationForm } from "../utils/tournamentValidation.js";
+import { isRegistrationDeadlinePassed } from "../utils/tournamentDates.js";
 
 export default function TournamentSignupSection() {
   const [tournaments, setTournaments] = useState([]);
@@ -25,6 +26,7 @@ export default function TournamentSignupSection() {
   const token = localStorage.getItem("token");
 
   const {
+    myRegistrations,
     regByTournamentId,
     refreshMyRegistrations,
   } = useTournamentRegistrations(token);
@@ -46,12 +48,12 @@ export default function TournamentSignupSection() {
     submitErr,
     setSubmitErr,
     activeRegistration,
-    setActiveRegistration,
     openForm,
     closeForm,
   } = useTournamentSignupForm({
     tournaments,
     regByTournamentId,
+    myRegistrations,
     userEmail,
   });
 
@@ -144,7 +146,13 @@ export default function TournamentSignupSection() {
       await deleteTournamentRegistration(activeRegistration.id, token);
       await refreshMyRegistrations();
 
-      setSubmitMsg("Nevezés törölve 🗑️");
+      const afterDeadline = isRegistrationDeadlinePassed(selectedTournament);
+      const message = afterDeadline
+        ? "Nevezés törölve. A nevezési határidő lejárt, ezért erre a versenyre már nem tudsz újra jelentkezni."
+        : "Nevezés törölve 🗑️";
+
+      setSubmitMsg(message);
+      window.alert(message);
       closeForm();
     } catch (e) {
       setSubmitErr(e.message || "Szerver hiba törlés közben.");

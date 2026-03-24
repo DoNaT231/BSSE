@@ -249,14 +249,6 @@ export async function deleteOwnTournamentRegistration({
     throw new Error("A verseny nem található.");
   }
 
-  if (tournament.registrationDeadline) {
-    const now = new Date();
-    const deadline = new Date(tournament.registrationDeadline);
-    if (now > deadline) {
-      throw new Error("A nevezési határidő lejárt.");
-    }
-  }
-
   return tournamentRegistrationRepository.deleteById(registrationId);
 }
 

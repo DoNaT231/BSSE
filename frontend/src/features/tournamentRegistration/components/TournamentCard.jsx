@@ -14,6 +14,8 @@ export default function TournamentCard({
   const alreadyRegistered = Boolean(registration?.id);
   const startIso = getTournamentStart(tournament);
   const canRegister = canRegisterToTournament(tournament);
+  const registrationDeadline =
+    tournament?.registration_deadline ?? tournament?.registrationDeadline ?? null;
 
   return (
     <div className="group relative rounded-3xl bg-white/95 border border-white/60 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-18px_rgba(15,23,42,0.55)]">
@@ -30,9 +32,9 @@ export default function TournamentCard({
                 : "Kezdés: nincs megadva"}
             </p>
 
-            {tournament.registration_deadline && (
+            {registrationDeadline && (
               <p className="mt-1 text-sm text-slate-600">
-                Nevezési határidő: {formatDateTime(tournament.registration_deadline)}
+                Nevezési határidő: {formatDateTime(registrationDeadline)}
               </p>
             )}
           </div>

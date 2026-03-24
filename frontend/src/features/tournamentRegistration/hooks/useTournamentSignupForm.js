@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 export default function useTournamentSignupForm({
   tournaments,
   regByTournamentId,
+  myRegistrations = [],
   userEmail,
 }) {
   const [openTournamentId, setOpenTournamentId] = useState(null);
@@ -23,7 +24,16 @@ export default function useTournamentSignupForm({
   function openForm(tournamentId) {
     setOpenTournamentId(tournamentId);
 
-    const existing = regByTournamentId[tournamentId] || null;
+    const existingFromMap =
+      regByTournamentId[tournamentId] ?? regByTournamentId[String(tournamentId)] ?? null;
+    const existingFromList =
+      Array.isArray(myRegistrations) &&
+      myRegistrations.find(
+        (registration) =>
+          Number(registration?.tournament_id ?? registration?.tournamentId) ===
+          Number(tournamentId)
+      );
+    const existing = existingFromMap || existingFromList || null;
     setActiveRegistration(existing);
 
     if (existing) {

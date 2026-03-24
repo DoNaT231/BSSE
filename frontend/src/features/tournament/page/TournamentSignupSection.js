@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL } from "../../../config.js";
 import { useAuth } from "../../../contexts/AuthContext.js";
 import Header from "../../../components/Header.js";
 import AuthFrostLock from "../../../components/AuthLock.js";
+import {
+  fetchPublicTournaments,
+  fetchMyTournamentRegistrations,
+  submitTournamentRegistration,
+  deleteTournamentRegistration,
+} from "../api/tournamentPublicApi.js";
 /**
  * TournamentSignupSection (Tailwind)
  * ------------------------------------------------------------
@@ -116,20 +121,7 @@ export default function TournamentSignupSection() {
         setLoading(true);
         setLoadError("");
 
-        const res = await fetch(`${API_BASE_URL}/api/tournaments`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (!res.ok) {
-          const data = await safeJson(res);
-          throw new Error(data?.message || `Hiba a versenyek lekérésekor (${res.status})`);
-        }
-
-        const data = await res.json();
+        const data = await fetchPublicTournaments(token);
         if (mounted) setTournaments(Array.isArray(data) ? data : []);
 
         if (mounted) await fetchMyRegistrations();
@@ -153,18 +145,7 @@ export default function TournamentSignupSection() {
       setSubmitErr("");
       setSubmitMsg("");
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/tournament-registrations/${activeRegistration.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await safeJson(res);
-      if (!res.ok) throw new Error(data?.message || `Törlés sikertelen (${res.status})`);
+      await deleteTournamentRegistration(activeRegistration.id, token);
 
       setSubmitMsg("Nevezés törölve 🗑️");
       setActiveRegistration(null);
@@ -184,18 +165,7 @@ export default function TournamentSignupSection() {
   }
 
   async function fetchMyRegistrations() {
-  const res = await fetch(`${API_BASE_URL}/api/tournament-registrations/my`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `Nevezések lekérése sikertelen (${res.status})`);
-
-  const list = Array.isArray(data) ? data : [];
+  const list = await fetchMyTournamentRegistrations(token);
   setMyRegistrations(list);
 
   const map = {};
@@ -275,33 +245,18 @@ export default function TournamentSignupSection() {
     try {
       setSubmitLoading(true);
 
-      const payload = {
-        tournament_id: selectedTournament.id,
-        team_name: teamName.trim() || null,
-        user_id: userId,
-        tel_number: telNumber.trim(),
-        contact_email: email.trim(),
-        players: players.map((p) => p.trim()),
-      };
-      console.log("payload: ",payload)
-
       const isEdit = Boolean(activeRegistration?.id);
-
-      const url = isEdit
-        ? `${API_BASE_URL}/api/tournament-registrations/${activeRegistration.id}`
-        : `${API_BASE_URL}/api/tournament-registrations`;
-
-      const res = await fetch(url, {
-        method: isEdit ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      await submitTournamentRegistration(
+        {
+          tournamentId: selectedTournament.id,
+          teamName: teamName.trim() || null,
+          telNumber: telNumber.trim(),
+          contactEmail: email.trim(),
+          players: players.map((p) => p.trim()),
         },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await safeJson(res);
-      if (!res.ok) throw new Error(data?.message || `Sikertelen mentés (${res.status})`);
+        token,
+        isEdit ? activeRegistration.id : null
+      );
 
       setSubmitMsg(isEdit ? "Nevezés módosítva ✅" : "Sikeres nevezés! ✅");
 
@@ -309,7 +264,15 @@ export default function TournamentSignupSection() {
       await fetchMyRegistrations();
 
       // opcionális: maradjon nyitva a modal, de most már edit módban legyen
-      const updated = isEdit ? { ...activeRegistration, ...payload } : null;
+      const updated = isEdit
+        ? {
+            ...activeRegistration,
+            team_name: teamName.trim() || null,
+            tel_number: telNumber.trim(),
+            contact_email: email.trim(),
+            players: players.map((p) => p.trim()),
+          }
+        : null;
       setActiveRegistration(updated || regByTournamentId[selectedTournament.id] || null);
     } catch (err) {
       setSubmitErr(err.message || "Szerver hiba nevezés közben.");
@@ -469,7 +432,7 @@ export default function TournamentSignupSection() {
                     {selectedTournament.number_of_players} fő/csapat
                   </p>
                 </div>
-do 
+
                 <button
                   onClick={closeForm}
                   className="px-3 py-2 text-sm font-extrabold text-white transition shrink-0 rounded-2xl bg-white/20 hover:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/30"

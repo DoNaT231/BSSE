@@ -245,7 +245,6 @@ export async function getReservationsByWeekAndCourt({
     courtId,
     weekStart,
     weekEnd,
-    userType,
   });
 }
 

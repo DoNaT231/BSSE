@@ -8,4 +8,4 @@ export const DAYS = [
   "Vasárnap",
 ];
 
-export const HOURS = Array.from({ length: 12 }, (_, i) => i + 9);
+export const HOURS = Array.from({ length: 12 }, (_, i) => i + 8);
