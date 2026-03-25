@@ -58,24 +58,45 @@ export default function HeroSection() {
         </h1>
 
 
-        {/* CTA GOMB */}
-        <Link to="/palyafoglalas" className="z-50">
-          <button
-            className="
-              h-[48px] w-[188px]
-              rounded-[10px]
-              bg-yellow
-              text-blackSoft
-              font-sans font-semibold text-lg
-              shadow-[0px_4px_10px_#111827]
-              transition-transform
-              duration-[400ms]
-              hover:scale-110
-            "
-          >
-            Pálya foglalás
-          </button>
-        </Link>
+        {/* CTA GOMBOK */}
+        <div className="z-50 mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link to="/palyafoglalas">
+            <button
+              className="
+                h-[48px] w-[188px]
+                rounded-[10px]
+                bg-yellow
+                text-blackSoft
+                font-sans font-semibold text-lg
+                shadow-[0px_4px_10px_#111827]
+                transition-transform
+                duration-[400ms]
+                hover:scale-110
+              "
+            >
+              Pálya foglalás
+            </button>
+          </Link>
+
+          <Link to="/versenyek">
+            <button
+              className="
+                h-[48px] w-[188px]
+                rounded-[10px]
+                bg-blackSoft
+                text-white
+                font-sans font-semibold text-lg
+                shadow-[0px_4px_10px_#111827]
+                transition-transform
+                duration-[400ms]
+                hover:scale-110
+                border border-white/10
+              "
+            >
+              Versenyjelentkezés
+            </button>
+          </Link>
+        </div>
       </div>
     </section>
   );

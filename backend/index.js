@@ -47,17 +47,25 @@ app.use(cors());                   // CORS engedélyezése
 app.use(express.json());           // JSON body parsing
 
 // API route-ok regisztrálása
-app.use('/api/auth', authRoutes);
-app.use('/api/courts', courtRoutes);
-app.use('/api/user', userRoutes);
-app.use("/api/calendar", calendarRoutes);
+console.log("Mount /api/auth");
+try { app.use('/api/auth', authRoutes); } catch (e) { console.error("Failed mount authRoutes", e); throw e; }
+console.log("Mount /api/courts");
+try { app.use('/api/courts', courtRoutes); } catch (e) { console.error("Failed mount courtRoutes", e); throw e; }
+console.log("Mount /api/user");
+try { app.use('/api/user', userRoutes); } catch (e) { console.error("Failed mount userRoutes", e); throw e; }
+console.log("Mount /api/calendar");
+try { app.use("/api/calendar", calendarRoutes); } catch (e) { console.error("Failed mount calendarRoutes", e); throw e; }
 // Tournament route-ok:
 // - minden /api/tournaments kéréshez kell bejelentkezés
 // - adminOnly middleware-t a routeren belül, csak admin végpontokra tesszük
+console.log("Mount /api/tournaments");
 app.use("/api/tournaments", authMiddleware, tournamentRoutes);
+console.log("Mount /api/reservations");
 app.use("/api/reservations", authMiddleware, reservationRoutes);
-app.use("/api/admin/users", authMiddleware,adminOnly, adminUsersRoutes);
-app.use('/api/tournament-registrations', authMiddleware, tournamentRegistrations);
+console.log("Mount /api/admin/users");
+app.use("/api/admin/users", authMiddleware, adminOnly, adminUsersRoutes);
+console.log("Mount /api/tournament-registrations");
+app.use("/api/tournament-registrations", authMiddleware, tournamentRegistrations);
 
 console.log('Routerek bekötve: auth, courts, users, reservations');
 
@@ -91,7 +99,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // SPA fallback – minden más kérés az index.html-re megy
-app.get('/', (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
 

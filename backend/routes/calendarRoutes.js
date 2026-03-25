@@ -2,6 +2,7 @@ import express from "express";
 import * as calendarService from "../services/calendarService.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import * as reservationService from "../services/reservationService.js";
+import { buildWeekRangeFromWeekStart } from "../utils/bookingTime.js";
 
 const router = express.Router();
 
@@ -13,19 +14,7 @@ const router = express.Router();
  * - a weekEnd exclusive lesz
  */
 function buildWeekRange(weekStart) {
-  const start = new Date(weekStart);
-
-  if (Number.isNaN(start.getTime())) {
-    throw new Error("Érvénytelen weekStart dátum.");
-  }
-
-  const end = new Date(start);
-  end.setDate(end.getDate() + 7);
-
-  return {
-    weekStart: start,
-    weekEnd: end,
-  };
+  return buildWeekRangeFromWeekStart(weekStart);
 }
 
 /**

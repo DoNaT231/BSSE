@@ -2,12 +2,16 @@ import pool from "../db.js";
 import * as eventsRepository from "../repositories/eventsRepository.js";
 import * as eventSlotsRepository from "../repositories/eventSlotsRepository.js";
 import * as reservationDetailsRepository from "../repositories/reservationDetailsRepository.js";
+import {
+  makeWallClockSlotKey,
+  parseLocalDateTime,
+} from "../utils/bookingTime.js";
 
 /**
  * Dátumkulcs összehasonlításhoz
  */
 function buildSlotKey(startTime, endTime) {
-  return `${new Date(startTime).toISOString()}__${new Date(endTime).toISOString()}`;
+  return makeWallClockSlotKey({ startTime, endTime });
 }
 
 /**
@@ -23,10 +27,10 @@ function validateSlots(slots) {
       throw new Error("Minden slothoz kötelező startTime és endTime.");
     }
 
-    const start = new Date(slot.startTime);
-    const end = new Date(slot.endTime);
+    const start = parseLocalDateTime(slot.startTime);
+    const end = parseLocalDateTime(slot.endTime);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
       throw new Error("Érvénytelen dátumformátum a slotok között.");
     }
 

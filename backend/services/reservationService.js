@@ -11,7 +11,22 @@ import * as calendarRepository from "../repositories/calendarRepository.js";
  * - az adatbázisban meglévő jelenlegi állapotot
  */
 function makeSlotKey({ startTime, endTime }) {
-  return `${new Date(startTime).toISOString()}__${new Date(endTime).toISOString()}`;
+  // A DB-ben timestamp without time zone van, ezért falióra (wall clock)
+  // értékek alapján hasonlítsunk össze (ne UTC toISOString()-szal).
+  // Várható formátum: "YYYY-MM-DD HH:mm:ss".
+  const normalize = (v) => {
+    if (!v) return "";
+    if (typeof v === "string") return v;
+    if (v instanceof Date) {
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())} ${pad(
+        v.getHours()
+      )}:${pad(v.getMinutes())}:${pad(v.getSeconds())}`;
+    }
+    return String(v);
+  };
+
+  return `${normalize(startTime)}__${normalize(endTime)}`;
 }
 
 /**
@@ -276,16 +291,26 @@ export async function deleteOwnReservationBySlotId({ slotId, userId }) {
 }
 
 function buildWeekRange(weekStart) {
-  const start = new Date(weekStart);
+  // weekStart: "YYYY-MM-DD" (frontenden így külditek)
+  // A cél: falióra alapú string, ne Date -> pg -> timezone konverzió.
+  if (!weekStart) throw new Error("Érvénytelen weekStart dátum.");
 
-  if (Number.isNaN(start.getTime())) {
-    throw new Error("Érvénytelen weekStart dátum.");
-  }
+  const [y, m, d] = String(weekStart).split("-").map(Number);
+  if (!y || !m || !d) throw new Error("Érvénytelen weekStart dátum.");
 
-  const end = new Date(start);
-  end.setDate(end.getDate() + 7);
+  const pad = (n) => String(n).padStart(2, "0");
+  const startDate = new Date(y, m - 1, d);
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 7);
 
-  return { weekStart: start, weekEnd: end };
+  const startStr = `${startDate.getFullYear()}-${pad(startDate.getMonth() + 1)}-${pad(
+    startDate.getDate()
+  )} 00:00:00`;
+  const endStr = `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(
+    endDate.getDate()
+  )} 00:00:00`;
+
+  return { weekStart: startStr, weekEnd: endStr };
 }
 
 /**

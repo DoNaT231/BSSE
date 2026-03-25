@@ -35,8 +35,7 @@ function Header() {
     <header
       className="
         fixed top-0 left-0 right-0 z-[200]
-        flex justify-center
-        transition-all duration-300
+        flex justify-center transition-all duration-300
       "
     >
       {/* ===================== LOGIN MODAL ===================== */}
@@ -68,7 +67,7 @@ function Header() {
           h-[54px]
           bg-blackSoft text-white
           flex items-center
-          z-10
+          z-20
         "
       >
         <h1 className="pl-[120px] text-lg font-semibold hidden md:block">
@@ -79,18 +78,35 @@ function Header() {
       {/* ===================== NAVBAR ===================== */}
       <div
         className={`
+          fixed left-0 right-0 top-[54px]
+          z-10
           flex w-full
+          pt-4 pb-4 md:pb-0 md:pt-0
           bg-lightBlue shadow-lg
-          items-center md:items-end
-          transition
-          h-100 md:h-24
-          md:translate-y-0
+          transition-transform duration-300 ease-out
+          ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%-48px)]"}
+          ${isOpen ? "pointer-events-auto" : "pointer-events-none"}
+          overflow-hidden
+          max-h-[calc(100vh-54px)]
+
+          md:static md:z-auto md:translate-y-0 md:pointer-events-auto
+
+          md:h-24
+          items-start md:items-end
           md:justify-end justify-center
-          ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%-108px)]"}
         `}
       >
         <nav
-          className="flex flex-col items-center gap-8 mb-16 text-center text-white w-fit md:flex-row md:gap-11 pt-28 md:pt-0 md:mr-3 md:mb-2 md:text-end"
+          className="
+            w-full
+            flex flex-col items-center
+            gap-6
+            py-8
+            text-center text-white
+            md:flex-row md:gap-11
+            md:py-0
+            md:mr-3 md:mb-2 md:text-end
+          "
         >
           <p
             className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
@@ -110,7 +126,9 @@ function Header() {
             <Link
               className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
               to="/profil"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+              }}
             >
               Profil
             </Link>
@@ -127,21 +145,21 @@ function Header() {
             <Link
               className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
               to="/admin"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+              }}
             >
               Admin felület
             </Link>
           )}
 
           {isLoggedIn ? (
-            <div>
-                <button
-                  className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
-                  onClick={() => setShowLogout(true)}
-                >
-                  Kijelentkezés
-                </button>
-            </div>
+            <button
+              className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+              onClick={() => setShowLogout(true)}
+            >
+              Kijelentkezés
+            </button>
           ) : (
             <button
               className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"

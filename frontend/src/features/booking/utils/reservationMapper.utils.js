@@ -60,15 +60,16 @@ export function slotOverlapsCell(slot, cellDate) {
   const cellStart = cellDate.getTime();
   const cellEnd = cellStart + 60 * 60 * 1000;
 
-  const slotStart = new Date(slot.startTime).getTime();
-  const slotEnd = new Date(slot.endTime).getTime();
+  const slotStart = parseLocalDateTime(slot.startTime)?.getTime();
+  const slotEnd = parseLocalDateTime(slot.endTime)?.getTime();
 
-  if (Number.isNaN(slotStart) || Number.isNaN(slotEnd)) return false;
+  if (slotStart == null || slotEnd == null) return false;
 
   // Egész napos esemény: a teljes napot blokkolja,
   // azaz minden, ugyanarra a napra eső cellával átfed.
   if (slot.allDay) {
-    const slotDate = new Date(slot.startTime);
+    const slotDate = parseLocalDateTime(slot.startTime);
+    if (!slotDate) return false;
     return (
       slotDate.getFullYear() === cellDate.getFullYear() &&
       slotDate.getMonth() === cellDate.getMonth() &&
