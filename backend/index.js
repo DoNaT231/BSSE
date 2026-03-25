@@ -98,9 +98,16 @@ app.use((req, res, next) => {
 // Frontend (React build) statikus kiszolgálása
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-// SPA fallback – minden más kérés az index.html-re megy
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+// SPA fallback – minden nem-API kérés ide jön
+app.use((req, res, next) => {
+  const indexPath = path.join(__dirname, '../frontend/build/index.html');
+
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error("❌ Frontend fallback hiba:", err.message);
+      res.status(500).send("Frontend build hiányzik vagy hibás.");
+    }
+  });
 });
 
 // Szerver indítása
