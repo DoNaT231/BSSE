@@ -71,7 +71,7 @@ router.post("/login-without-password", async (req, res) => {
 
     const user = await authService.loginWithoutPassword(email);
 
-    loginResponse({res, user})
+    loginResponse(res, user)
 
   } catch (error) {
     res.status(400).json({
@@ -89,7 +89,7 @@ router.post("/login", async (req, res) => {
 
     const user = await authService.loginWithPassword(email, password);
 
-    loginResponse({res, user})
+    loginResponse(res, user);
   
   } catch (error) {
     res.status(400).json({

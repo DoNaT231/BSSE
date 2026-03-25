@@ -2,6 +2,7 @@ import express from 'express';
 import db from '../db.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import bcrypt from 'bcryptjs';
+import * as usersService from '../services/usersService.js';
 
 const router = express.Router();
 
@@ -69,6 +70,22 @@ router.patch('/set-password', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Jelszó beállítás hiba:', error);
     res.status(500).json({ error: 'Szerverhiba' });
+  }
+});
+
+/**
+ * Saját profil lekérése
+ * GET /api/user/me
+ */
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const currentUserId = Number(req.user?.id);
+    const user = await usersService.getOwnProfile(currentUserId);
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
   }
 });
 

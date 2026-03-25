@@ -106,6 +106,16 @@ function Header() {
             Foglalás
           </p>
 
+          {isLoggedIn && (
+            <Link
+              className="relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+              to="/profil"
+              onClick={() => setIsOpen(false)}
+            >
+              Profil
+            </Link>
+          )}
+
           <p
             className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
             onClick={() => handleNavClick("/versenyek")}

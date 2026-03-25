@@ -12,6 +12,7 @@ import 'leaflet/dist/leaflet.css';
 import AdminDashboard from './pages/Admin/AdminDashboard.js';
 import { AuthProvider } from './contexts/AuthContext.js';
 import TournamentSignupSection from './features/tournamentRegistration/page/TournamentSignupSection';
+import Profile from './pages/Profile.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const apiUrl = "http://localhost:5000";
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
   {
     path: '/admin',
     element: <AdminDashboard/>
+  },
+  {
+    path: '/profil',
+    element: <Profile/>
   }
 ]);
 root.render(
