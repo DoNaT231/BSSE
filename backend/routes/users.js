@@ -8,7 +8,10 @@ const router = express.Router();
 
 // Összes felhasználó lekérése (admin only)
 router.get('/', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin kérheti le a felhasználókat' });
+  const userType = String(req.user?.user_type ?? "").toLowerCase();
+  if (userType !== 'admin') {
+    return res.status(403).json({ message: 'Csak admin kérheti le a felhasználókat' });
+  }
 
   try {
     const result = await db.query('SELECT id, username, email, user_type, created_at, is_local FROM users');
@@ -20,7 +23,10 @@ router.get('/', authMiddleware, async (req, res) => {
 
 // Felhasználó törlése ID alapján (admin only)
 router.delete('/:id', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin törölhet' });
+  const userType = String(req.user?.user_type ?? "").toLowerCase();
+  if (userType !== 'admin') {
+    return res.status(403).json({ message: 'Csak admin törölhet' });
+  }
 
   const { id } = req.params;
   console.log("id: ", id)
@@ -37,7 +43,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 
 // Felhasználó törlése email alapján (admin only)
 router.delete('/by-email/:email', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin törölhet' });
+  const userType = String(req.user?.user_type ?? "").toLowerCase();
+  if (userType !== 'admin') {
+    return res.status(403).json({ message: 'Csak admin törölhet' });
+  }
 
   const { email } = req.params;
 

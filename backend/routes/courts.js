@@ -16,7 +16,10 @@ router.get('/', async (req, res) => {
 
 // Új pálya létrehozása (admin)
 router.post('/', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin hozhat létre pályát' });
+  const userType = String(req.user?.user_type ?? "").toLowerCase();
+  if (userType !== 'admin') {
+    return res.status(403).json({ message: 'Csak admin hozhat létre pályát' });
+  }
   console.log("p�lya l�trehoz�sa.....");
   const { name, number} = req.body;
   if(!name || !number){
@@ -36,7 +39,10 @@ router.post('/', authMiddleware, async (req, res) => {
 
 // Pálya törlése (admin)
 router.delete('/:id', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Csak admin törölhet pályát' });
+  const userType = String(req.user?.user_type ?? "").toLowerCase();
+  if (userType !== 'admin') {
+    return res.status(403).json({ message: 'Csak admin törölhet pályát' });
+  }
 
   try {
     const result = await db.query('DELETE FROM courts WHERE id = $1 RETURNING *', [req.params.id]);
