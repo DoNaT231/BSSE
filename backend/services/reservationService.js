@@ -2,32 +2,12 @@ import pool from "../db.js";
 import * as reservationSyncRepository from "../repositories/reservationSyncRepository.js";
 import * as eventWriteRepository from "../repositories/eventWriteRepository.js";
 import * as calendarRepository from "../repositories/calendarRepository.js";
-
-/**
- * Két időpontból készít egy összehasonlításra alkalmas kulcsot
- *
- * A weekly sync során ezzel hasonlítjuk össze:
- * - a frontendről érkező kívánt állapotot
- * - az adatbázisban meglévő jelenlegi állapotot
- */
-function makeSlotKey({ startTime, endTime }) {
-  // A DB-ben timestamp without time zone van, ezért falióra (wall clock)
-  // értékek alapján hasonlítsunk össze (ne UTC toISOString()-szal).
-  // Várható formátum: "YYYY-MM-DD HH:mm:ss".
-  const normalize = (v) => {
-    if (!v) return "";
-    if (typeof v === "string") return v;
-    if (v instanceof Date) {
-      const pad = (n) => String(n).padStart(2, "0");
-      return `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())} ${pad(
-        v.getHours()
-      )}:${pad(v.getMinutes())}:${pad(v.getSeconds())}`;
-    }
-    return String(v);
-  };
-
-  return `${normalize(startTime)}__${normalize(endTime)}`;
-}
+import {
+  makeWallClockSlotKey,
+  normalizeWallClockValue,
+  parseLocalDateTime,
+  buildWeekRangeFromWeekStart,
+} from "../utils/bookingTime.js";
 
 /**
  * Bejövő slot tömb minimális validálása
@@ -47,10 +27,10 @@ function validateIncomingSlots(slots) {
       throw new Error("Minden slothoz startTime és endTime szükséges.");
     }
 
-    const start = new Date(slot.startTime);
-    const end = new Date(slot.endTime);
+    const start = parseLocalDateTime(slot.startTime);
+    const end = parseLocalDateTime(slot.endTime);
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    if (!start || !end) {
       throw new Error("Érvénytelen dátum formátum található a beküldött slotok között.");
     }
 
@@ -58,6 +38,24 @@ function validateIncomingSlots(slots) {
       throw new Error("A slot startTime mezője kisebb kell legyen, mint az endTime.");
     }
   }
+}
+
+/**
+ * ISO + falióra + Date keverékéből egyetlen kulcsot csinál; duplikátumokat kiszűr.
+ */
+function normalizeAndDedupeIncomingSlots(slots) {
+  const seen = new Map();
+  for (const slot of slots) {
+    const n = {
+      startTime: normalizeWallClockValue(slot.startTime),
+      endTime: normalizeWallClockValue(slot.endTime),
+    };
+    const key = makeWallClockSlotKey(n);
+    if (!seen.has(key)) {
+      seen.set(key, n);
+    }
+  }
+  return [...seen.values()];
 }
 
 /**
@@ -80,7 +78,6 @@ export async function getOwnWeeklyReservations({
   weekStart,
   weekEnd,
 }) {
-    console.log(reservationSyncRepository);
   return reservationSyncRepository.getExistingUserWeeklyReservationSlots({
     userId,
     courtId,
@@ -120,6 +117,7 @@ export async function syncWeeklyReservations({
   slots,
 }) {
   validateIncomingSlots(slots);
+  const normalizedSlots = normalizeAndDedupeIncomingSlots(slots);
 
   const client = await pool.connect();
 
@@ -140,7 +138,7 @@ export async function syncWeeklyReservations({
     const existingMap = new Map();
     for (const existing of existingReservations) {
       existingMap.set(
-        makeSlotKey({
+        makeWallClockSlotKey({
           startTime: existing.startTime,
           endTime: existing.endTime,
         }),
@@ -149,9 +147,9 @@ export async function syncWeeklyReservations({
     }
 
     const incomingMap = new Map();
-    for (const incoming of slots) {
+    for (const incoming of normalizedSlots) {
       incomingMap.set(
-        makeSlotKey({
+        makeWallClockSlotKey({
           startTime: incoming.startTime,
           endTime: incoming.endTime,
         }),
@@ -178,6 +176,9 @@ export async function syncWeeklyReservations({
     }
 
     const keepEventIds = new Set(toKeep.map((item) => Number(item.eventId)));
+    const toDeleteEventIds = new Set(
+      toDelete.map((item) => Number(item.eventId))
+    );
 
     for (const slot of toCreate) {
       const overlaps = await reservationSyncRepository.getOverlappingSlots(
@@ -191,7 +192,9 @@ export async function syncWeeklyReservations({
 
       const blockingOverlap = overlaps.find((overlap) => {
         const overlapEventId = Number(overlap.eventId);
-        return !keepEventIds.has(overlapEventId);
+        if (keepEventIds.has(overlapEventId)) return false;
+        if (toDeleteEventIds.has(overlapEventId)) return false;
+        return true;
       });
 
       if (blockingOverlap) {
@@ -290,29 +293,6 @@ export async function deleteOwnReservationBySlotId({ slotId, userId }) {
   return deletedEvent;
 }
 
-function buildWeekRange(weekStart) {
-  // weekStart: "YYYY-MM-DD" (frontenden így külditek)
-  // A cél: falióra alapú string, ne Date -> pg -> timezone konverzió.
-  if (!weekStart) throw new Error("Érvénytelen weekStart dátum.");
-
-  const [y, m, d] = String(weekStart).split("-").map(Number);
-  if (!y || !m || !d) throw new Error("Érvénytelen weekStart dátum.");
-
-  const pad = (n) => String(n).padStart(2, "0");
-  const startDate = new Date(y, m - 1, d);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + 7);
-
-  const startStr = `${startDate.getFullYear()}-${pad(startDate.getMonth() + 1)}-${pad(
-    startDate.getDate()
-  )} 00:00:00`;
-  const endStr = `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(
-    endDate.getDate()
-  )} 00:00:00`;
-
-  return { weekStart: startStr, weekEnd: endStr };
-}
-
 /**
  * Nyomtatási célra: reservation típusú event_slots lekérése user_type szerint.
  *
@@ -361,7 +341,7 @@ export async function getPrintableReservationsForPrint({
     throw err;
   }
 
-  const { weekStart: start, weekEnd } = buildWeekRange(weekStart);
+  const { weekStart: start, weekEnd } = buildWeekRangeFromWeekStart(weekStart);
 
   return calendarRepository.getPrintableReservationsByCourtAndWeekAndUserType(
     {
@@ -412,7 +392,7 @@ export async function getPrintableReservationsForPrintAll({
     throw err;
   }
 
-  const { weekStart: start, weekEnd } = buildWeekRange(weekStart);
+  const { weekStart: start, weekEnd } = buildWeekRangeFromWeekStart(weekStart);
 
   return calendarRepository.getPrintableReservationsByWeekAndUserType({
     weekStart: start,

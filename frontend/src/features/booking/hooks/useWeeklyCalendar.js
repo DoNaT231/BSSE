@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import fetchCourts from "../api/CourtsApi.js";
 import {
   apiGetWeeklyCalendarSlots,
@@ -13,6 +13,7 @@ import {
   getCellDate,
   getCellEndDate,
   isSameDay,
+  parseLocalDateTime,
   toIso,
 } from "../utils/reservationDate.utils.js";
 import {
@@ -128,6 +129,9 @@ export default function useWeeklyCalendar({ user, role, token }) {
    * Ezzel pl. letiltható a modal bezárása / gombok
    */
   const [isSaving, setIsSaving] = useState(false);
+
+  /** Szinkron dupla kattintás / párhuzamos hívás ellen (setState késik) */
+  const syncInFlightRef = useRef(false);
 
   /**
    * Az éppen megjelenített hét hétfője
@@ -314,6 +318,8 @@ export default function useWeeklyCalendar({ user, role, token }) {
    * - siker modal megnyitása
    */
   async function confirmSubmit() {
+    if (syncInFlightRef.current) return;
+    syncInFlightRef.current = true;
     try {
       setIsSaving(true);
 
@@ -334,6 +340,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
       openErrorModal(err.message || "Hiba történt a szinkronizálás során.");
     } finally {
       setIsSaving(false);
+      syncInFlightRef.current = false;
     }
   }
 
@@ -381,21 +388,17 @@ export default function useWeeklyCalendar({ user, role, token }) {
     const cellEndDate = getCellEndDate(cellDate);
     const now = new Date();
 
-    console.log("celldate: ", cellDate)
-    console.log("celldatend ", cellEndDate)
-
     const existingSlot = findCalendarSlotAtCell(calendarSlots, cellDate);
     const overlappingSlots = findSlotsOverlappingCell(calendarSlots, cellDate);
     const blockingTournament = overlappingSlots.find(
       (s) => s.eventType === "tournament"
     );
 
-    const tournamentSlotThatDay = calendarSlots.find(
-      (s) =>
-        s.eventType === "tournament" &&
-        isSameDay(new Date(s.startTime), cellDate) &&
-        s.tournamentId != null
-    );
+    const tournamentSlotThatDay = calendarSlots.find((s) => {
+      if (s.eventType !== "tournament" || s.tournamentId == null) return false;
+      const start = parseLocalDateTime(s.startTime);
+      return start ? isSameDay(start, cellDate) : false;
+    });
     const hasTournamentThatDay = Boolean(tournamentSlotThatDay);
     const alreadySelected = isDraftSelected(draftReservations, cellDate);
 
@@ -459,9 +462,6 @@ export default function useWeeklyCalendar({ user, role, token }) {
     setDraftReservations((prev) => {
       const startIso = dayjs(cellDate).format("YYYY-MM-DD HH:mm:ss");
       const endIso = dayjs(cellEndDate).format("YYYY-MM-DD HH:mm:ss");
-
-      console.log("startIso ", startIso)
-      console.log("endIso ", endIso)
 
       const exists = prev.some(
         (reservation) => reservation.startTime === startIso

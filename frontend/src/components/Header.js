@@ -99,11 +99,11 @@ function Header() {
         <nav
           className="
             w-full
-            flex flex-col items-center
-            gap-6
+            flex flex-col items-center md:items-end
+            gap-6 justify-end
             py-8
             text-center text-white
-            md:flex-row md:gap-11
+            md:flex-row md:gap-11 md:text-center
             md:py-0
             md:mr-3 md:mb-2 md:text-end
           "

@@ -1,5 +1,4 @@
 import pool from "../db.js";
-console.log("reservationSyncRepository loaded");
 
 /**
  * Reservation sync row átalakítása
