@@ -177,6 +177,7 @@ export default function TournamentCreateForm({
                 }
               >
                 <option value="">Válassz pályát</option>
+                <option value="__ALL__">Összes pálya (mindhárom)</option>
                 {courts.map((court) => (
                   <option key={court.id} value={court.id}>
                     {court.name}

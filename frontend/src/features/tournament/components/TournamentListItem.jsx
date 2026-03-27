@@ -30,6 +30,7 @@ export default function TournamentListItem({
   regsError,
 }) {
   const [slotModal, setSlotModal] = useState(null);
+  const [slotModalError, setSlotModalError] = useState("");
 
   const getCourtName = (courtId) => {
     const c = courts.find((x) => Number(x.id) === Number(courtId));
@@ -39,12 +40,30 @@ export default function TournamentListItem({
   const slots = Array.isArray(tournament.slots) ? tournament.slots : [];
 
   async function handleSlotSave(payload) {
-    if (slotModal?.mode === "add") {
-      await onAddSlot?.(tournament.id, payload);
-    } else if (slotModal?.mode === "edit" && slotModal?.slot) {
-      await onUpdateSlot?.(tournament.id, slotModal.slot.slotId, payload);
+    setSlotModalError("");
+    try {
+      if (slotModal?.mode === "add") {
+        const targetCourtIds =
+          Array.isArray(payload?.courtIds) && payload.courtIds.length > 0
+            ? payload.courtIds
+            : [payload?.courtId];
+
+        for (const courtId of targetCourtIds) {
+          if (!courtId) continue;
+          await onAddSlot?.(tournament.id, {
+            ...payload,
+            courtId: Number(courtId),
+          });
+        }
+      } else if (slotModal?.mode === "edit" && slotModal?.slot) {
+        await onUpdateSlot?.(tournament.id, slotModal.slot.slotId, payload);
+      }
+      setSlotModal(null);
+    } catch (error) {
+      setSlotModalError(
+        error?.message || "Nem sikerült menteni a slotot a backend hibája miatt."
+      );
     }
-    setSlotModal(null);
   }
 
   async function handleSlotDelete(slot) {
@@ -130,7 +149,10 @@ export default function TournamentListItem({
           <div className="text-xs font-medium uppercase tracking-wide text-gray-500">Időpontok (slots)</div>
           <button
             type="button"
-            onClick={() => setSlotModal({ mode: "add" })}
+            onClick={() => {
+              setSlotModalError("");
+              setSlotModal({ mode: "add" });
+            }}
             disabled={slotActionLoading}
             className="text-sm px-2 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-60"
           >
@@ -151,7 +173,10 @@ export default function TournamentListItem({
                 <span className="ml-auto flex gap-1">
                   <button
                     type="button"
-                    onClick={() => setSlotModal({ mode: "edit", slot })}
+                    onClick={() => {
+                      setSlotModalError("");
+                      setSlotModal({ mode: "edit", slot });
+                    }}
                     disabled={slotActionLoading}
                     className="text-xs px-2 py-1 border rounded hover:bg-gray-100 disabled:opacity-60"
                   >
@@ -181,8 +206,12 @@ export default function TournamentListItem({
         tournament={tournament}
         courts={courts}
         onSave={handleSlotSave}
-        onClose={() => setSlotModal(null)}
+        onClose={() => {
+          setSlotModalError("");
+          setSlotModal(null);
+        }}
         saving={slotActionLoading}
+        externalError={slotModalError}
       />
 
       <TournamentRegistrationsPanel

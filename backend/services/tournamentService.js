@@ -3,6 +3,26 @@ import * as tournamentRepository from "../repositories/tournamentRepository.js";
 import * as eventWriteRepository from "../repositories/eventWriteRepository.js";
 import * as reservationSyncRepository from "../repositories/reservationSyncRepository.js";
 import * as calendarRepository from "../repositories/calendarRepository.js";
+import * as tournamentRegistrationRepository from "../repositories/tournamentRegistrationRepository.js";
+import {
+  normalizeWallClockValue,
+  parseLocalDateTime,
+} from "../utils/bookingTime.js";
+
+function normalizeTournamentDateTime(day, value, fallbackTime = "00:00:00") {
+  const raw = String(value ?? "").trim();
+  const hasDatePart = /^\d{4}-\d{2}-\d{2}[ T]/.test(raw);
+
+  if (hasDatePart) {
+    return normalizeWallClockValue(raw);
+  }
+
+  const hasSeconds = /^\d{2}:\d{2}:\d{2}$/.test(raw);
+  const hasHourMinute = /^\d{2}:\d{2}$/.test(raw);
+  const time = hasSeconds ? raw : hasHourMinute ? `${raw}:00` : fallbackTime;
+
+  return normalizeWallClockValue(`${day} ${time}`);
+}
 
 function validateTournamentSlots(slots) {
   if (!Array.isArray(slots) || slots.length === 0) {
@@ -14,10 +34,10 @@ function validateTournamentSlots(slots) {
       throw new Error("Minden slothoz courtId, startTime es endTime szukseges.");
     }
 
-    const start = new Date(slot.startTime);
-    const end = new Date(slot.endTime);
+    const start = parseLocalDateTime(slot.startTime);
+    const end = parseLocalDateTime(slot.endTime);
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    if (!start || !end) {
       throw new Error("Ervenytelen datum formatum a slotok kozott.");
     }
 
@@ -32,10 +52,10 @@ function validateSingleSlot({ courtId, startTime, endTime }) {
     throw new Error("courtId, startTime es endTime szukseges.");
   }
 
-  const start = new Date(startTime);
-  const end = new Date(endTime);
+  const start = parseLocalDateTime(startTime);
+  const end = parseLocalDateTime(endTime);
 
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+  if (!start || !end) {
     throw new Error("Ervenytelen datum formatum.");
   }
 
@@ -59,6 +79,34 @@ function attachSlotsToTournaments(tournaments, allSlots) {
   }));
 }
 
+async function attachRegistrationStats(tournaments) {
+  if (!Array.isArray(tournaments) || tournaments.length === 0) {
+    return [];
+  }
+
+  const stats = await Promise.all(
+    tournaments.map(async (tournament) => {
+      const registrationCount =
+        await tournamentRegistrationRepository.countByTournamentId(
+          Number(tournament.id)
+        );
+
+      const maxTeams = tournament.maxTeams ?? null;
+      return {
+        ...tournament,
+        maxTeams,
+        max_teams: maxTeams,
+        registrationCount,
+        registration_count: registrationCount,
+        registeredTeams: registrationCount,
+        registered_teams: registrationCount,
+      };
+    })
+  );
+
+  return stats;
+}
+
 export async function createTournament({
   title,
   description = null,
@@ -78,30 +126,31 @@ export async function createTournament({
       const day = slot.day;
 
       if (slot.allDay) {
-        const startPart = slot.startTime && String(slot.startTime).trim()
-          ? String(slot.startTime).trim()
-          : "00:00";
+        const startPart =
+          slot.startTime && String(slot.startTime).trim()
+            ? String(slot.startTime).trim()
+            : "00:00:00";
 
         return {
           courtId: slot.courtId,
-          startTime: `${day}T${startPart}`,
-          endTime: `${day}T23:59`,
+          startTime: normalizeTournamentDateTime(day, startPart, "00:00:00"),
+          endTime: normalizeTournamentDateTime(day, "23:59:59", "23:59:59"),
           allDay: true,
         };
       }
 
       return {
         courtId: slot.courtId,
-        startTime: `${day}T${slot.startTime}`,
-        endTime: `${day}T${slot.endTime}`,
+        startTime: normalizeTournamentDateTime(day, slot.startTime, "00:00:00"),
+        endTime: normalizeTournamentDateTime(day, slot.endTime, "00:00:00"),
         allDay: !!slot.allDay,
       };
     }
 
     return {
       courtId: slot.courtId,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
+      startTime: normalizeWallClockValue(slot.startTime),
+      endTime: normalizeWallClockValue(slot.endTime),
       allDay: !!slot.allDay,
     };
   });
@@ -217,26 +266,28 @@ export async function createTournament({
 
 export async function getAllTournaments() {
   const tournaments = await tournamentRepository.findAll();
-  const eventIds = tournaments.map((t) => t.eventId).filter(Boolean);
+  const tournamentsWithStats = await attachRegistrationStats(tournaments);
+  const eventIds = tournamentsWithStats.map((t) => t.eventId).filter(Boolean);
 
   if (eventIds.length === 0) {
-    return tournaments.map((t) => ({ ...t, slots: [] }));
+    return tournamentsWithStats.map((t) => ({ ...t, slots: [] }));
   }
 
   const allSlots = await calendarRepository.getEventSlotsByEventIds(eventIds);
-  return attachSlotsToTournaments(tournaments, allSlots);
+  return attachSlotsToTournaments(tournamentsWithStats, allSlots);
 }
 
 export async function getAllPublicTournaments() {
   const tournaments = await tournamentRepository.findAllPublic();
-  const eventIds = tournaments.map((t) => t.eventId).filter(Boolean);
+  const tournamentsWithStats = await attachRegistrationStats(tournaments);
+  const eventIds = tournamentsWithStats.map((t) => t.eventId).filter(Boolean);
 
   if (eventIds.length === 0) {
-    return tournaments.map((t) => ({ ...t, slots: [] }));
+    return tournamentsWithStats.map((t) => ({ ...t, slots: [] }));
   }
 
   const allSlots = await calendarRepository.getEventSlotsByEventIds(eventIds);
-  return attachSlotsToTournaments(tournaments, allSlots);
+  return attachSlotsToTournaments(tournamentsWithStats, allSlots);
 }
 
 export async function deleteTournamentById(id) {
@@ -270,7 +321,9 @@ export async function addTournamentSlot(
   tournamentId,
   { courtId, startTime, endTime, allDay = false }
 ) {
-  validateSingleSlot({ courtId, startTime, endTime });
+  const normalizedStart = normalizeWallClockValue(startTime);
+  const normalizedEnd = normalizeWallClockValue(endTime);
+  validateSingleSlot({ courtId, startTime: normalizedStart, endTime: normalizedEnd });
 
   const tournament = await tournamentRepository.findById(tournamentId);
   if (!tournament) {
@@ -283,7 +336,7 @@ export async function addTournamentSlot(
     await client.query("BEGIN");
 
     const overlaps = await reservationSyncRepository.getOverlappingSlots(
-      { courtId: Number(courtId), startTime, endTime },
+      { courtId: Number(courtId), startTime: normalizedStart, endTime: normalizedEnd },
       client
     );
 
@@ -307,8 +360,8 @@ export async function addTournamentSlot(
       {
         eventId: tournament.eventId,
         courtId: Number(courtId),
-        startTime,
-        endTime,
+        startTime: normalizedStart,
+        endTime: normalizedEnd,
         slotStatus: "active",
         allDay: !!allDay,
       },
@@ -339,7 +392,9 @@ export async function updateTournamentSlot(
   slotId,
   { courtId, startTime, endTime, allDay = false }
 ) {
-  validateSingleSlot({ courtId, startTime, endTime });
+  const normalizedStart = normalizeWallClockValue(startTime);
+  const normalizedEnd = normalizeWallClockValue(endTime);
+  validateSingleSlot({ courtId, startTime: normalizedStart, endTime: normalizedEnd });
 
   const tournament = await tournamentRepository.findById(tournamentId);
   if (!tournament) {
@@ -359,7 +414,7 @@ export async function updateTournamentSlot(
     await client.query("BEGIN");
 
     const overlaps = await reservationSyncRepository.getOverlappingSlots(
-      { courtId: Number(courtId), startTime, endTime },
+      { courtId: Number(courtId), startTime: normalizedStart, endTime: normalizedEnd },
       client
     );
 
@@ -384,7 +439,12 @@ export async function updateTournamentSlot(
 
     const updated = await eventWriteRepository.updateEventSlotById(
       slotId,
-      { courtId: Number(courtId), startTime, endTime, allDay: !!allDay },
+      {
+        courtId: Number(courtId),
+        startTime: normalizedStart,
+        endTime: normalizedEnd,
+        allDay: !!allDay,
+      },
       client
     );
 

@@ -86,8 +86,7 @@ export default function useAdminTournaments(token) {
   function handleAddSlot(e) {
     e.preventDefault();
 
-    const courtIdNum = Number(slotForm.courtId);
-    if (!courtIdNum || Number.isNaN(courtIdNum)) {
+    if (!slotForm.courtId) {
       setError("Válassz egy érvényes pályát a slothoz.");
       return;
     }
@@ -127,20 +126,42 @@ export default function useAdminTournaments(token) {
     }
 
     setError("");
+    const selectedAllCourts = slotForm.courtId === "__ALL__";
+    const targetCourts = selectedAllCourts
+      ? courts
+      : courts.filter((court) => Number(court.id) === Number(slotForm.courtId));
 
-    const courtName = findCourtNameById(courtIdNum);
+    if (!targetCourts.length) {
+      setError("Nem található érvényes pálya a slothoz.");
+      return;
+    }
 
-    setSlots((prev) => [
-      ...prev,
-      {
-        courtId: courtIdNum,
-        courtName,
-        day: slotForm.day,
-        startTime: startIso,
-        endTime: endIso,
-        allDay: !!slotForm.allDay,
-      },
-    ]);
+    setSlots((prev) => {
+      const next = [...prev];
+
+      for (const court of targetCourts) {
+        const courtIdNum = Number(court.id);
+        const alreadyExists = next.some(
+          (slot) =>
+            Number(slot.courtId) === courtIdNum &&
+            slot.startTime === startIso &&
+            slot.endTime === endIso
+        );
+
+        if (alreadyExists) continue;
+
+        next.push({
+          courtId: courtIdNum,
+          courtName: court.name || findCourtNameById(courtIdNum),
+          day: slotForm.day,
+          startTime: startIso,
+          endTime: endIso,
+          allDay: !!slotForm.allDay,
+        });
+      }
+
+      return next;
+    });
 
     setSlotForm(initialSlotForm);
   }

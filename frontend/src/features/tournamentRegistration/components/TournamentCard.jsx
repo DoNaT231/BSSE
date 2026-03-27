@@ -4,6 +4,7 @@ import {
   formatDateTime,
   getTournamentStart,
   canRegisterToTournament,
+  isTournamentFull,
 } from "../utils/tournamentDates.js";
 
 export default function TournamentCard({
@@ -14,8 +15,17 @@ export default function TournamentCard({
   const alreadyRegistered = Boolean(registration?.id);
   const startIso = getTournamentStart(tournament);
   const canRegister = canRegisterToTournament(tournament);
+  const isFull = isTournamentFull(tournament);
   const registrationDeadline =
     tournament?.registration_deadline ?? tournament?.registrationDeadline ?? null;
+  const maxTeams = Number(tournament?.max_teams ?? tournament?.maxTeams);
+  const registeredTeams = Number(
+    tournament?.registered_teams ??
+      tournament?.registeredTeams ??
+      tournament?.registration_count ??
+      tournament?.registrationCount ??
+      0
+  );
 
   return (
     <div className="group relative rounded-3xl bg-white/95 border border-white/60 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-18px_rgba(15,23,42,0.55)]">
@@ -61,6 +71,12 @@ export default function TournamentCard({
           </p>
         )}
 
+        {Number.isFinite(maxTeams) && maxTeams > 0 && (
+          <p className="mt-2 text-sm text-slate-600">
+            Jelentkezések: {registeredTeams}/{maxTeams} csapat
+          </p>
+        )}
+
         <TournamentStatusBadge
           tournament={tournament}
           alreadyRegistered={alreadyRegistered}
@@ -71,7 +87,11 @@ export default function TournamentCard({
           disabled={!alreadyRegistered && !canRegister}
           className="mt-4 w-full rounded-2xl bg-[#f7b23b] px-4 py-3 text-sm font-extrabold text-slate-900 shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-orange-200/70 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {alreadyRegistered ? "Nevezés módosítása" : "Jelentkezés"}
+          {alreadyRegistered
+            ? "Nevezés módosítása"
+            : isFull
+            ? "Betelt a maximum csapatszám"
+            : "Jelentkezés"}
         </button>
       </div>
     </div>

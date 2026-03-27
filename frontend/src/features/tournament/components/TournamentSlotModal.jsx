@@ -10,12 +10,14 @@ export default function TournamentSlotModal({
   onSave,
   onClose,
   saving,
+  externalError = "",
 }) {
   const [courtId, setCourtId] = useState("");
   const [day, setDay] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [allDay, setAllDay] = useState(false);
+  const [formError, setFormError] = useState("");
 
   function toDateInputValue(d) {
     const year = d.getFullYear();
@@ -32,6 +34,7 @@ export default function TournamentSlotModal({
 
   useEffect(() => {
     if (!open) return;
+    setFormError("");
     if (mode === "edit" && slot) {
       setCourtId(String(slot.courtId ?? ""));
       const start = new Date(slot.startTime);
@@ -51,7 +54,12 @@ export default function TournamentSlotModal({
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!courtId || !day) return;
+    setFormError("");
+
+    if (!courtId || !day) {
+      setFormError("A pálya és a nap megadása kötelező.");
+      return;
+    }
 
     let localStart, localEnd;
 
@@ -60,7 +68,12 @@ export default function TournamentSlotModal({
       localStart = `${day}T${startPart}`;
       localEnd = `${day}T23:59`;
     } else {
-      if (!startTime || !endTime) return;
+      if (!startTime || !endTime) {
+        setFormError(
+          "Ha nem egész napos a slot, a kezdés és a befejezés megadása kötelező."
+        );
+        return;
+      }
       localStart = `${day}T${startTime}`;
       localEnd = `${day}T${endTime}`;
     }
@@ -68,11 +81,25 @@ export default function TournamentSlotModal({
     const normStart = datetimeLocalToString(localStart);
     const normEnd = datetimeLocalToString(localEnd);
 
-    if (!normStart || !normEnd) return;
-    if (new Date(normStart) >= new Date(normEnd)) return;
+    if (!normStart || !normEnd) {
+      setFormError("Érvénytelen kezdés/befejezés formátum.");
+      return;
+    }
+    if (new Date(normStart) >= new Date(normEnd)) {
+      setFormError("A kezdés időpontja korábban kell legyen, mint a befejezés.");
+      return;
+    }
+
+    const allCourtsSelected = mode === "add" && courtId === "__ALL__";
+    const courtIds = allCourtsSelected
+      ? (courts || []).map((court) => Number(court.id)).filter(Boolean)
+      : [Number(courtId)];
+
+    if (!courtIds.length) return;
 
     onSave({
-      courtId: Number(courtId),
+      courtId: allCourtsSelected ? null : Number(courtId),
+      courtIds,
       day,
       startTime: normStart,
       endTime: normEnd,
@@ -116,6 +143,9 @@ export default function TournamentSlotModal({
               disabled={saving}
             >
               <option value="">Válassz pályát</option>
+              {mode === "add" && (
+                <option value="__ALL__">Összes pálya (mindhárom)</option>
+              )}
               {courts.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name || `Pálya #${c.id}`}
@@ -169,6 +199,12 @@ export default function TournamentSlotModal({
               Egész nap
             </label>
           </div>
+
+          {(formError || externalError) && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+              {formError || externalError}
+            </div>
+          )}
 
           <div className="flex gap-2 justify-end pt-2">
             <button
