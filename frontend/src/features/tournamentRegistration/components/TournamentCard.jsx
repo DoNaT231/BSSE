@@ -11,86 +11,69 @@ export default function TournamentCard({
   tournament,
   registration,
   onOpen,
+  onOpenDetails,
 }) {
   const alreadyRegistered = Boolean(registration?.id);
   const startIso = getTournamentStart(tournament);
   const canRegister = canRegisterToTournament(tournament);
   const isFull = isTournamentFull(tournament);
-  const registrationDeadline =
-    tournament?.registration_deadline ?? tournament?.registrationDeadline ?? null;
-  const maxTeams = Number(tournament?.max_teams ?? tournament?.maxTeams);
-  const registeredTeams = Number(
-    tournament?.registered_teams ??
-      tournament?.registeredTeams ??
-      tournament?.registration_count ??
-      tournament?.registrationCount ??
-      0
-  );
 
   return (
-    <div className="group relative rounded-3xl bg-white/95 border border-white/60 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-18px_rgba(15,23,42,0.55)]">
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="text-lg font-extrabold truncate text-slate-900">
-              {tournament.title}
-            </h3>
+    <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.28)] transition hover:-translate-y-1 hover:shadow-[0_22px_55px_-28px_rgba(15,23,42,0.34)]">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500" />
 
-            <p className="mt-1 text-sm text-slate-600">
-              {startIso
-                ? `Kezdés: ${formatDateTime(startIso)}`
-                : "Kezdés: nincs megadva"}
-            </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="truncate text-xl font-extrabold tracking-tight text-slate-900">
+            {tournament.title}
+          </h3>
 
-            {registrationDeadline && (
-              <p className="mt-1 text-sm text-slate-600">
-                Nevezési határidő: {formatDateTime(registrationDeadline)}
-              </p>
-            )}
-          </div>
-
-          {tournament.team_size != null && (
-            <div className="px-3 py-1 text-xs font-extrabold border shrink-0 rounded-2xl bg-slate-50 border-slate-200 text-slate-700">
-              {tournament.team_size} fő/csapat
-            </div>
-          )}
+          <p className="mt-2 text-sm font-medium text-slate-600">
+            {startIso
+              ? `Kezdés: ${formatDateTime(startIso)}`
+              : "Kezdés: nincs megadva"}
+          </p>
         </div>
 
-        {tournament.description && (
-          <p className="mt-3 text-sm leading-relaxed text-slate-700 line-clamp-4">
-            {tournament.description}
-          </p>
+        {tournament.team_size != null && (
+          <div className="shrink-0 rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-700">
+            {tournament.team_size} fő/csapat
+          </div>
         )}
+      </div>
 
-        {tournament.entry_fee !== null && tournament.entry_fee !== undefined && (
-          <p className="mt-3 text-sm leading-relaxed text-slate-700">
-            Nevezési díj:{" "}
-            {Number(tournament.entry_fee) === 0
-              ? "ingyenes"
-              : `${tournament.entry_fee} Ft`}
-          </p>
-        )}
-
-        {Number.isFinite(maxTeams) && maxTeams > 0 && (
-          <p className="mt-2 text-sm text-slate-600">
-            Jelentkezések: {registeredTeams}/{maxTeams} csapat
-          </p>
-        )}
-
+      <div className="mt-4">
         <TournamentStatusBadge
           tournament={tournament}
           alreadyRegistered={alreadyRegistered}
         />
+      </div>
+
+      {tournament.description && (
+        <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600">
+          {tournament.description}
+        </p>
+      )}
+
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => onOpenDetails?.(tournament)}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
+        >
+          Részletek
+        </button>
 
         <button
+          type="button"
           onClick={() => onOpen(tournament.id)}
           disabled={!alreadyRegistered && !canRegister}
-          className="mt-4 w-full rounded-2xl bg-[#f7b23b] px-4 py-3 text-sm font-extrabold text-slate-900 shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-orange-200/70 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-sky-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {alreadyRegistered
             ? "Nevezés módosítása"
             : isFull
-            ? "Betelt a maximum csapatszám"
+            ? "Betelt"
             : "Jelentkezés"}
         </button>
       </div>

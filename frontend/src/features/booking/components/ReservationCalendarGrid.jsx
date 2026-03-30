@@ -21,7 +21,7 @@ export default function ReservationCalendarGrid({
     : [];
 
   return (
-    <div className="w-full max-w-[960px] mx-auto bg-white border border-border rounded-card overflow-hidden shadow-soft">
+    <div className="w-full max-w-[1024px] mx-auto bg-white border border-border rounded-card overflow-hidden shadow-soft">
 
       {/* header */}
       <div className="grid grid-cols-[80px_repeat(7,1fr)] bg-primaryLight font-semibold text-center text-sm border-b border-border">

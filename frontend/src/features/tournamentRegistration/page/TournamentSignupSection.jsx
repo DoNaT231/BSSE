@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../../components/Header.js";
+import TournamentDetailsModal from "../components/TournamentDetailsModal.jsx";
 import AuthFrostLock from "../../../components/AuthLock.js";
 import { useAuth } from "../../../contexts/AuthContext.js";
 
@@ -20,6 +21,7 @@ export default function TournamentSignupSection() {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [detailsTournament, setDetailsTournament] = useState(null);
 
   const { user, isLoggedIn } = useAuth();
   const userEmail = user?.email || "";
@@ -162,69 +164,121 @@ export default function TournamentSignupSection() {
   }
 
   return (
-    <div className="min-h-screen bg-[#e9f6ff]">
+    <div className="min-h-screen bg-slate-50">
       <Header />
 
       <AuthFrostLock loggedIn={isLoggedIn}>
-        <section className="w-full max-w-6xl px-4 pt-32 pb-12 mx-auto">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl text-slate-900">
-              Versenyek
-            </h2>
-            <p className="mt-2 text-sm md:text-base text-slate-700/80">
-              Válassz versenyt, majd töltsd ki a jelentkezést.
-            </p>
+        <section className="relative overflow-hidden pt-28 pb-16">
+          {/* háttér díszítések */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
+            <div className="absolute top-[180px] right-[-60px] h-[260px] w-[260px] rounded-full bg-cyan-200/40 blur-3xl" />
+            <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
           </div>
 
-          <div className="mt-8 rounded-3xl overflow-hidden shadow-[0_12px_30px_-18px_rgba(2,65,99,0.35)] border border-white/60">
-            <div className="bg-[#5fc3ee] px-6 pt-8 pb-6">
-              <div className="px-4 py-2 mx-auto text-xs font-extrabold tracking-wide text-white rounded-full w-fit bg-white/25">
-                NEVEZÉSEK
-              </div>
+          <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* HERO */}
+            <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center rounded-full border border-sky-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-700 shadow-sm">
+                  Versenynevezések
+                </div>
 
-              <div className="mt-5">
-                {loading && (
-                  <p className="font-semibold text-white/90">Betöltés...</p>
-                )}
+                <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+                  Jelentkezz a következő
+                  <span className="block text-sky-600">strandröplabda versenyre</span>
+                </h1>
 
-                {loadError && (
-                  <p className="inline-block px-4 py-3 font-extrabold text-white bg-red-500/90 rounded-2xl">
-                    {loadError}
-                  </p>
-                )}
+                <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+                  Válaszd ki a számodra megfelelő versenyt, ellenőrizd a
+                  nevezési adatokat, és pár kattintással add le a jelentkezést.
+                </p>
 
-                {!loading && !loadError && tournaments.length === 0 && (
-                  <div className="p-5 shadow-sm bg-white/95 rounded-2xl text-slate-800">
-                    Jelenleg nincs aktív verseny.
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Elérhető versenyek
+                    </p>
+                    <p className="mt-1 text-2xl font-extrabold text-slate-900">
+                      {tournaments.length}
+                    </p>
                   </div>
-                )}
+
+                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Saját nevezéseid
+                    </p>
+                    <p className="mt-1 text-2xl font-extrabold text-slate-900">
+                      {myRegistrations?.length || 0}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 mt-6 md:grid-cols-2 xl:grid-cols-3">
-                {tournaments.map((tournament) => (
-                  <TournamentCard
-                    key={tournament.id}
-                    tournament={tournament}
-                    registration={regByTournamentId[tournament.id]}
-                    onOpen={openForm}
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-300/30 via-cyan-200/20 to-blue-200/30 blur-2xl" />
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(15,23,42,0.28)]">
+                  <img
+                    src="/images/tournament_SMASH.jpg"
+                    alt="SMASH tournament"
+                    className="h-auto w-full rounded-[1.4rem] object-cover"
                   />
-                ))}
+                </div>
               </div>
             </div>
 
-            <div className="bg-[#e9f6ff]">
-              <svg
-                viewBox="0 0 1440 120"
-                className="block w-full"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M0,64L60,69.3C120,75,240,85,360,80C480,75,600,53,720,48C840,43,960,53,1080,58.7C1200,64,1320,64,1380,64L1440,64L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z"
-                  fill="#5fc3ee"
-                  fillOpacity="0.35"
-                />
-              </svg>
+            {/* STATE MESSAGES */}
+            <div className="mt-10">
+              {loading && (
+                <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm">
+                  Betöltés...
+                </div>
+              )}
+
+              {loadError && (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700 shadow-sm">
+                  {loadError}
+                </div>
+              )}
+
+              {!loading && !loadError && tournaments.length === 0 && (
+                <div className="rounded-2xl border border-slate-200 bg-white px-5 py-5 text-slate-700 shadow-sm">
+                  Jelenleg nincs aktív verseny.
+                </div>
+              )}
             </div>
+
+            {/* TOURNAMENT LIST */}
+            {!loading && !loadError && tournaments.length > 0 && (
+              <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] backdrop-blur sm:p-6 lg:p-8">
+                <div className="mb-6 flex items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
+                      Aktív versenyek
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Kattints a kiválasztott versenyre a nevezéshez vagy módosításhoz.
+                    </p>
+                  </div>
+
+                  <div className="hidden rounded-full bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700 md:block">
+                    {tournaments.length} elérhető verseny
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {tournaments.map((tournament) => (
+                    <TournamentCard
+                      key={tournament.id}
+                      tournament={tournament}
+                      registration={regByTournamentId[tournament.id]}
+                      onOpen={openForm}
+                      onOpenDetails={setDetailsTournament}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <TournamentModal
@@ -245,6 +299,16 @@ export default function TournamentSignupSection() {
             players={players}
             updatePlayer={updatePlayer}
           />
+
+        <TournamentDetailsModal
+          tournament={detailsTournament}
+          registration={
+            detailsTournament ? regByTournamentId[detailsTournament.id] : null
+          }
+          isOpen={Boolean(detailsTournament)}
+          onClose={() => setDetailsTournament(null)}
+          onRegister={openForm}
+        />
         </section>
       </AuthFrostLock>
     </div>

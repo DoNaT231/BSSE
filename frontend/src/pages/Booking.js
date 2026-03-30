@@ -4,7 +4,7 @@ import WeeklyCalendar from "../features/booking/pages/WeeklyCalendar";
 
 export default function Booking(){
     return(
-        <div className="mt-32 bg-white">
+        <div className="mt-24 bg-white">
             <Header/>
             <WeeklyCalendar/>
         </div>
