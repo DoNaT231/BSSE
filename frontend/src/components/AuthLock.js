@@ -67,7 +67,7 @@ export default function AuthFrostLock({children }) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-h-screen bg-slate-50">
 
       {/* ===============================
          CHILDREN TARTALOM
@@ -92,7 +92,7 @@ export default function AuthFrostLock({children }) {
          ha a user nincs bejelentkezve.
       */}
       {!user && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-md bg-white/20">
+        <div className="absolute inset-0 z-20 flex backdrop-blur-md bg-black/40">
 
           {/* ===============================
              LOGIN MODAL
@@ -103,6 +103,7 @@ export default function AuthFrostLock({children }) {
             <LoginModal
               isOpen={showModal}
               onClose={closeModal}
+              dismissible={false}
             />
           )}
 

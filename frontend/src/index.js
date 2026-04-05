@@ -13,6 +13,7 @@ import AdminDashboard from './pages/Admin/AdminDashboard.js';
 import { AuthProvider } from './contexts/AuthContext.js';
 import TournamentSignupSection from './features/tournamentRegistration/page/TournamentSignupSection';
 import Profile from './pages/Profile.js';
+import ThursdayChampionshipPage from './pages/ThursdayChampionshipPage.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const apiUrl = "http://localhost:5000";
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
   {
     path: '/versenyek',
     element: <TournamentSignupSection/>
+  },
+  {
+    path: '/csutortoki-bajnoksag',
+    element: <ThursdayChampionshipPage/>
   },
   {
     path: '/smashspt',

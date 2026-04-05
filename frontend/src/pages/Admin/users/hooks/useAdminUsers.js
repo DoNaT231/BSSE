@@ -3,6 +3,7 @@ import {
   fetchAdminUsers,
   fetchAdminUserById,
   saveAdminUser,
+  adjustAdminThursdayPoints,
   activateAdminUser,
   deactivateAdminUser,
   removeAdminUser,
@@ -79,6 +80,31 @@ export default function useAdminUsers() {
       return updatedUser;
     } catch (err) {
       setModalMessage(err.message || "Nem sikerült módosítani a felhasználót.");
+      setModalOpen(true);
+      throw err;
+    } finally {
+      setIsActionLoading(false);
+    }
+  }
+
+  async function adjustThursdayPoints(userId, delta) {
+    try {
+      setIsActionLoading(true);
+      setError("");
+
+      const updatedUser = await adjustAdminThursdayPoints(userId, delta);
+
+      setModalMessage("A csütörtöki pontok frissültek.");
+      setModalOpen(true);
+
+      setSelectedUser(updatedUser);
+      await loadUsers();
+
+      return updatedUser;
+    } catch (err) {
+      setModalMessage(
+        err.message || "Nem sikerült módosítani a csütörtöki pontokat."
+      );
       setModalOpen(true);
       throw err;
     } finally {
@@ -168,6 +194,7 @@ export default function useAdminUsers() {
     refreshSelectedUser,
     loadUsers,
     updateUser,
+    adjustThursdayPoints,
     deactivateUser,
     activateUser,
     deleteUser,

@@ -40,6 +40,31 @@ router.get("/:id", authMiddleware, async (req, res) => {
 });
 
 /**
+ * Csütörtöki pontok módosítása (delta: +N / −N, minimum 0)
+ */
+router.patch(
+  "/:id/thursday-points",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const delta = req.body?.delta;
+
+      const updatedUser = await usersService.adminAdjustThursdayPoints(
+        req.user,
+        Number(req.params.id),
+        delta
+      );
+
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res.status(400).json({
+        message: error.message,
+      });
+    }
+  }
+);
+
+/**
  * User módosítása admin által
  */
 router.patch("/:id", authMiddleware, async (req, res) => {

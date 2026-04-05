@@ -11,6 +11,8 @@ function mapRow(row) {
     players: row.players,
     teamName: row.team_name,
     contactEmail: row.contact_email,
+    status: row.status ?? row.registration_status ?? "CONFIRMED",
+    paid: row.paid ?? row.registration_paid ?? false,
     createdAt: row.created_at,
   };
 }
@@ -23,6 +25,8 @@ export async function create(
     players = null,
     teamName = null,
     contactEmail = null,
+    status = "CONFIRMED",
+    paid = false,
   },
   client = pool
 ) {
@@ -35,12 +39,14 @@ export async function create(
         players,
         team_name,
         contact_email,
+        paid,
+        status,
         created_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
       RETURNING *
     `,
-    [tournamentId, userId, telNumber, players, teamName, contactEmail]
+    [tournamentId, userId, telNumber, players, teamName, contactEmail, paid, status]
   );
 
   return mapRow(rows[0]);
@@ -132,7 +138,7 @@ export async function countByTournamentId(tournamentId, client = pool) {
 
 export async function updateById(
   id,
-  { telNumber, players, teamName, contactEmail },
+  { telNumber, players, teamName, contactEmail, status, paid },
   client = pool
 ) {
   const fields = [];
@@ -157,6 +163,16 @@ export async function updateById(
   if (contactEmail !== undefined) {
     fields.push(`contact_email = $${index++}`);
     values.push(contactEmail);
+  }
+
+  if (status !== undefined) {
+    fields.push(`status = $${index++}`);
+    values.push(status);
+  }
+
+  if (paid !== undefined) {
+    fields.push(`paid = $${index++}`);
+    values.push(paid);
   }
 
   if (fields.length === 0) {
@@ -202,6 +218,8 @@ export async function findAllDetailedByTournamentId(tournamentId, client = pool)
         tr.tel_number,
         tr.team_name,
         tr.players,
+        tr.status,
+        tr.paid,
         tr.created_at,
         u.email AS user_email
       FROM tournament_registrations tr

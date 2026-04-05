@@ -141,6 +141,40 @@ export async function adminUpdateUser(
 }
 
 /**
+ * Admin: csütörtöki pontok növelése / csökkentése (delta egész, nem lehet 0)
+ */
+export async function adminAdjustThursdayPoints(
+  currentUser,
+  targetUserId,
+  delta
+) {
+  const d = Number(delta);
+
+  if (!Number.isFinite(d) || !Number.isInteger(d) || d === 0) {
+    throw new Error(
+      "A pontváltozásnak nem nulla egész számnak kell lennie."
+    );
+  }
+
+  const existingUser = await usersRepository.findById(targetUserId);
+
+  if (!existingUser) {
+    throw new Error("Felhasználó nem található.");
+  }
+
+  const updated = await usersRepository.adjustThursdayPointsById(
+    targetUserId,
+    d
+  );
+
+  if (!updated) {
+    throw new Error("Felhasználó nem található.");
+  }
+
+  return updated;
+}
+
+/**
  * Admin: user deaktiválása
  * Ezt inkább ajánlom a fizikai törlés helyett
  */

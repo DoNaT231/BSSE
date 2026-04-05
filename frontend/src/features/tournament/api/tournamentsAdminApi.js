@@ -99,3 +99,33 @@ export async function fetchTournamentRegistrations(tournamentId, token) {
     { method: "GET" }
   );
 }
+
+export async function updateTournamentRegistrationStatus(
+  registrationId,
+  status,
+  token
+) {
+  return request(`/api/tournament-registrations/admin/${registrationId}/status`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+/**
+ * Admin: tournament_registration paid mező módosítása
+ * Body: { paid: boolean }
+ */
+export async function updateTournamentRegistrationPaid(
+  registrationId,
+  paid,
+  token
+) {
+  return request(
+    `/api/tournament-registrations/admin/${registrationId}/paid`,
+    token,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ paid }),
+    }
+  );
+}

@@ -8,13 +8,12 @@ import { Link } from "react-router-dom";
  */
 export default function SmashSPT() {
   return (
-    <div className="min-h-screen mt-32 bg-slate-50">
-      {/* Globális fejléc */}
+    <div className="page-root--alt">
       <Header />
 
-      {/* Oldaltér */}
-      <div className="px-4 py-10 sm:py-12">
-        <div className="w-full max-w-3xl mx-auto">
+      <div className="page-main">
+        <div className="page-document-wrap">
+          <div className="page-document-inner">
           {/* Dokumentum kártya */}
           <div className="bg-white shadow-sm rounded-2xl ring-1 ring-slate-200">
             <div className="p-6 sm:p-10">
@@ -182,6 +181,7 @@ export default function SmashSPT() {
                 Kellemes sportolást kívánunk!
               </p>
             </div>
+          </div>
           </div>
         </div>
       </div>

@@ -91,6 +91,31 @@ export async function sendTournamentRegistrationSuccessEmail({
   });
 }
 
+export async function sendTournamentRegistrationWaitlistEmail({
+  toEmail,
+  toName,
+  tournamentName,
+  phoneNumber,
+  registrationDate,
+  tournamentDate,
+  entryFee,
+}) {
+  const t = EMAIL_TEMPLATES.TOURNAMENT_REG_WAITLIST;
+  return sendTemplateEmail({
+    toEmail,
+    toName,
+    templateId: t.id,
+    subject: t.subject,
+    params: {
+      tournamentName: tournamentName || "",
+      phoneNumber: phoneNumber || "",
+      registrationDate: formatHungarianDate(registrationDate) || "",
+      tournamentDate: formatHungarianDate(tournamentDate) || "",
+      entryFee: entryFee || "",
+    },
+  });
+}
+
 /**
  * 3) Foglalás lemondva
  */

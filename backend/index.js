@@ -26,6 +26,7 @@ import calendarRoutes from "./routes/calendarRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import tournamentRoutes from "./routes/tournamentRoutes.js";
 import tournamentRegistrations from './routes/tournamentRegistrationRoutes.js';
+import thursdayLeaderboardRoutes from './routes/thursdayLeaderboardRoutes.js';
 
 // MiddleWarek
 import authMiddleware from './middleware/authMiddleware.js';
@@ -51,6 +52,8 @@ console.log("Mount /api/auth");
 try { app.use('/api/auth', authRoutes); } catch (e) { console.error("Failed mount authRoutes", e); throw e; }
 console.log("Mount /api/courts");
 try { app.use('/api/courts', courtRoutes); } catch (e) { console.error("Failed mount courtRoutes", e); throw e; }
+console.log("Mount /api/thursday-leaderboard");
+try { app.use('/api/thursday-leaderboard', thursdayLeaderboardRoutes); } catch (e) { console.error("Failed mount thursdayLeaderboardRoutes", e); throw e; }
 console.log("Mount /api/user");
 try { app.use('/api/user', userRoutes); } catch (e) { console.error("Failed mount userRoutes", e); throw e; }
 console.log("Mount /api/calendar");

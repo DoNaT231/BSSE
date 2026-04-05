@@ -59,6 +59,11 @@ export default function TournamentSignupSection() {
     userEmail,
   });
 
+  async function reloadTournamentData() {
+    const data = await fetchPublicTournaments(token);
+    setTournaments(Array.isArray(data) ? data : []);
+  }
+
   useEffect(() => {
     let mounted = true;
 
@@ -68,9 +73,7 @@ export default function TournamentSignupSection() {
         setLoadError("");
 
         const data = await fetchPublicTournaments(token);
-        if (mounted) {
-          setTournaments(Array.isArray(data) ? data : []);
-        }
+        if (mounted) setTournaments(Array.isArray(data) ? data : []);
 
         if (mounted && isLoggedIn) {
           await refreshMyRegistrations();
@@ -114,7 +117,7 @@ export default function TournamentSignupSection() {
 
       const isEdit = Boolean(activeRegistration?.id);
 
-      await submitTournamentRegistration(
+      const response = await submitTournamentRegistration(
         {
           tournamentId: selectedTournament.id,
           teamName: teamName.trim() || null,
@@ -126,9 +129,19 @@ export default function TournamentSignupSection() {
         isEdit ? activeRegistration.id : null
       );
 
+      await reloadTournamentData();
       await refreshMyRegistrations();
 
-      setSubmitMsg(isEdit ? "Nevezés módosítva ✅" : "Sikeres nevezés! ✅");
+      const status = String(
+        response?.status ?? response?.registration_status ?? "CONFIRMED"
+      ).toUpperCase();
+      if (isEdit) {
+        setSubmitMsg("Nevezés módosítva ✅");
+      } else if (status === "WAITLISTED") {
+        setSubmitMsg("Sikeres jelentkezés! Várólistára kerültél. ⏳");
+      } else {
+        setSubmitMsg("Sikeres nevezés! ✅");
+      }
       closeForm();
     } catch (err) {
       setSubmitErr(err.message || "Szerver hiba nevezés közben.");
@@ -146,6 +159,7 @@ export default function TournamentSignupSection() {
       setSubmitMsg("");
 
       await deleteTournamentRegistration(activeRegistration.id, token);
+      await reloadTournamentData();
       await refreshMyRegistrations();
 
       const afterDeadline = isRegistrationDeadlinePassed(selectedTournament);
@@ -164,11 +178,11 @@ export default function TournamentSignupSection() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="page-root">
       <Header />
 
       <AuthFrostLock loggedIn={isLoggedIn}>
-        <section className="relative overflow-hidden pt-28 pb-16">
+        <section className="page-main">
           {/* háttér díszítések */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
@@ -176,20 +190,18 @@ export default function TournamentSignupSection() {
             <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
           </div>
 
-          <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="page-container">
             {/* HERO */}
             <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="max-w-2xl">
-                <div className="inline-flex items-center rounded-full border border-sky-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-700 shadow-sm">
-                  Versenynevezések
-                </div>
+                <div className="type-kicker">Versenynevezések</div>
 
-                <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+                <h1 className="mt-5 type-page-title">
                   Jelentkezz a következő
-                  <span className="block text-sky-600">strandröplabda versenyre</span>
+                  <span className="type-page-title-accent">strandröplabda versenyre</span>
                 </h1>
 
-                <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+                <p className="type-lead">
                   Válaszd ki a számodra megfelelő versenyt, ellenőrizd a
                   nevezési adatokat, és pár kattintással add le a jelentkezést.
                 </p>
@@ -253,10 +265,8 @@ export default function TournamentSignupSection() {
               <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] backdrop-blur sm:p-6 lg:p-8">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
-                      Aktív versenyek
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-600">
+                    <h2 className="type-section-title">Aktív versenyek</h2>
+                    <p className="type-section-desc">
                       Kattints a kiválasztott versenyre a nevezéshez vagy módosításhoz.
                     </p>
                   </div>

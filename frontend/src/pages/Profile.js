@@ -191,13 +191,14 @@ export default function Profile() {
   const selectedCourt = courts.find((c) => Number(c.id) === Number(selectedCourtId));
 
   return (
-    <div className="min-h-screen bg-[#e9f6ff]">
+    <div className="page-root--alt">
       <Header />
 
       <AuthFrostLock>
-        <div className="max-w-6xl px-4 pt-32 pb-16 mx-auto">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <section className="md:col-span-1 bg-white shadow rounded-2xl p-6 border border-white/60">
+        <div className="page-main">
+          <div className="page-container-narrow">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <section className="md:col-span-1 bg-white shadow rounded-2xl p-6 border border-white/60">
               <h2 className="text-2xl font-extrabold">Profil</h2>
 
               <div className="mt-4 space-y-2 text-sm text-slate-700">
@@ -388,6 +389,7 @@ export default function Profile() {
                 </div>
               </div>
             </section>
+          </div>
           </div>
         </div>
       </AuthFrostLock>

@@ -112,9 +112,10 @@ function WeeklyCalendar() {
   }, [pendingPrint, printData]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex min-h-0 flex-1 flex-col">
       <AuthFrostLock>
-        <section className="relative overflow-hidden pt-16 pb-16">
+        <div className="page-main">
+          <section className="relative overflow-hidden">
           {/* háttér glow */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
@@ -122,7 +123,7 @@ function WeeklyCalendar() {
             <div className="absolute bottom-[-120px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
           </div>
 
-          <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="page-container">
             {/* HERO */}
             <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="max-w-2xl">
@@ -236,7 +237,8 @@ function WeeklyCalendar() {
               weekStart={printData.weekStart}
             />
           )}
-        </section>
+          </section>
+        </div>
       </AuthFrostLock>
     </div>
   );

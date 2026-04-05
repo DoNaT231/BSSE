@@ -9,13 +9,12 @@ import { Link } from "react-router-dom";
  */
 export default function AktAndAfsz() {
   return (
-    <div className="min-h-screen mt-32 bg-slate-50">
-      {/* Globális fejléc */}
+    <div className="page-root--alt">
       <Header />
 
-      {/* Oldaltér (padding + középre igazítás) */}
-      <div className="px-4 py-10 sm:py-12">
-        <div className="w-full max-w-3xl mx-auto">
+      <div className="page-main">
+        <div className="page-document-wrap">
+          <div className="page-document-inner">
           {/* Dokumentum kártya */}
           <div className="bg-white shadow-sm rounded-2xl ring-1 ring-slate-200">
             <div className="p-6 sm:p-10">
@@ -119,6 +118,7 @@ export default function AktAndAfsz() {
 
               {/* (a további szöveges részek ugyanígy folytathatók változtatás nélkül) */}
             </div>
+          </div>
           </div>
         </div>
       </div>

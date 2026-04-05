@@ -16,6 +16,10 @@ export default function TournamentList({
   registrations,
   regsLoading,
   regsError,
+  onStatusChange,
+  statusUpdateLoadingId,
+  onPaidChange,
+  paidUpdateLoadingId,
 }) {
   return (
     <div className="mt-6">
@@ -43,6 +47,10 @@ export default function TournamentList({
               registrations={openRegsId === tournament.id ? registrations : []}
               regsLoading={openRegsId === tournament.id ? regsLoading : false}
               regsError={openRegsId === tournament.id ? regsError : ""}
+              onStatusChange={onStatusChange}
+              statusUpdateLoadingId={statusUpdateLoadingId}
+              onPaidChange={onPaidChange}
+              paidUpdateLoadingId={paidUpdateLoadingId}
             />
           ))}
         </div>

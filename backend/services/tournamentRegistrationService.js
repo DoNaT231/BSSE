@@ -1,6 +1,9 @@
 import * as tournamentRegistrationRepository from "../repositories/tournamentRegistrationRepository.js";
 import * as tournamentRepository from "../repositories/tournamentRepository.js";
-import { sendTournamentRegistrationSuccessEmail } from "./email/service.js";
+import {
+  sendTournamentRegistrationSuccessEmail,
+  sendTournamentRegistrationWaitlistEmail,
+} from "./email/service.js";
 import pool from "../db.js";
 
 function isNonEmptyString(v) {
@@ -20,12 +23,13 @@ async function getTournamentStartFromSlots(eventId, client = pool) {
   return rows[0]?.start_at ?? null;
 }
 
-async function sendSuccessEmailSafe({
+async function sendRegistrationEmailSafe({
   tournamentId,
   userId,
   telNumber,
   registrationDate,
   contactEmail,
+  status,
 }) {
   if (!contactEmail) return;
 
@@ -43,7 +47,7 @@ async function sendSuccessEmailSafe({
     const username = rows[0].username;
     const tournamentStart = await getTournamentStartFromSlots(tournament.eventId);
 
-    await sendTournamentRegistrationSuccessEmail({
+    const emailPayload = {
       toEmail: contactEmail,
       toName: username,
       tournamentName: tournament.title,
@@ -56,7 +60,13 @@ async function sendSuccessEmailSafe({
         tournament.entry_fee == null || Number(tournament.entry_fee) === 0
           ? "Ingyenes"
           : `${tournament.entry_fee} Ft`,
-    });
+    };
+
+    if (String(status).toUpperCase() === "WAITLISTED") {
+      await sendTournamentRegistrationWaitlistEmail(emailPayload);
+    } else {
+      await sendTournamentRegistrationSuccessEmail(emailPayload);
+    }
   } catch (e) {
     console.error("Tournament registration email failed:", e);
   }
@@ -124,13 +134,13 @@ export async function registerToTournament({
     }
   }
 
+  let registrationStatus = "CONFIRMED";
   if (tournament.maxTeams) {
     const currentCount = await tournamentRegistrationRepository.countByTournamentId(
       tournamentId
     );
-
     if (currentCount >= Number(tournament.maxTeams)) {
-      throw new Error("A verseny betelt.");
+      registrationStatus = "WAITLISTED";
     }
   }
 
@@ -141,14 +151,16 @@ export async function registerToTournament({
     players: players ?? null,
     teamName: teamName?.trim() || null,
     contactEmail: contactEmail?.trim() || null,
+    status: registrationStatus,
   });
 
-  await sendSuccessEmailSafe({
+  await sendRegistrationEmailSafe({
     tournamentId,
     userId,
     telNumber: created.telNumber,
     registrationDate: created.createdAt,
     contactEmail: created.contactEmail,
+    status: created.status ?? registrationStatus,
   });
 
   return created;
@@ -268,4 +280,56 @@ export async function getTournamentRegistrations(tournamentId) {
     },
     registrations,
   };
+}
+
+export async function updateRegistrationStatusByAdmin({
+  registrationId,
+  status,
+}) {
+  const normalizedStatus = String(status || "").trim().toUpperCase();
+  const allowed = new Set(["CONFIRMED", "WAITLISTED"]);
+
+  if (!allowed.has(normalizedStatus)) {
+    throw new Error("Érvénytelen státusz. Csak CONFIRMED vagy WAITLISTED lehet.");
+  }
+
+  const registration = await tournamentRegistrationRepository.findById(registrationId);
+  if (!registration) {
+    throw new Error("A jelentkezés nem található.");
+  }
+
+  return tournamentRegistrationRepository.updateById(registrationId, {
+    status: normalizedStatus,
+  });
+}
+
+/**
+ * Admin: tournament_registration paid mező módosítása
+ * paid: boolean (vagy true/false string)
+ */
+export async function updateRegistrationPaidByAdmin({ registrationId, paid }) {
+  if (paid === undefined) {
+    throw new Error("Hiányzó paid mező.");
+  }
+
+  const normalizedPaid =
+    typeof paid === "boolean"
+      ? paid
+      : ["true", "1", "yes"].includes(String(paid).trim().toLowerCase());
+
+  if (!Number.isFinite(Number(registrationId))) {
+    throw new Error("Érvénytelen registrationId.");
+  }
+
+  const registration = await tournamentRegistrationRepository.findById(
+    registrationId
+  );
+
+  if (!registration) {
+    throw new Error("A jelentkezés nem található.");
+  }
+
+  return tournamentRegistrationRepository.updateById(registrationId, {
+    paid: normalizedPaid,
+  });
 }

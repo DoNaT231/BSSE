@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import useUserEditor from "../hooks/useUserEditor";
 import { formatBoolean, formatUserType } from "../utils/userFormatters";
 import UserEditForm from "./UserEditForm";
@@ -6,12 +7,18 @@ export default function UserDetailsPanel({
   selectedUser,
   onClose,
   onUpdate,
+  onAdjustThursdayPoints,
   onActivate,
   onDeactivate,
   onDelete,
   isActionLoading,
 }) {
   const { formData, handleChange, resetForm } = useUserEditor(selectedUser);
+  const [pointsAmount, setPointsAmount] = useState("1");
+
+  useEffect(() => {
+    setPointsAmount("1");
+  }, [selectedUser?.id]);
 
   if (!selectedUser) {
     return (
@@ -27,6 +34,26 @@ export default function UserDetailsPanel({
     event.preventDefault();
     await onUpdate(selectedUser.id, formData);
   }
+
+  function parsePointsDelta() {
+    const n = Number.parseInt(String(pointsAmount).trim(), 10);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return n;
+  }
+
+  async function handleAddPoints() {
+    const n = parsePointsDelta();
+    if (n == null) return;
+    await onAdjustThursdayPoints(selectedUser.id, n);
+  }
+
+  async function handleSubtractPoints() {
+    const n = parsePointsDelta();
+    if (n == null) return;
+    await onAdjustThursdayPoints(selectedUser.id, -n);
+  }
+
+  const pointsDeltaValid = parsePointsDelta() != null;
 
   return (
     <div className="p-4 border lg:col-span-2 rounded-2xl">
@@ -76,6 +103,45 @@ export default function UserDetailsPanel({
         <div className="col-span-1 p-3 border rounded-xl md:col-span-2">
           <div className="text-xs text-gray-500">Telefonszám</div>
           <div className="font-semibold">{selectedUser.phone || "—"}</div>
+        </div>
+
+        <div className="col-span-1 p-3 border rounded-xl md:col-span-2">
+          <div className="text-xs text-gray-500">Csütörtöki pontok</div>
+          <div className="mt-1 text-2xl font-semibold tabular-nums">
+            {Number(selectedUser.thursday_points ?? 0)}
+          </div>
+          <div className="flex flex-wrap items-end gap-2 mt-3">
+            <label className="flex flex-col gap-1 text-xs text-gray-500">
+              Összeg
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={pointsAmount}
+                onChange={(e) => setPointsAmount(e.target.value)}
+                className="w-24 px-2 py-1.5 text-sm border rounded-lg"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={handleAddPoints}
+              disabled={isActionLoading || !pointsDeltaValid}
+              className="px-3 py-2 text-sm text-emerald-800 border border-emerald-200 rounded-xl bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50"
+            >
+              + Hozzáadás
+            </button>
+            <button
+              type="button"
+              onClick={handleSubtractPoints}
+              disabled={isActionLoading || !pointsDeltaValid}
+              className="px-3 py-2 text-sm text-amber-900 border border-amber-200 rounded-xl bg-amber-50 hover:bg-amber-100 disabled:opacity-50"
+            >
+              − Levonás
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            Csak admin módosíthatja; a pontszám nem mehet 0 alá.
+          </p>
         </div>
       </div>
 

@@ -1,13 +1,36 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-export default function Modal({ children, closeModal}) {
+
+/**
+ * Általános modal keret.
+ *
+ * @param {function} closeModal | onClose — bezárás (legalább egy legyen dismissible módban)
+ * @param {boolean} dismissible — ha true: X gomb + opcionálisan háttérre kattintás zár
+ * @param {boolean} closeOnBackdropClick — csak ha dismissible (alap: true)
+ */
+export default function Modal({
+  children,
+  closeModal,
+  onClose,
+  dismissible = true,
+  closeOnBackdropClick = true,
+}) {
+  const handleClose = closeModal ?? onClose;
+
+  function onBackdropMouseDown(e) {
+    if (!dismissible || !closeOnBackdropClick || !handleClose) return;
+    if (e.target === e.currentTarget) handleClose();
+  }
+
   return (
     <div
       className="
         fixed inset-0 z-[1000]
         flex items-center justify-center
-        bg-black/50 backdrop-blur-sm
+        h-screen
         animate-fadeIn
       "
+      onMouseDown={onBackdropMouseDown}
+      role="presentation"
     >
       <div
         className="
@@ -22,13 +45,20 @@ export default function Modal({ children, closeModal}) {
           gap-8
           relative
         "
+        onMouseDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
-        <button
-          onClick={closeModal}
-          className="absolute z-50 top-4 right-4"
-        >
-          <XMarkIcon className="w-10 h-10 text-gray-700 size-6" />
-        </button>
+        {dismissible && handleClose ? (
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="Bezárás"
+            className="absolute z-50 top-4 right-4 rounded-lg p-1 hover:bg-gray-100"
+          >
+            <XMarkIcon className="w-6 h-6 text-gray-700" />
+          </button>
+        ) : null}
         {children}
       </div>
     </div>

@@ -12,6 +12,7 @@ export default function UsersSection() {
     selectUser,
     loadUsers,
     updateUser,
+    adjustThursdayPoints,
     activateUser,
     deactivateUser,
     deleteUser,
@@ -49,6 +50,7 @@ export default function UsersSection() {
           selectedUser={selectedUser}
           onClose={() => setSelectedUser(null)}
           onUpdate={updateUser}
+          onAdjustThursdayPoints={adjustThursdayPoints}
           onActivate={activateUser}
           onDeactivate={deactivateUser}
           onDelete={deleteUser}

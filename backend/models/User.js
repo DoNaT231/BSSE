@@ -8,6 +8,7 @@ export default class User {
     is_active,
     is_local,
     phone,
+    thursday_points,
     updated_at,
     created_at
   ) {
@@ -19,6 +20,7 @@ export default class User {
     this.is_active = is_active;
     this.is_local = is_local;
     this.phone = phone;
+    this.thursday_points = thursday_points;
     this.updated_at = updated_at;
     this.created_at = created_at;
   }

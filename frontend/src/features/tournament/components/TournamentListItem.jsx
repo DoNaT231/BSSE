@@ -28,6 +28,10 @@ export default function TournamentListItem({
   registrations,
   regsLoading,
   regsError,
+  onStatusChange,
+  statusUpdateLoadingId,
+  onPaidChange,
+  paidUpdateLoadingId,
 }) {
   const [slotModal, setSlotModal] = useState(null);
   const [slotModalError, setSlotModalError] = useState("");
@@ -219,6 +223,10 @@ export default function TournamentListItem({
         registrations={registrations}
         loading={regsLoading}
         error={regsError}
+        onStatusChange={onStatusChange}
+        statusUpdateLoadingId={statusUpdateLoadingId}
+        onPaidChange={onPaidChange}
+        paidUpdateLoadingId={paidUpdateLoadingId}
       />
     </div>
   );

@@ -1,7 +1,11 @@
 import React from "react";
 import TournamentFormFields from "./TournamentFormFields.jsx";
 import TournamentPlayersFields from "./TournamentPlayersFields.jsx";
-import { formatDateTime, getTournamentStart } from "../utils/tournamentDates.js";
+import {
+  formatDateTime,
+  getTournamentStart,
+  isTournamentFull,
+} from "../utils/tournamentDates.js";
 
 export default function TournamentModal({
   selectedTournament,
@@ -24,6 +28,7 @@ export default function TournamentModal({
   if (!selectedTournament) return null;
 
   const startIso = getTournamentStart(selectedTournament);
+  const willBeWaitlisted = !activeRegistration?.id && isTournamentFull(selectedTournament);
 
   return (
     <div
@@ -76,6 +81,13 @@ export default function TournamentModal({
               updatePlayer={updatePlayer}
             />
 
+            {willBeWaitlisted && (
+              <div className="p-3 text-sm font-extrabold border border-amber-200 rounded-2xl bg-amber-50 text-amber-800">
+                A verseny elérte a maximum csapatszámot, ezért a jelentkezésed
+                várólistára fog kerülni.
+              </div>
+            )}
+
             {submitErr && (
               <div className="p-3 text-sm font-extrabold text-red-700 border border-red-200 rounded-2xl bg-red-50">
                 {submitErr}
@@ -98,6 +110,8 @@ export default function TournamentModal({
                   ? "Mentés..."
                   : activeRegistration?.id
                   ? "Módosítás mentése"
+                  : willBeWaitlisted
+                  ? "Várólistára jelentkezem"
                   : "Jelentkezés elküldése"}
               </button>
 

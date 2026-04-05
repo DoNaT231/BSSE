@@ -64,7 +64,6 @@ export function formatDateTime(iso) {
     if (!tournament) return false;
     if (isRegistrationDeadlinePassed(tournament)) return false;
     if (hasTournamentStarted(tournament)) return false;
-    if (isTournamentFull(tournament)) return false;
   
     return true;
   }

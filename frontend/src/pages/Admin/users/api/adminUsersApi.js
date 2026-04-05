@@ -77,6 +77,25 @@ export async function updateUserAdmin(userId, userData) {
 }
 
 /**
+ * Csütörtöki pontok módosítása admin által (delta: pozitív vagy negatív egész)
+ */
+export async function adjustThursdayPointsAdmin(userId, delta) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/users/${userId}/thursday-points`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ delta }),
+    }
+  );
+
+  return handleResponse(
+    response,
+    "Nem sikerült módosítani a csütörtöki pontokat."
+  );
+}
+
+/**
  * User deaktiválása admin által
  */
 export async function deactivateUserAdmin(userId) {

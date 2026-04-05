@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import Modal from "./Modal";
 import LoginModal from "../features/auth/components/LoginModal";
 import LogoutModal from "../features/auth/components/LogoutModal";
 
@@ -42,6 +41,7 @@ function Header() {
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
+        dismissible
       />
 
       {/* ===================== KIJELENTKEZÉS MODAL ===================== */}
@@ -139,6 +139,13 @@ function Header() {
             onClick={() => handleNavClick("/versenyek")}
           >
             Versenyek
+          </p>
+
+          <p
+            className="cursor-pointer relative hover:after:w-full after:block after:h-[1px] after:bg-white after:w-0 after:transition-all"
+            onClick={() => handleNavClick("/csutortoki-bajnoksag")}
+          >
+            Csütörtöki bajnokság
           </p>
 
           {isAdmin && (

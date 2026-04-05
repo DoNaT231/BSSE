@@ -70,6 +70,10 @@ export default function TournamentsAdminSection() {
         registrations={registrations.registrations}
         regsLoading={registrations.regsLoading}
         regsError={registrations.regsError}
+        onStatusChange={registrations.changeRegistrationStatus}
+        statusUpdateLoadingId={registrations.statusUpdateLoadingId}
+        onPaidChange={registrations.changeRegistrationPaid}
+        paidUpdateLoadingId={registrations.paidUpdateLoadingId}
       />
 
       <TournamentDeleteModal

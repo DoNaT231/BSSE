@@ -1,0 +1,40 @@
+/**
+ * Tipográfiai minták (címek, lead, kis címkék).
+ * Használat: JSX-ben className="type-page-title" stb.
+ */
+.type-page-title {
+  @apply text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl;
+}
+
+.type-page-title-accent {
+  @apply block text-sky-600;
+}
+
+.type-lead {
+  @apply mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg;
+}
+
+.type-section-title {
+  @apply text-2xl font-extrabold tracking-tight text-slate-900;
+}
+
+.type-section-desc {
+  @apply mt-1 text-sm text-slate-600;
+}
+
+.type-kicker {
+  @apply inline-flex items-center rounded-full border border-sky-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-700 shadow-sm;
+}
+
+/* Jogi / dokumentum oldalak */
+.type-doc-h1 {
+  @apply text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl;
+}
+
+.type-doc-h2 {
+  @apply mt-2 text-lg font-semibold text-slate-700 sm:text-xl;
+}
+
+.type-doc-meta {
+  @apply text-sm text-slate-500;
+}

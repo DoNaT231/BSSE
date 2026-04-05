@@ -1,7 +1,6 @@
 import {
     canRegisterToTournament,
     isRegistrationDeadlinePassed,
-    isTournamentFull,
     hasTournamentStarted,
   } from "./tournamentDates.js";
   
@@ -24,10 +23,6 @@ import {
   
     if (hasTournamentStarted(tournament)) {
       return "A verseny már elkezdődött.";
-    }
-  
-    if (isTournamentFull(tournament)) {
-      return "A verseny betelt.";
     }
   
     if (!canRegisterToTournament(tournament)) {

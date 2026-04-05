@@ -108,4 +108,50 @@ router.get(
   }
 );
 
+/**
+ * PATCH /api/tournament-registrations/admin/:id/status
+ * Body: { status: "CONFIRMED" | "WAITLISTED" }
+ */
+router.patch(
+  "/admin/:id/status",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const updated =
+        await tournamentRegistrationService.updateRegistrationStatusByAdmin({
+          registrationId: Number(req.params.id),
+          status: req.body?.status,
+        });
+
+      return res.status(200).json(updated);
+    } catch (err) {
+      return res.status(400).json({ message: err.message });
+    }
+  }
+);
+
+/**
+ * PATCH /api/tournament-registrations/admin/:id/paid
+ * Body: { paid: boolean }
+ */
+router.patch(
+  "/admin/:id/paid",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const updated =
+        await tournamentRegistrationService.updateRegistrationPaidByAdmin({
+          registrationId: Number(req.params.id),
+          paid: req.body?.paid,
+        });
+
+      return res.status(200).json(updated);
+    } catch (err) {
+      return res.status(400).json({ message: err.message });
+    }
+  }
+);
+
 export default router;

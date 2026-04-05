@@ -2,26 +2,18 @@ import EmailStep from "./EmailStep";
 import PasswordStep from "./PasswordStep";
 import RegisterStep from "./RegisterStep";
 import useAuthFlow from "../useAuthFlow";
+import Modal from "../../../components/Modal";
 
 /**
  * LoginModal
  * ---------------------------------------
- * A bejelentkezési / regisztrációs folyamat
- * megjelenítéséért felelős modal komponens.
- *
- * Flow:
- * 1. Email megadása
- * 2. A hook eldönti a következő lépést
- * 3. Password vagy Register step jelenik meg
- *
- * Props:
- * - isOpen (boolean) → modal láthatósága
- * - onClose (function) → modal bezárása
+ * dismissible (alap: true): Header „Bejelentkezés” — X + háttérre kattintás zárhat.
+ * dismissible={false}: AuthFrostLock — nincs X, nem zárható háttérrel; csak sikeres auth után.
  */
-
 export default function LoginModal({
   isOpen,
   onClose,
+  dismissible = true,
 }) {
   const {
     step,
@@ -37,17 +29,15 @@ export default function LoginModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
-      <div className="w-full max-w-md p-6 bg-white shadow-xl rounded-2xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Bejelentkezés</h2>
-          <button
-            onClick={onClose}
-            className="px-2 py-1 text-sm text-gray-500 rounded-md hover:bg-gray-100"
-          >
-            Bezárás
-          </button>
-        </div>
+    <Modal
+      closeModal={onClose}
+      dismissible={dismissible}
+      closeOnBackdropClick={dismissible}
+    >
+      <div className="w-full text-left">
+        <h2 className="pr-10 text-xl font-semibold text-center mb-1">
+          Bejelentkezés
+        </h2>
 
         {step === "email" && (
           <EmailStep
@@ -77,6 +67,6 @@ export default function LoginModal({
           />
         )}
       </div>
-    </div>
+    </Modal>
   );
 }

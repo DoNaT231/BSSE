@@ -14,6 +14,7 @@ function mapRowToUser(row) {
     row.is_active,
     row.is_local,
     row.phone,
+    Number(row.thursday_points ?? 0),
     row.updated_at,
     row.created_at
   );
@@ -368,6 +369,49 @@ export async function updateActiveStatusById(id, isActive, client = pool) {
   );
 
   return mapRowToUser(rows[0]);
+}
+
+/**
+ * Admin: csütörtöki pontok módosítása relatív deltával (nem megy 0 alá)
+ */
+export async function adjustThursdayPointsById(id, delta, client = pool) {
+  const { rows } = await client.query(
+    `
+      UPDATE users
+      SET thursday_points = GREATEST(0, COALESCE(thursday_points, 0) + $2::integer),
+          updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `,
+    [id, delta]
+  );
+
+  return mapRowToUser(rows[0]);
+}
+
+/**
+ * Nyilvános ranglista: top N felhasználó csütörtöki pont szerint (username + points)
+ */
+export async function findTopThursdayPoints(limit = 10, client = pool) {
+  const lim = Math.min(Math.max(Number.parseInt(String(limit), 10) || 10, 1), 50);
+
+  const { rows } = await client.query(
+    `
+      SELECT
+        COALESCE(NULLIF(TRIM(username), ''), 'Névtelen') AS username,
+        COALESCE(thursday_points, 0)::integer AS points
+      FROM users
+      WHERE is_active = TRUE
+      ORDER BY COALESCE(thursday_points, 0) DESC, username ASC
+      LIMIT $1
+    `,
+    [lim]
+  );
+
+  return rows.map((r) => ({
+    username: r.username,
+    points: Number(r.points ?? 0),
+  }));
 }
 
 /**

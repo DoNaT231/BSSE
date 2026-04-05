@@ -2,6 +2,7 @@ import {
   getAllUsersAdmin,
   getUserByIdAdmin,
   updateUserAdmin,
+  adjustThursdayPointsAdmin,
   deactivateUserAdmin,
   activateUserAdmin,
   deleteUserAdmin,
@@ -17,6 +18,10 @@ export async function fetchAdminUserById(userId) {
 
 export async function saveAdminUser(userId, payload) {
   return updateUserAdmin(userId, payload);
+}
+
+export async function adjustAdminThursdayPoints(userId, delta) {
+  return adjustThursdayPointsAdmin(userId, delta);
 }
 
 export async function deactivateAdminUser(userId) {

@@ -4,15 +4,19 @@ export const EMAIL_TEMPLATES = {
     subject: "A foglalásodat mentettük!",
   },
   TOURNAMENT_REG_SUCCESS: {
-    id: 3, // majd Brevo-ban létrehozod
+    id: 3, 
     subject: "Versenyjelentkezés sikeres",
+  },
+  TOURNAMENT_REG_WAITLIST: {
+    id: 5, 
+    subject: "Versenyjelentkezés várólistán",
   },
   RESERVATION_CANCELLED: {
     id: 4, // majd Brevo-ban létrehozod
     subject: "Foglalás lemondva",
   },
   ADMIN_CONFLICT: {
-    id: 5, // majd Brevo-ban létrehozod
+    id: 6, // majd Brevo-ban létrehozod
     subject: "Ütközés / admin értesítés",
   },
 };
