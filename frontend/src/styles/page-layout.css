@@ -1,0 +1,35 @@
+/**
+ * Oldal-vázak: egységes padding a fix Header alatt, konténer szélességek.
+ * (Nincs @layer: a fájl @importtal kerül be, külön fordítási egységként a @layer hibát okozna.)
+ */
+.page-root {
+  @apply min-h-screen bg-page-bg;
+}
+
+.page-root--alt {
+  @apply min-h-screen bg-page-bg-alt;
+}
+
+.page-root--white {
+  @apply min-h-screen bg-white;
+}
+
+.page-main {
+  @apply relative overflow-hidden pt-header pb-page-bottom;
+}
+
+.page-container {
+  @apply relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.page-container-narrow {
+  @apply relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+}
+
+.page-document-wrap {
+  @apply px-4 py-10 sm:py-12;
+}
+
+.page-document-inner {
+  @apply mx-auto w-full max-w-3xl;
+}

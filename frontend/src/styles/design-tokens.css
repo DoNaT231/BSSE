@@ -1,0 +1,36 @@
+/**
+ * BSSE design tokenek (színek, távolságok, tipográfia alapok).
+ * A Tailwind `tailwind.config.js` több helyen `var(--bsse-*)` hivatkozást használ;
+ * futásidejű értékek itt vannak definiálva.
+ */
+:root {
+  /* --- Layout: fix Header alatti tartalom kezdete (egységes oldalmagasság / offset) --- */
+  --bsse-space-header-offset: 7rem;
+  --bsse-space-page-bottom: 4rem;
+  --bsse-space-page-x: 1rem;
+  --bsse-max-content: 80rem;
+  --bsse-max-content-md: 72rem;
+  --bsse-max-document: 48rem;
+
+  /* --- Felületek --- */
+  --bsse-color-page-bg: #f8fafc;
+  --bsse-color-page-bg-alt: #e9f6ff;
+  --bsse-color-surface: #ffffff;
+  --bsse-color-border-subtle: #e2e8f0;
+
+  /* --- Márka / navigáció (Header) --- */
+  --bsse-color-brand-sky: #60a5fa;
+  --bsse-color-brand-sky-strong: #0284c7;
+  --bsse-color-brand-dark: #111827;
+
+  /* --- Szöveg --- */
+  --bsse-color-text: #1e293b;
+  --bsse-color-text-muted: #64748b;
+  --bsse-color-text-heading: #0f172a;
+
+  /* --- Kártya / panel --- */
+  --bsse-radius-card: 12px;
+  --bsse-radius-pill: 17px;
+  --bsse-shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.05);
+  --bsse-shadow-card: 0 20px 60px -30px rgba(15, 23, 42, 0.25);
+}
