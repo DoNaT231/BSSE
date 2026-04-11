@@ -10,7 +10,7 @@
 
 @layer base {
   body {
-    @apply bg-page-bg text-slate-800 font-sans antialiased;
+    @apply bg-page-bg font-sans antialiased text-brandDark;
   }
 }
 

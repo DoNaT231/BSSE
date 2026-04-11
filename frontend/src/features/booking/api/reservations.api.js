@@ -75,7 +75,7 @@ export async function apiGetWeeklyCalendarSlots({ monday, courtId, token }) {
     throw err;
   }
 
-  return json;
+  return Array.isArray(json) ? json : [];
 }
 
 /**
@@ -120,7 +120,7 @@ export async function apiGetOwnWeeklyReservations({ monday, courtId, token }) {
     throw err;
   }
 
-  return json;
+  return Array.isArray(json) ? json : [];
 }
 
 /**

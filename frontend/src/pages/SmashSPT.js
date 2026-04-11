@@ -25,14 +25,14 @@ export default function SmashSPT() {
 
                 <Link
                   to="/"
-                  className="text-sm font-medium underline text-slate-700 hover:text-slate-900 underline-offset-4"
+                  className="text-sm font-medium underline text-slate-700 hover:text-brandDark underline-offset-4"
                 >
                   Vissza a kezdőlapra
                 </Link>
               </div>
 
               {/* ===== CÍM ===== */}
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-brandDark">
                 SMASH STRANDRÖPLABDA – PÁLYAHASZNÁLATI TÁJÉKOZTATÓ
               </h1>
 
@@ -47,12 +47,12 @@ export default function SmashSPT() {
               </p>
 
               {/* ===== HÁZIREND ===== */}
-              <h3 className="mt-8 text-xl font-semibold sm:text-2xl text-slate-900">
+              <h3 className="mt-8 text-xl font-semibold sm:text-2xl text-brandDark">
                 🏐 Házirend
               </h3>
 
               {/* Szabadon használható */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Szabadon használható
               </h4>
               <ul className="pl-5 mt-2 space-y-1 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -64,7 +64,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Foglalás */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Elsőbbség a foglalásnak
               </h4>
               <ul className="pl-5 mt-2 space-y-2 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -84,7 +84,7 @@ export default function SmashSPT() {
                     href="https://balatonsse.hu/palyafoglalas"
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-blue-600 hover:underline"
+                    className="font-medium text-lightBlue hover:underline"
                   >
                     https://balatonsse.hu/palyafoglalas
                   </a>
@@ -98,7 +98,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Felszerelés */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 A felszerelés védelme
               </h4>
               <ul className="pl-5 mt-2 space-y-1 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -112,7 +112,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Dohányzás */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Dohányzásmentes övezet
               </h4>
               <ul className="pl-5 mt-2 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -120,7 +120,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Tisztaság */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Tisztaság és biztonság
               </h4>
               <ul className="pl-5 mt-2 space-y-1 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -134,7 +134,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Karbantartás */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Pályakarbantartás
               </h4>
               <ul className="pl-5 mt-2 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -145,7 +145,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Vészhelyzet */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Elsősegély és vészhelyzet
               </h4>
               <ul className="pl-5 mt-2 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -156,7 +156,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Felelősség */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Felelősség
               </h4>
               <ul className="pl-5 mt-2 text-sm leading-7 list-disc sm:text-base text-slate-700">
@@ -168,7 +168,7 @@ export default function SmashSPT() {
               </ul>
 
               {/* Üzemeltetés */}
-              <h4 className="mt-6 text-lg font-semibold text-slate-800">
+              <h4 className="mt-6 text-lg font-semibold text-brandDark">
                 Üzemeltetés
               </h4>
               <p className="mt-2 text-sm leading-7 sm:text-base text-slate-600">

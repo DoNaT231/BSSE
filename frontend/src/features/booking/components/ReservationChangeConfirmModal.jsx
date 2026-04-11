@@ -32,8 +32,8 @@ function ReservationChangeConfirmModal({
 }) {
   if (!isOpen) return null;
 
-  const added = changes?.added || [];
-  const removed = changes?.removed || [];
+  const added = changes?.added ?? [];
+  const removed = changes?.removed ?? [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50">
@@ -102,7 +102,7 @@ function ReservationChangeConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={isSaving}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white rounded-lg bg-lightBlue hover:bg-lightBlueStrong disabled:opacity-50"
           >
             {isSaving ? "Mentés..." : "Mentés"}
           </button>

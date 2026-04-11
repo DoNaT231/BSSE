@@ -21,21 +21,21 @@ const WaveDivider = () => {
     >
       <path
         className="wave-path wave-1"
-        fill="#60a5fa"
+        fill="#1ea4de"
         opacity="1"
         d="M0,200 C220,100 440,100 660,200 C880,300 1100,300 1320,200 L1320 500 L0 500"
       />
 
       <path
         className="wave-path wave-2"
-        fill="#60a5fa"
+        fill="#1ea4de"
         opacity="0.7"
         d="M0,200 C220,100 440,100 660,200 C880,300 1100,300 1320,200 L1320 500 L0 500"
       />
 
       <path
         className="wave-path wave-3"
-        fill="#60a5fa"
+        fill="#1ea4de"
         opacity="0.4"
         d="M0,200 C220,100 440,100 660,200 C880,300 1100,300 1320,200 L1320 500 L0 500"
       />

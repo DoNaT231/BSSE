@@ -204,12 +204,14 @@ export default function useWeeklyCalendar({ user, role, token }) {
   async function loadCourts() {
     try {
       const data = await fetchCourts();
-      setCourts(data);
+      const list = Array.isArray(data) ? data : [];
+      setCourts(list);
 
-      if (data?.length && !selectedCourtId) {
-        setSelectedCourtId(Number(data[0].id));
+      if (list.length > 0 && selectedCourtId == null) {
+        setSelectedCourtId(Number(list[0].id));
       }
     } catch {
+      setCourts([]);
       openErrorModal("Hiba történt a pályák lekérésekor.");
     }
   }
@@ -245,12 +247,17 @@ export default function useWeeklyCalendar({ user, role, token }) {
           : Promise.resolve([]),
       ]);
 
-      setCalendarSlots(slots);
+      const safeSlots = Array.isArray(slots) ? slots : [];
+      const own = Array.isArray(ownReservations) ? ownReservations : [];
+      setCalendarSlots(safeSlots);
 
-      const ownDraft = ownReservations.map(toDraftReservation);
+      const ownDraft = own.map(toDraftReservation);
       setDraftReservations(ownDraft);
       setInitialReservations(ownDraft);
     } catch (err) {
+      setCalendarSlots([]);
+      setDraftReservations([]);
+      setInitialReservations([]);
       openErrorModal(err.message || "Hiba történt a foglalások lekérésekor.");
     }
   }
@@ -388,13 +395,14 @@ export default function useWeeklyCalendar({ user, role, token }) {
     const cellEndDate = getCellEndDate(cellDate);
     const now = new Date();
 
-    const existingSlot = findCalendarSlotAtCell(calendarSlots, cellDate);
-    const overlappingSlots = findSlotsOverlappingCell(calendarSlots, cellDate);
+    const slots = Array.isArray(calendarSlots) ? calendarSlots : [];
+    const existingSlot = findCalendarSlotAtCell(slots, cellDate);
+    const overlappingSlots = findSlotsOverlappingCell(slots, cellDate);
     const blockingTournament = overlappingSlots.find(
       (s) => s.eventType === "tournament"
     );
 
-    const tournamentSlotThatDay = calendarSlots.find((s) => {
+    const tournamentSlotThatDay = slots.find((s) => {
       if (s.eventType !== "tournament" || s.tournamentId == null) return false;
       const start = parseLocalDateTime(s.startTime);
       return start ? isSameDay(start, cellDate) : false;

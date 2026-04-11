@@ -11,7 +11,7 @@ const PODIUM = [
       "bg-gradient-to-b from-slate-100 to-slate-300 border-slate-300",
     label: "2. helyezés",
     labelClass: "text-slate-500",
-    usernameClass: "text-slate-900",
+    usernameClass: "text-brandDark",
     pointsClass: "text-slate-700",
   },
   {
@@ -122,9 +122,9 @@ export default function ThursdayChampionshipPage() {
 
       <section className="page-main">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
+          <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />
           <div className="absolute top-[180px] right-[-60px] h-[260px] w-[260px] rounded-full bg-cyan-200/40 blur-3xl" />
-          <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
+          <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-lightBlue/20 blur-3xl" />
         </div>
 
         <div className="page-container relative">
@@ -137,9 +137,9 @@ export default function ThursdayChampionshipPage() {
             </h1>
 
             <p className="type-lead">
-              Gyere le <span className="font-semibold text-slate-800">csütörtökönként</span> a
+              Gyere le <span className="font-semibold text-brandDark">csütörtökönként</span> a
               csütörtöki bajnokságunkra, hogy pontokat szerezz — a szezon végén pedig{" "}
-              <span className="font-semibold text-sky-700">nyeremény</span> vár a legjobbakra!
+              <span className="font-semibold text-lightBlueStrong">nyeremény</span> vár a legjobbakra!
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export default function ThursdayChampionshipPage() {
           </div>
 
           {!loading && !error && entries.length > 0 && (
-            <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] backdrop-blur sm:p-6 lg:p-8">
+            <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.25)] backdrop-blur sm:p-6 lg:p-8">
               <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2 className="type-section-title">Ranglista</h2>
@@ -172,7 +172,7 @@ export default function ThursdayChampionshipPage() {
                     Top 10 játékos csütörtöki pontok alapján.
                   </p>
                 </div>
-                <div className="rounded-full bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700">
+                <div className="rounded-full bg-primaryLight px-4 py-2 text-sm font-bold text-lightBlueStrong">
                   Élő sorrend
                 </div>
               </div>
@@ -227,11 +227,11 @@ export default function ThursdayChampionshipPage() {
                         <span className="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-sm font-extrabold tabular-nums text-slate-700 shrink-0">
                           {i + 4}
                         </span>
-                        <span className="font-semibold text-slate-900 truncate">
+                        <span className="font-semibold text-brandDark truncate">
                           {row.username}
                         </span>
                       </div>
-                      <span className="font-extrabold tabular-nums text-sky-700 shrink-0">
+                      <span className="font-extrabold tabular-nums text-lightBlueStrong shrink-0">
                         {row.points} pt
                       </span>
                     </li>

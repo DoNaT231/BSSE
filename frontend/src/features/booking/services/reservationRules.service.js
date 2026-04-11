@@ -31,6 +31,8 @@ export function validateReservationSelection({
   weekEndExclusive,
   draftReservations,
 }) {
+  const drafts = Array.isArray(draftReservations) ? draftReservations : [];
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -53,7 +55,7 @@ export function validateReservationSelection({
    * A draft foglalásokat local Date objektummá alakítjuk,
    * timezone-kezelés nélkül.
    */
-  const ownDates = draftReservations
+  const ownDates = drafts
     .map((reservation) => parseLocalDateTime(reservation.startTime))
     .filter(Boolean);
 

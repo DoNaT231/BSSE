@@ -41,7 +41,7 @@ export default function TournamentModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)] border border-white/60"
       >
-        <div className="bg-[#5fc3ee] px-5 py-4">
+        <div className="bg-lightBlue px-5 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 className="text-lg font-extrabold text-white truncate">
@@ -104,7 +104,7 @@ export default function TournamentModal({
               <button
                 type="submit"
                 disabled={submitLoading}
-                className="w-full rounded-2xl bg-[#f7b23b] px-4 py-3 text-sm font-extrabold text-slate-900 shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-orange-200/70 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl bg-yellow px-4 py-3 text-sm font-extrabold text-blackSoft shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitLoading
                   ? "Mentés..."

@@ -185,9 +185,9 @@ export default function TournamentSignupSection() {
         <section className="page-main">
           {/* háttér díszítések */}
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
+            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />
             <div className="absolute top-[180px] right-[-60px] h-[260px] w-[260px] rounded-full bg-cyan-200/40 blur-3xl" />
-            <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
+            <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-lightBlue/20 blur-3xl" />
           </div>
 
           <div className="page-container">
@@ -211,7 +211,7 @@ export default function TournamentSignupSection() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Elérhető versenyek
                     </p>
-                    <p className="mt-1 text-2xl font-extrabold text-slate-900">
+                    <p className="mt-1 text-2xl font-extrabold text-brandDark">
                       {tournaments.length}
                     </p>
                   </div>
@@ -220,7 +220,7 @@ export default function TournamentSignupSection() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Saját nevezéseid
                     </p>
-                    <p className="mt-1 text-2xl font-extrabold text-slate-900">
+                    <p className="mt-1 text-2xl font-extrabold text-brandDark">
                       {myRegistrations?.length || 0}
                     </p>
                   </div>
@@ -228,8 +228,8 @@ export default function TournamentSignupSection() {
               </div>
 
               <div className="relative">
-                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-300/30 via-cyan-200/20 to-blue-200/30 blur-2xl" />
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(15,23,42,0.28)]">
+                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-lightBlue/25 via-primaryLight/80 to-lightBlue/15 blur-2xl" />
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(35,31,32,0.28)]">
                   <img
                     src="/images/tournament_SMASH.jpg"
                     alt="SMASH tournament"
@@ -262,7 +262,7 @@ export default function TournamentSignupSection() {
 
             {/* TOURNAMENT LIST */}
             {!loading && !loadError && tournaments.length > 0 && (
-              <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] backdrop-blur sm:p-6 lg:p-8">
+              <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.25)] backdrop-blur sm:p-6 lg:p-8">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
                     <h2 className="type-section-title">Aktív versenyek</h2>
@@ -271,7 +271,7 @@ export default function TournamentSignupSection() {
                     </p>
                   </div>
 
-                  <div className="hidden rounded-full bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700 md:block">
+                  <div className="hidden rounded-full bg-primaryLight px-4 py-2 text-sm font-bold text-lightBlueStrong md:block">
                     {tournaments.length} elérhető verseny
                   </div>
                 </div>

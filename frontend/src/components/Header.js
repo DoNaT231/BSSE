@@ -50,13 +50,29 @@ function Header() {
         onClose={() => setShowLogout(false)}
       />
 
-      {/* ===================== LOGÓ ===================== */}
-      <div className="fixed z-30 w-20 h-20 overflow-hidden transition-transform duration-300 rounded-full cursor-pointer top-2 left-[calc(50%-40px)] md:left-2 hover:scale-105">
+      {/* ===================== LOGÓ (SMASH by Melodiak) ===================== */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => handleNavClick("/")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleNavClick("/");
+          }
+        }}
+        className="
+          fixed z-30 top-4 left-4 md:left-4 md:translate-x-0
+          w-[min(11rem,calc(100vw-5.5rem))] h-[4rem]
+          flex items-center justify-center
+          rounded-[2rem] bg-white shadow-md px-2 py-1
+          cursor-pointer transition-transform duration-300 hover:scale-[1.02]
+        "
+      >
         <img
-          src="./images/Képernyőkép 2025-06-11 200633.png"
-          alt="BSSE logo"
-          className="object-cover w-full h-full"
-          onClick={() => handleNavClick("/")}
+          src={`${process.env.PUBLIC_URL}/logos/smash_by_melodiak_final.svg`}
+          alt="SMASH by Melodiak"
+          className="max-h-full w-full object-contain object-center pointer-events-none"
         />
       </div>
 
@@ -70,7 +86,7 @@ function Header() {
           z-20
         "
       >
-        <h1 className="pl-[120px] text-lg font-semibold hidden md:block">
+        <h1 className="pl-[200px] text-lg font-semibold hidden md:block">
           BALATONI STRANDSPORT EGYESÜLET
         </h1>
       </div>

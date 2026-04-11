@@ -118,22 +118,22 @@ function WeeklyCalendar() {
           <section className="relative">
           {/* háttér glow */}
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
+            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />
             <div className="absolute top-[220px] right-[-80px] h-[280px] w-[280px] rounded-full bg-cyan-200/40 blur-3xl" />
-            <div className="absolute bottom-[-120px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
+            <div className="absolute bottom-[-120px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-lightBlue/20 blur-3xl" />
           </div>
 
           <div className="page-container">
             {/* HERO */}
             <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="max-w-2xl">
-                <div className="inline-flex items-center rounded-full border border-sky-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-sky-700 shadow-sm">
+                <div className="inline-flex items-center rounded-full border border-lightBlue/30 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-lightBlueStrong shadow-sm">
                   Pályafoglalás
                 </div>
 
-                <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+                <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-brandDark sm:text-5xl">
                   Foglald le egyszerűen a
-                  <span className="block text-sky-600">számodra megfelelő pályát</span>
+                  <span className="block text-lightBlue">számodra megfelelő pályát</span>
                 </h1>
 
                 <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
@@ -146,7 +146,7 @@ function WeeklyCalendar() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Elérhető pályák
                     </p>
-                    <p className="mt-1 text-2xl font-extrabold text-slate-900">
+                    <p className="mt-1 text-2xl font-extrabold text-brandDark">
                       {Array.isArray(courts) ? courts.length : 0}
                     </p>
                   </div>
@@ -155,7 +155,7 @@ function WeeklyCalendar() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Kiválasztott hét
                     </p>
-                    <p className="mt-1 text-lg font-extrabold text-slate-900">
+                    <p className="mt-1 text-lg font-extrabold text-brandDark">
                       {new Date(monday).toLocaleDateString("hu-HU")} – {new Date(sunday).toLocaleDateString("hu-HU")}
                     </p>
                   </div>
@@ -163,8 +163,8 @@ function WeeklyCalendar() {
               </div>
 
               <div className="relative">
-                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-300/30 via-cyan-200/20 to-blue-200/30 blur-2xl" />
-                <div className="hidden md:block relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(15,23,42,0.28)]">
+                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-lightBlue/25 via-primaryLight/80 to-lightBlue/15 blur-2xl" />
+                <div className="hidden md:block relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(35,31,32,0.28)]">
                   <img
                     src="/images/ropipalya1.jpg"
                     alt="Strandröplabda pálya"
@@ -175,7 +175,7 @@ function WeeklyCalendar() {
             </div>
 
             {/* felső vezérlő panel */}
-            <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] backdrop-blur sm:p-6">
+            <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.25)] backdrop-blur sm:p-6">
               <ReservationHeader
                 monday={monday}
                 sunday={sunday}
@@ -190,7 +190,7 @@ function WeeklyCalendar() {
             </div>
 
             {/* naptár */}
-            <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.22)] sm:p-5 lg:p-6">
+            <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.22)] sm:p-5 lg:p-6">
 
               <div className="overflow-hidden rounded-[1.5rem] border border-slate-100 bg-slate-50/70">
                 <ReservationCalendarGrid

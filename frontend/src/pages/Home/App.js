@@ -6,7 +6,6 @@ import AboutSection from "./sections/AboutSection";
 import GallerySection from "./sections/GallerySection";
 import CalendarSection from "./sections/CalendarSection";
 import SponsorSection from "./sections/SponsorSection";
-import FooterSection from "./sections/FooterSection";
 
 /**
  * HomePage (Landing)
@@ -37,9 +36,6 @@ export default function HomePage() {
 
       {/* SZPONZORÁCIÓ */}
       <SponsorSection />
-
-      {/* FOOTER + TÉRKÉP */}
-      <FooterSection />
     </div>
   );
 }

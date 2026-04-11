@@ -68,7 +68,7 @@ export default function HeroSection() {
                 bg-yellow
                 text-blackSoft
                 font-sans font-semibold text-lg
-                shadow-[0px_4px_10px_#111827]
+                shadow-[0px_4px_10px_rgba(35,31,32,0.45)]
                 transition-transform
                 duration-[400ms]
                 hover:scale-110
@@ -86,7 +86,7 @@ export default function HeroSection() {
                 bg-blackSoft
                 text-white
                 font-sans font-semibold text-lg
-                shadow-[0px_4px_10px_#111827]
+                shadow-[0px_4px_10px_rgba(35,31,32,0.45)]
                 transition-transform
                 duration-[400ms]
                 hover:scale-110

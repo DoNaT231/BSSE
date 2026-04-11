@@ -40,6 +40,8 @@ export function toDraftReservation(slot) {
  * @returns {Object|undefined}
  */
 export function findCalendarSlotAtCell(calendarSlots, cellDate) {
+  if (!Array.isArray(calendarSlots)) return undefined;
+
   const cellTime = cellDate.getTime();
 
   return calendarSlots.find((slot) => {
@@ -88,7 +90,8 @@ export function slotOverlapsCell(slot, cellDate) {
  * @returns {Array<Object>}
  */
 export function findSlotsOverlappingCell(calendarSlots, cellDate) {
-  return (calendarSlots || []).filter((slot) => slotOverlapsCell(slot, cellDate));
+  const list = Array.isArray(calendarSlots) ? calendarSlots : [];
+  return list.filter((slot) => slotOverlapsCell(slot, cellDate));
 }
 
 /**
@@ -103,6 +106,8 @@ export function findSlotsOverlappingCell(calendarSlots, cellDate) {
  * @returns {boolean}
  */
 export function isDraftSelected(draftReservations, cellDate) {
+  if (!Array.isArray(draftReservations)) return false;
+
   const cellKey = dayjs(cellDate).format(LOCAL_TIMESTAMP_FORMAT);
 
   return draftReservations.some(

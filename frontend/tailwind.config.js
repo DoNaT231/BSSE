@@ -12,11 +12,15 @@ module.exports = {
           bg: "var(--bsse-color-page-bg)",
           "bg-alt": "var(--bsse-color-page-bg-alt)",
         },
-        primaryLight: "#eef2ff",
+        primaryLight: "var(--bsse-color-primary-tint)",
         border: "#d1d5db",
         yellow: "#facc15",
-        lightBlue: "#60a5fa",
-        blackSoft: "#111827",
+        lightBlue: "var(--bsse-color-brand-cyan)",
+        lightBlueStrong: "var(--bsse-color-brand-cyan-strong)",
+        blackSoft: "var(--bsse-color-brand-dark)",
+        /** Ugyanaz mint blackSoft; olvashatóbb név a szövegeknél */
+        brandDark: "var(--bsse-color-brand-dark)",
+        brandInk: "var(--bsse-color-brand-ink)",
       },
       maxWidth: {
         content: "var(--bsse-max-content)",

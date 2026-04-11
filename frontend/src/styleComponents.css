@@ -8,7 +8,7 @@
   }
 
   .title-base {
-    @apply mt-8 mb-2 text-3xl font-bold text-center text-gray-800;
+    @apply mt-8 mb-2 text-3xl font-bold text-center text-brandDark;
   }
 
   .desc-base {
@@ -20,11 +20,11 @@
   }
 
   .input-base {
-    @apply w-full px-4 text-gray-800 transition border rounded-lg h-11 border-border focus:outline-none focus:ring-2 focus:ring-lightBlue focus:border-lightBlue;
+    @apply w-full px-4 text-brandDark transition border rounded-lg h-11 border-border focus:outline-none focus:ring-2 focus:ring-lightBlue focus:border-lightBlue;
   }
 
   .btn-primary {
-    @apply w-40 py-2 mx-auto mt-2 font-medium text-white transition rounded-lg bg-slate-700 hover:bg-slate-800;
+    @apply w-40 py-2 mx-auto mt-2 font-medium text-white transition rounded-lg bg-blackSoft hover:bg-brandInk;
   }
 
   .btn-secondary {

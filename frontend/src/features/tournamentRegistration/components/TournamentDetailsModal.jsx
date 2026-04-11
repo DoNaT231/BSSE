@@ -42,9 +42,9 @@ export default function TournamentDetailsModal({
       : null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-slate-900/55 p-4 pt-[100px] overflow-y-auto backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-[0_40px_100px_-30px_rgba(15,23,42,0.45)] max-h-[calc(100vh-110px)] flex flex-col">
-        <div className="bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600 px-6 py-5 text-white">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-brandDark/55 p-4 pt-[100px] overflow-y-auto backdrop-blur-sm">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-[0_40px_100px_-30px_rgba(35,31,32,0.45)] max-h-[calc(100vh-110px)] flex flex-col">
+        <div className="bg-gradient-to-r from-lightBlueStrong via-lightBlue to-lightBlue px-6 py-5 text-white">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">
@@ -71,7 +71,7 @@ export default function TournamentDetailsModal({
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                 Kezdés
               </p>
-              <p className="mt-2 text-base font-bold text-slate-900">
+              <p className="mt-2 text-base font-bold text-brandDark">
                 {startIso ? formatDateTime(startIso) : "Nincs megadva"}
               </p>
             </div>
@@ -81,7 +81,7 @@ export default function TournamentDetailsModal({
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Nevezési határidő
                 </p>
-                <p className="mt-2 text-base font-bold text-slate-900">
+                <p className="mt-2 text-base font-bold text-brandDark">
                   {formatDateTime(registrationDeadline)}
                 </p>
               </div>
@@ -92,7 +92,7 @@ export default function TournamentDetailsModal({
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Csapatlétszám
                 </p>
-                <p className="mt-2 text-base font-bold text-slate-900">
+                <p className="mt-2 text-base font-bold text-brandDark">
                   {tournament.team_size} fő/csapat
                 </p>
               </div>
@@ -103,7 +103,7 @@ export default function TournamentDetailsModal({
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Nevezési díj
                 </p>
-                <p className="mt-2 text-base font-bold text-slate-900">
+                <p className="mt-2 text-base font-bold text-brandDark">
                   {entryFee}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export default function TournamentDetailsModal({
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Jelentkezések
                 </p>
-                <p className="mt-2 text-base font-bold text-slate-900">
+                <p className="mt-2 text-base font-bold text-brandDark">
                   {registeredTeams}/{maxTeams} csapat
                 </p>
               </div>
@@ -149,7 +149,7 @@ export default function TournamentDetailsModal({
               onRegister?.(tournament.id);
             }}
             disabled={!alreadyRegistered && !canRegister}
-            className="rounded-xl bg-sky-600 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl px-5 py-3 text-sm font-extrabold text-white transition bg-lightBlue hover:bg-lightBlueStrong disabled:cursor-not-allowed disabled:opacity-50"
           >
             {alreadyRegistered
               ? "Nevezés módosítása"

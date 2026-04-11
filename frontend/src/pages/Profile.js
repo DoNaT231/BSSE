@@ -324,7 +324,7 @@ export default function Profile() {
                               className="flex items-start justify-between gap-4 p-4 border rounded-xl bg-slate-50/50"
                             >
                               <div className="min-w-0">
-                                <p className="font-bold text-slate-900 truncate">
+                                <p className="font-bold text-brandDark truncate">
                                   {formatSlot(slot)}
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1">
@@ -363,7 +363,7 @@ export default function Profile() {
                             >
                               <div className="flex items-start justify-between gap-4">
                                 <div className="min-w-0">
-                                  <p className="font-extrabold text-slate-900 truncate">
+                                  <p className="font-extrabold text-brandDark truncate">
                                     {tournament?.title ?? `Verseny #${reg.tournamentId ?? "-"}`}
                                   </p>
                                   <p className="text-sm text-slate-700 mt-1">

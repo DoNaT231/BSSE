@@ -32,7 +32,7 @@ function ReservationInfoModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 text-sm font-medium text-white rounded-lg bg-lightBlue hover:bg-lightBlueStrong"
           >
             Rendben
           </button>

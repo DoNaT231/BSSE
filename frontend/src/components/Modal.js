@@ -34,7 +34,7 @@ export default function Modal({
     >
       <div
         className="
-          bg-white text-gray-900
+          bg-white text-brandDark
           rounded-xl p-8
           w-[90%] max-w-md
           shadow-2xl

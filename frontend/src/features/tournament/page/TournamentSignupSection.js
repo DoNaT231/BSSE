@@ -46,14 +46,14 @@ async function safeJson(res) {
 function Field({ label, value, onChange, placeholder, type = "text", required = false }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-slate-800">{label}</span>
+      <span className="text-sm font-semibold text-brandDark">{label}</span>
       <input
         type={type}
         required={required}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-200/60"
+        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-brandDark shadow-sm outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-200/60"
       />
     </label>
   );
@@ -284,7 +284,7 @@ export default function TournamentSignupSection() {
 
 
   return (
-  <div className="min-h-screen bg-[#e9f6ff]">
+  <div className="min-h-screen bg-page-bg-alt">
     <Header />
     <AuthFrostLock
           loggedIn={loggedIn}
@@ -293,7 +293,7 @@ export default function TournamentSignupSection() {
     <section className="w-full max-w-6xl px-4 pt-32 pb-12 mx-auto">
       {/* Section header (centered like the screenshot) */}
       <div className="text-center">
-        <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl text-slate-900">
+        <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl text-brandDark">
           Versenyek
         </h2>
         <p className="mt-2 text-sm md:text-base text-slate-700/80">
@@ -303,7 +303,7 @@ export default function TournamentSignupSection() {
 
       {/* Blue block background with wave separator */}
       <div className="mt-8 rounded-3xl overflow-hidden shadow-[0_12px_30px_-18px_rgba(2,65,99,0.35)] border border-white/60">
-        <div className="bg-[#5fc3ee] px-6 pt-8 pb-6">
+        <div className="bg-lightBlue px-6 pt-8 pb-6">
           {/* Small “section pill” like in screenshot */}
           <div className="px-4 py-2 mx-auto text-xs font-extrabold tracking-wide text-white rounded-full w-fit bg-white/25">
             NEVEZÉSEK
@@ -321,7 +321,7 @@ export default function TournamentSignupSection() {
             )}
 
             {!loading && !loadError && tournaments.length === 0 && (
-              <div className="p-5 shadow-sm bg-white/95 rounded-2xl text-slate-800">
+              <div className="p-5 shadow-sm bg-white/95 rounded-2xl text-brandDark">
                 Jelenleg nincs aktív verseny.
               </div>
             )}
@@ -336,13 +336,13 @@ export default function TournamentSignupSection() {
               return (
                 <div
                   key={t.id}
-                  className="group relative rounded-3xl bg-white/95 border border-white/60 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-18px_rgba(15,23,42,0.55)]"
+                  className="group relative rounded-3xl bg-white/95 border border-white/60 shadow-[0_10px_24px_-18px_rgba(35,31,32,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-18px_rgba(35,31,32,0.55)]"
                 >
 
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <h3 className="text-lg font-extrabold truncate text-slate-900">
+                        <h3 className="text-lg font-extrabold truncate text-brandDark">
                           {t.title}
                         </h3>
                         <p className="mt-1 text-sm text-slate-600">
@@ -381,7 +381,7 @@ export default function TournamentSignupSection() {
 
                     <button
                       onClick={() => openForm(t.id)}
-                      className="mt-4 w-full rounded-2xl bg-[#f7b23b] px-4 py-3 text-sm font-extrabold text-slate-900 shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-orange-200/70"
+                      className="mt-4 w-full rounded-2xl bg-yellow px-4 py-3 text-sm font-extrabold text-blackSoft shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25"
                     >
                       {alreadyRegistered ? "Nevezés módosítása" : "Jelentkezés"}
                     </button>
@@ -393,7 +393,7 @@ export default function TournamentSignupSection() {
         </div>
 
         {/* Wave separator (SVG) */}
-        <div className="bg-[#e9f6ff]">
+        <div className="bg-page-bg-alt">
           <svg
             viewBox="0 0 1440 120"
             className="block w-full"
@@ -401,7 +401,7 @@ export default function TournamentSignupSection() {
           >
             <path
               d="M0,64L60,69.3C120,75,240,85,360,80C480,75,600,53,720,48C840,43,960,53,1080,58.7C1200,64,1320,64,1380,64L1440,64L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z"
-              fill="#5fc3ee"
+              fill="#1ea4de"
               fillOpacity="0.35"
             />
           </svg>
@@ -421,7 +421,7 @@ export default function TournamentSignupSection() {
             className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)] border border-white/60"
           >
             {/* Modal top bar */}
-            <div className="bg-[#5fc3ee] px-5 py-4">
+            <div className="bg-lightBlue px-5 py-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <h3 className="text-lg font-extrabold text-white truncate">
@@ -468,7 +468,7 @@ export default function TournamentSignupSection() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-extrabold text-slate-900">
+                  <div className="text-sm font-extrabold text-brandDark">
                     Játékosok ({selectedTournament.team_size} fő) *
                   </div>
 
@@ -500,7 +500,7 @@ export default function TournamentSignupSection() {
                   <button
                   type="submit"
                   disabled={submitLoading}
-                  className="w-full rounded-2xl bg-[#f7b23b] px-4 py-3 text-sm font-extrabold text-slate-900 shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-orange-200/70 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-2xl bg-yellow px-4 py-3 text-sm font-extrabold text-blackSoft shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitLoading
                     ? "Mentés..."

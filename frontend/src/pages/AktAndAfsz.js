@@ -27,7 +27,7 @@ export default function AktAndAfsz() {
                 {/* Ha nem kell, nyugodtan törölhető */}
                 <Link
                   to="/"
-                  className="text-sm font-medium underline text-slate-700 hover:text-slate-900 underline-offset-4"
+                  className="text-sm font-medium underline text-slate-700 hover:text-brandDark underline-offset-4"
                 >
                   Vissza a kezdőlapra
                 </Link>
@@ -35,7 +35,7 @@ export default function AktAndAfsz() {
 
               {/* ===== ADATKEZELÉSI TÁJÉKOZTATÓ ===== */}
 
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-brandDark">
                 Adatkezelési Tájékoztató – BSSE Weboldal
               </h1>
 
@@ -49,7 +49,7 @@ export default function AktAndAfsz() {
                 <li>Jelszó (titkosított formában kerül tárolásra)</li>
               </ul>
 
-              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-slate-900">
+              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-brandDark">
                 Mire használjuk az adatokat?
               </h2>
 
@@ -67,7 +67,7 @@ export default function AktAndAfsz() {
                 </li>
               </ul>
 
-              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-slate-900">
+              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-brandDark">
                 Mit nem csinálunk?
               </h2>
 
@@ -77,7 +77,7 @@ export default function AktAndAfsz() {
                 <li>Csak a működéshez szükséges adatokat kérjük el.</li>
               </ul>
 
-              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-slate-900">
+              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-brandDark">
                 Adatmegőrzés
               </h2>
 
@@ -86,7 +86,7 @@ export default function AktAndAfsz() {
                 tároljuk. A fiók és az adatok törlése bármikor kérhető.
               </p>
 
-              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-slate-900">
+              <h2 className="mt-8 text-xl font-semibold sm:text-2xl text-brandDark">
                 Kapcsolat
               </h2>
 
@@ -101,11 +101,11 @@ export default function AktAndAfsz() {
 
               <hr className="my-10 border-slate-200" />
 
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-brandDark">
                 Általános Felhasználási Szabályzat (ÁSZF) – BSSE Weboldal
               </h1>
 
-              <h2 className="mt-6 text-xl font-semibold sm:text-2xl text-slate-900">
+              <h2 className="mt-6 text-xl font-semibold sm:text-2xl text-brandDark">
                 Szolgáltató adatai
               </h2>
 

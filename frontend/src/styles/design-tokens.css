@@ -12,25 +12,32 @@
   --bsse-max-content-md: 72rem;
   --bsse-max-document: 48rem;
 
-  /* --- Felületek --- */
-  --bsse-color-page-bg: #f8fafc;
-  --bsse-color-page-bg-alt: #e9f6ff;
+  /* --- Felületek (SMASH by Melodiak: fehér alap + halvány cián) --- */
+  --bsse-color-page-bg: #ffffff;
+  --bsse-color-page-bg-alt: #e8f6fc;
   --bsse-color-surface: #ffffff;
   --bsse-color-border-subtle: #e2e8f0;
 
-  /* --- Márka / navigáció (Header) --- */
-  --bsse-color-brand-sky: #60a5fa;
-  --bsse-color-brand-sky-strong: #0284c7;
-  --bsse-color-brand-dark: #111827;
+  /* --- Márka (smash_by_melodiak_final.svg: #1ea4de, #231f20, #fff, #000600) --- */
+  --bsse-color-brand-cyan: #1ea4de;
+  --bsse-color-brand-cyan-strong: #1589b8;
+  /** Márka sötét (Tailwind: `text-brandDark`, `bg-blackSoft`, stb.) */
+  --bsse-color-brand-dark: #231f20;
+  --bsse-color-brand-ink: #000600;
+  --bsse-color-primary-tint: #e8f6fc;
+
+  /* --- Kompatibilitás: régi token nevek → új paletta --- */
+  --bsse-color-brand-sky: var(--bsse-color-brand-cyan);
+  --bsse-color-brand-sky-strong: var(--bsse-color-brand-cyan-strong);
 
   /* --- Szöveg --- */
-  --bsse-color-text: #1e293b;
-  --bsse-color-text-muted: #64748b;
-  --bsse-color-text-heading: #0f172a;
+  --bsse-color-text: #231f20;
+  --bsse-color-text-muted: #4a4548;
+  --bsse-color-text-heading: #000600;
 
   /* --- Kártya / panel --- */
   --bsse-radius-card: 12px;
   --bsse-radius-pill: 17px;
   --bsse-shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.05);
-  --bsse-shadow-card: 0 20px 60px -30px rgba(15, 23, 42, 0.25);
+  --bsse-shadow-card: 0 20px 60px -30px rgba(35, 31, 32, 0.22);
 }

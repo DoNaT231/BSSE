@@ -8,7 +8,7 @@ export default function TournamentPlayersFields({
 }) {
   return (
     <div className="space-y-2">
-      <div className="text-sm font-extrabold text-slate-900">
+      <div className="text-sm font-extrabold text-brandDark">
         Játékosok ({teamSize} fő) *
       </div>
 

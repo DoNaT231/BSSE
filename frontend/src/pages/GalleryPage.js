@@ -155,9 +155,9 @@ export default function GalleryPage() {
       <main className="page-main overflow-visible">
         <section className="relative">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-sky-200/40 blur-3xl" />
+            <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />
             <div className="absolute top-[220px] right-[-80px] h-[280px] w-[280px] rounded-full bg-cyan-200/40 blur-3xl" />
-            <div className="absolute bottom-[-120px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
+            <div className="absolute bottom-[-120px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-lightBlue/20 blur-3xl" />
           </div>
 
           <div className="page-container">
@@ -178,18 +178,18 @@ export default function GalleryPage() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Események
                     </p>
-                    <p className="mt-1 text-2xl font-extrabold text-slate-900">{groupedEvents.length}</p>
+                    <p className="mt-1 text-2xl font-extrabold text-brandDark">{groupedEvents.length}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kepek</p>
-                    <p className="mt-1 text-2xl font-extrabold text-slate-900">{images.length}</p>
+                    <p className="mt-1 text-2xl font-extrabold text-brandDark">{images.length}</p>
                   </div>
                 </div>
               </div>
 
               <div className="relative">
-                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-300/30 via-cyan-200/20 to-blue-200/30 blur-2xl" />
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(15,23,42,0.28)]">
+                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-lightBlue/25 via-primaryLight/80 to-lightBlue/15 blur-2xl" />
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(35,31,32,0.28)]">
                   <img
                     src="/images/tournament_SMASH.jpg"
                     alt="BSSE galeria"
@@ -214,10 +214,10 @@ export default function GalleryPage() {
                 return (
                   <article
                     key={event.key}
-                    className="rounded-[2rem] border border-slate-200 bg-white/95 p-4 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.22)] sm:p-5 lg:p-6"
+                    className="rounded-[2rem] border border-slate-200 bg-white/95 p-4 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.22)] sm:p-5 lg:p-6"
                   >
                     <div className="mb-4 flex items-center justify-between gap-3">
-                      <h2 className="text-2xl font-bold text-slate-900">{event.title}</h2>
+                      <h2 className="text-2xl font-bold text-brandDark">{event.title}</h2>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-semibold text-slate-500">{event.images.length} kep</span>
                         {hiddenCount > 0 && (

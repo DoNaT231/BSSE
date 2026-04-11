@@ -1,16 +1,15 @@
 import { API_BASE_URL } from "../../../config";
 
-export default async function fetchCourts(){
-    try {
-      const url = `${API_BASE_URL}/api/courts`;
+/** Szerver / hálózati hiba esetén üres tömb — a UI (courts.length, .map) ne omoljon össze. */
+export default async function fetchCourts() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/courts`);
+    if (!response.ok) return [];
 
-      const response = await fetch(`${API_BASE_URL}/api/courts`);
-      if (!response.ok) throw new Error("Hiba a pályák lekérésekor");
-
-      const data = await response.json();
-      return data;
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}

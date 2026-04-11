@@ -13,7 +13,7 @@ export default function TournamentDeleteModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
       <div className="w-full max-w-md bg-white border shadow-xl rounded-2xl p-5">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-brandDark">
           Verseny törlése
         </h3>
         <p className="mt-2 text-sm text-gray-600">

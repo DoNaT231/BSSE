@@ -11,13 +11,14 @@ export default function ReservationCalendarGrid({
   role,
   handleClick
 }) {
-
   const safeDraftReservations = Array.isArray(draftReservations)
     ? draftReservations
     : [];
-
   const safeCalendarSlots = Array.isArray(calendarSlots)
     ? calendarSlots
+    : [];
+  const safeInitialReservations = Array.isArray(initialReservations)
+    ? initialReservations
     : [];
 
   return (
@@ -49,7 +50,7 @@ export default function ReservationCalendarGrid({
 
               draftReservations={safeDraftReservations}
               calendarSlots={safeCalendarSlots}
-              initialReservations={initialReservations}
+              initialReservations={safeInitialReservations}
 
               currentUserId={currentUserId}
               role={role}
