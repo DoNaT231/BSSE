@@ -4,7 +4,6 @@ import WaveDivider from "../../components/WaveDevider"; // nálad így van elnev
 import HeroSection from "./sections/HeroSection";
 import AboutSection from "./sections/AboutSection";
 import GallerySection from "./sections/GallerySection";
-import CalendarSection from "./sections/CalendarSection";
 import SponsorSection from "./sections/SponsorSection";
 import SiteFooter from "../../components/SiteFooter";
 

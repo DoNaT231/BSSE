@@ -1,4 +1,3 @@
-import { debugApiRequest } from "../../../../shared/utils/debugApiRequest";
 import { API_BASE_URL } from "../../../../config";
 
 /**

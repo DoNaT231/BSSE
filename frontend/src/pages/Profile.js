@@ -22,7 +22,7 @@ function formatSlot(slot) {
 }
 
 export default function Profile() {
-  const { user, isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
   const token = localStorage.getItem("token");
 
   const [profile, setProfile] = useState(null);

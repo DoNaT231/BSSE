@@ -19,7 +19,7 @@ function Header() {
   const [showLogout, setShowLogout] = useState(false);
 
   const navigate = useNavigate();
-  const { user, logout, isAdmin, isLoggedIn } = useAuth();
+  const { isAdmin, isLoggedIn } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
