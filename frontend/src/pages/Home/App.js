@@ -6,6 +6,7 @@ import AboutSection from "./sections/AboutSection";
 import GallerySection from "./sections/GallerySection";
 import CalendarSection from "./sections/CalendarSection";
 import SponsorSection from "./sections/SponsorSection";
+import SiteFooter from "../../components/SiteFooter";
 
 /**
  * HomePage (Landing)
@@ -15,27 +16,28 @@ import SponsorSection from "./sections/SponsorSection";
  */
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Header />
 
-      {/* HERO */}
-      <div className="relative">
-        <HeroSection />
-        {/* HULLÁM ELVÁLASZTÓ */}
-        <WaveDivider />
+        {/* HERO */}
+        <div className="relative">
+          <HeroSection />
+          {/* HULLÁM ELVÁLASZTÓ */}
+          <WaveDivider />
+        </div>
+
+        {/* ABOUT */}
+        <AboutSection />
+
+        {/* GALÉRIA */}
+        <GallerySection />
+
+        {/* SZPONZORÁCIÓ */}
+        <SponsorSection />
       </div>
 
-
-
-
-      {/* ABOUT */}
-      <AboutSection />
-
-      {/* GALÉRIA */}
-      <GallerySection />
-
-      {/* SZPONZORÁCIÓ */}
-      <SponsorSection />
+      <SiteFooter />
     </div>
   );
 }

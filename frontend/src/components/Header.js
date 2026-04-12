@@ -63,7 +63,7 @@ function Header() {
         }}
         className="
           fixed z-30 top-4 left-4 md:left-4 md:translate-x-0
-          w-[min(11rem,calc(100vw-5.5rem))] h-[4rem]
+          w-[min(11rem,calc(100%-5.5rem))] h-[4rem]
           flex items-center justify-center
           rounded-[2rem] bg-white shadow-md px-2 py-1
           cursor-pointer transition-transform duration-300 hover:scale-[1.02]
@@ -106,8 +106,9 @@ function Header() {
           max-h-[calc(100vh-54px)]
 
           md:static md:z-auto md:translate-y-0 md:pointer-events-auto
+          md:overflow-visible md:max-h-none
 
-          md:h-24
+          md:min-h-24 md:h-auto md:py-2
           items-start md:items-end
           md:justify-end justify-center
         `}
@@ -119,7 +120,7 @@ function Header() {
             gap-6 justify-end
             py-8
             text-center text-white
-            md:flex-row md:gap-11 md:text-center
+            md:flex-row md:flex-wrap md:gap-x-4 md:gap-y-2 md:text-center lg:gap-x-7 xl:gap-11
             md:py-0
             md:mr-3 md:mb-2 md:text-end
           "

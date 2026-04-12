@@ -1,86 +1,69 @@
 import React from "react";
+import PartnerPdfLogo from "../../../components/PartnerPdfLogo";
 
-/**
- * SponsorSection
- * - max 900px container
- * - 2 oszlop (mobilon 1)
- * - “card” stílus eredetihez hasonló
- */
+const PARTNER_LOGOS = [
+  { file: "maw_logo.pdf", label: "Man at Work" },
+  { file: "MD_logo_4C.pdf", label: "Meló-Diák" },
+  { file: "szomszedok-age-logo.pdf", label: "Szomszédok" },
+];
+
 export default function SponsorSection() {
   return (
     <section
       className="
-        bg-[#fdfdfd]
-        px-5 py-[60px]
-        font-[Montserrat]
-        text-[var(--Black)]
-        max-w-[900px]
-        mx-auto
+        bg-[#fdfdfd] px-4 sm:px-6 lg:px-8 py-16 md:py-20
+        font-[Montserrat] text-[var(--Black)]
+        mx-auto w-full max-w-6xl
       "
     >
-      <h2 className="text-[2.5rem] text-[#005fa3] text-center mb-[10px]">
-        Szponzorációs lehetőségek a BSSE-nél
+      {/* Cím */}
+      <h2 className="text-[2.3rem] text-[#005fa3] text-center mb-3">
+        Szponzoraink
       </h2>
 
-      <p className="text-[1.2rem] text-center max-w-[900px] mx-auto mb-10 text-[#555]">
-        A Balatoni Strandsport Egyesület várja azon partnerek jelentkezését, akik szeretnének jelen
-        lenni a Balaton északi partjának egyik leglátogatottabb strandján. Legyen szó helyi
-        vállalkozásról vagy országos márkáról, nálunk lehetőség van valódi közösségépítő jelenlétre.
+      {/* Leírás */}
+      <p className="text-[1.15rem] text-center max-w-2xl mx-auto mb-10 text-[#555]">
+        Büszkék vagyunk partnereinkre, akik támogatásukkal hozzájárulnak a Smash
+        strandröplabda bajnokságok és közösségi események sikeres
+        megvalósításához. Együtt építjük a balatoni strandsport közösséget.
       </p>
 
-      <div className="grid grid-cols-2 gap-5 justify-center mb-[50px] max-[500px]:grid-cols-1">
-        {[
-          {
-            t: "🎤 Bemondásos hirdetés",
-            d: "A versenyek alatt rendszeres hangosbemondásokkal hívjuk fel a figyelmet partnereinkre, promóciós üzenetekkel és márkamegjelöléssel.",
-          },
-          {
-            t: "🏆 Névadási lehetőség",
-            d: "Legyen egy eseményünk, vagy akár maga az egyesület a Te márkád nevét viselő projekt – erősítsd megítélésedet és ismertségedet hosszú távon!",
-          },
-          {
-            t: "📢 Hirdetési felület",
-            d: "Roll-up, molinó, beachflag – kiemelt, vizuálisan jól látható helyeken jelenhetsz meg sporteseményeinken és szociális média felületeinken.",
-          },
-          {
-            t: "🌊 Megjelenés a strandon",
-            d: "A Balatonalmádi Wesselényi strand az északi part egyik leglátogatottabb pontja. Szponzoraink számára célzott és figyelemfelkeltő helyszíni jelenlétet biztosítunk.",
-          },
-        ].map((x) => (
-          <div
-            key={x.t}
-            className="
-            w-full
-            h-full
-              self-center
-              bg-[#eef6fb]
-              p-5
-              rounded-[15px]
-              shadow-[0_2px_6px_rgba(0,0,0,0.1)]
-              max-w-[400px]
-            "
-          >
-            <h3 className="text-[1.3rem] mb-[10px]">{x.t}</h3>
-            <p className="text-[1rem] text-[#444]">{x.d}</p>
-          </div>
-        ))}
-      </div>
+      {/* Logók */}
+      <div className="grid grid-cols-3 gap-5 max-[600px]:grid-cols-1">
+        {PARTNER_LOGOS.map(({ file, label }) => {
+          const href = `/logos/${file}`;
 
-      <div className="bg-[#eef6fb] p-[30px] rounded-[15px] text-center">
-        <h4 className="text-[1.5rem] text-[var(--darkBlue)] mb-[10px]">Érdekel a lehetőség?</h4>
-        <p className="text-[1rem] my-[5px]">
-          📧{" "}
-          <a
-            className="text-[var(--yellow)] underline"
-            href="mailto:almadistrandroplabda@gmail.com?subject=Tárgy&body=Szöveg"
-          >
-            almadistrandroplabda@gmail.com
-          </a>
-        </p>
-        <p className="text-[1rem] my-[5px]">📞 +36 70 280 3145</p>
-        <p className="text-[1rem] my-[5px]">
-          Szívesen egyeztetünk személyesen vagy e-mailben – kérj ajánlatot még ma!
-        </p>
+          return (
+            <a
+              key={file}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                bg-white
+                rounded-[15px]
+                shadow-[0_2px_6px_rgba(0,0,0,0.1)]
+                p-5
+                flex flex-col items-center justify-center
+                transition duration-200
+                hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]
+              "
+            >
+              <div className="h-[60px] flex items-center justify-center mb-3">
+                <PartnerPdfLogo
+                  pdfUrl={href}
+                  label={label}
+                  maxHeightPx={50}
+                  maxWidthPx={120}
+                />
+              </div>
+
+              <span className="text-[0.95rem] text-[#333] font-medium">
+                {label}
+              </span>
+            </a>
+          );
+        })}
       </div>
     </section>
   );

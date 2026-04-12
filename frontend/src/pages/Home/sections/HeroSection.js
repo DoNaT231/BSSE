@@ -18,8 +18,7 @@ export default function HeroSection() {
         md:pb-36
         lg:pb-52
         xl:pb-72
-        2xl:
-        flex flex-col  justify-center
+        flex flex-col justify-center
         text-center
         box-border
       "
@@ -32,7 +31,7 @@ export default function HeroSection() {
             leading-none
             text-transparent
 
-            text-[9rem]
+            text-[12rem]
             sm:text-[16rem]
             md:text-[20rem]
             lg:text-[22rem]

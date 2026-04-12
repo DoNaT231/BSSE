@@ -25,7 +25,7 @@ export default function ReservationCalendarGrid({
     <div className="w-full max-w-[1024px] mx-auto bg-white border border-border rounded-card overflow-hidden shadow-soft">
 
       {/* header */}
-      <div className="grid grid-cols-[80px_repeat(7,1fr)] bg-primaryLight font-semibold text-center text-sm border-b border-border">
+      <div className="grid grid-cols-[80px_repeat(7,minmax(0,1fr))] bg-primaryLight font-semibold text-center text-sm border-b border-border">
         <div></div>
         {days.map(day => (
           <div key={day} className="py-3">
@@ -35,7 +35,7 @@ export default function ReservationCalendarGrid({
       </div>
 
       {hours.map(hour => (
-        <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] text-sm">
+        <div key={hour} className="grid grid-cols-[80px_repeat(7,minmax(0,1fr))] text-sm">
 
           <div className="py-2 text-center border-r bg-primaryLight border-border">
             {hour}:00

@@ -15,56 +15,50 @@ import TournamentSignupSection from './features/tournamentRegistration/page/Tour
 import Profile from './pages/Profile.js';
 import ThursdayChampionshipPage from './pages/ThursdayChampionshipPage.js';
 import GalleryPage from './pages/GalleryPage.js';
-import PageShell from './components/PageShell.jsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const apiUrl = "http://localhost:5000";
 const router = createBrowserRouter([
   {
-    element: <PageShell />,
-    children: [
-      {
-        path: '/',
-        element: <App />,
-        errorElement: <NotFoundPage />,
-      },
-      {
-        path: '/adatkezelesitajekoztatoesaszf',
-        element: <AktAndAfsz />,
-      },
-      {
-        path: '/palyafoglalas',
-        element: <Booking />,
-      },
-      {
-        path: '/versenyek',
-        element: <TournamentSignupSection />,
-      },
-      {
-        path: '/csutortoki-bajnoksag',
-        element: <ThursdayChampionshipPage />,
-      },
-      {
-        path: '/galeria',
-        element: <GalleryPage />,
-      },
-      {
-        path: '/smashspt',
-        element: <SmashSPT />,
-      },
-      {
-        path: '/admin',
-        element: <AdminDashboard />,
-      },
-      {
-        path: '/profil',
-        element: <Profile />,
-      },
-      {
-        path: '*',
-        element: <NotFoundPage />,
-      },
-    ],
+    path: '/',
+    element: <App />,
+    errorElement: <NotFoundPage />,
+  },
+  {
+    path: '/adatkezelesitajekoztatoesaszf',
+    element: <AktAndAfsz />,
+  },
+  {
+    path: '/palyafoglalas',
+    element: <Booking />,
+  },
+  {
+    path: '/versenyek',
+    element: <TournamentSignupSection />,
+  },
+  {
+    path: '/csutortoki-bajnoksag',
+    element: <ThursdayChampionshipPage />,
+  },
+  {
+    path: '/galeria',
+    element: <GalleryPage />,
+  },
+  {
+    path: '/smashspt',
+    element: <SmashSPT />,
+  },
+  {
+    path: '/admin',
+    element: <AdminDashboard />,
+  },
+  {
+    path: '/profil',
+    element: <Profile />,
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ]);
 root.render(

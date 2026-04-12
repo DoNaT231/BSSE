@@ -112,10 +112,10 @@ function WeeklyCalendar() {
   }, [pendingPrint, printData]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <AuthFrostLock>
         <div className="page-main overflow-visible">
-          <section className="relative">
+          <section className="relative overflow-x-clip">
           {/* háttér glow */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />

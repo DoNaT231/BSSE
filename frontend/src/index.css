@@ -1,5 +1,10 @@
 @import "./styles/design-tokens.css";
 
+/* Görgetősáv helye mindig lefoglalva → nincs vízszintes „ugrás” rövid vs. hosszú oldalak között (fix header + 100vw). */
+html {
+  scrollbar-gutter: stable;
+}
+
 @tailwind base;
 @tailwind components;
 

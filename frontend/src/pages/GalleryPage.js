@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
+import SiteFooter from "../components/SiteFooter";
 
 const PREVIEW_COUNT = 5;
 
@@ -149,11 +150,11 @@ export default function GalleryPage() {
   }, [images]);
 
   return (
-    <div className="page-root">
+    <div className="page-root flex min-h-screen min-w-0 flex-col">
       <Header />
 
-      <main className="page-main overflow-visible">
-        <section className="relative">
+      <main className="page-main min-w-0 flex-1 overflow-visible">
+        <section className="relative overflow-x-clip">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />
             <div className="absolute top-[220px] right-[-80px] h-[280px] w-[280px] rounded-full bg-cyan-200/40 blur-3xl" />
@@ -286,6 +287,8 @@ export default function GalleryPage() {
           </div>
         </section>
       </main>
+
+      <SiteFooter />
 
       {selectedImage && (
         <div

@@ -33,9 +33,9 @@ export default function AboutSection() {
     <section
       aria-labelledby="about-heading"
       className="
-        box-border bg-lightBlue px-4 pt-4 pb-20 font-[Montserrat] text-brandDark
+        box-border bg-lightBlue px-4 sm:px-6 lg:px-8 pt-6 pb-16 font-[Montserrat] text-brandDark
         max-[940px]:mt-[-30px] max-[700px]:mt-[-10px]
-        sm:py-20
+        md:pt-8 md:pb-20
       "
     >
       <div className="mx-auto max-w-6xl text-center">
@@ -51,7 +51,7 @@ export default function AboutSection() {
 
         <p
           className="
-            mx-auto mt-5 max-w-2xl px-2 text-[1.2rem] font-semibold leading-snug text-white
+            mx-auto mt-5 max-w-2xl text-[1.2rem] font-semibold leading-snug text-white
             [text-shadow:0_1px_2px_rgba(35,31,32,0.18)] max-[700px]:mt-4 max-[700px]:text-[1.08rem]
           "
         >
@@ -62,7 +62,7 @@ export default function AboutSection() {
       {/* Folyó bemutatkozó szöveg */}
       <div
         className="
-          mx-auto mt-10 max-w-6xl px-[5%]
+          mx-auto mt-10 max-w-6xl
           grid gap-6 text-left
           text-[1.05rem] leading-[1.8] text-white/95
           md:grid-cols-2 md:gap-10
@@ -84,7 +84,7 @@ export default function AboutSection() {
       </div>
 
       {/* Mit kínálunk */}
-      <div className="mx-auto mt-16 max-w-6xl px-[5%] max-[700px]:mt-12">
+      <div className="mx-auto mt-16 max-w-6xl max-[700px]:mt-12">
         <div className="mb-9 text-center max-[700px]:mb-7">
           <h2
             className="
@@ -133,7 +133,7 @@ export default function AboutSection() {
 
       <p
         className="
-          mx-auto mt-10 max-w-3xl px-[5%] text-center text-[1.08rem] font-semibold leading-relaxed text-white
+          mx-auto mt-10 max-w-3xl text-center text-[1.08rem] font-semibold leading-relaxed text-white
           drop-shadow-sm max-[700px]:mt-8 max-[700px]:text-[1rem]
         "
       >

@@ -27,7 +27,7 @@ export default function InfiniteGallery() {
       className="
         w-full
         overflow-hidden
-        py-[20px]
+        py-16 md:py-20
         box-border
         bg-gradient-to-b from-lightBlue to-white
       "
@@ -44,7 +44,7 @@ export default function InfiniteGallery() {
                 w-[240px]
                 h-[380px]
                 object-cover
-                mx-[16px]
+                mx-4
                 rounded-[17px]
                 shadow-[0_4px_10px_rgba(0,0,0,0.2)]
                 shrink-0
