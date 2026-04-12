@@ -1,5 +1,9 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { jwtDecode } from "jwt-decode";
+import {
+  registerAuthSessionInvalidationHandler,
+  DEFAULT_SESSION_INVALID_MESSAGE,
+} from "./authSessionInvalidation";
 
 /**
  * AuthContext
@@ -39,13 +43,21 @@ export function AuthProvider({ children }) {
 
     try {
       const decoded = jwtDecode(token);
-      console.log(token)
-      console.log(decoded)
       setUser(decoded);
-      console.log(decoded)
     } catch (err) {
-      logout();
+      localStorage.removeItem("token");
+      setUser(null);
     }
+  }, []);
+
+  useEffect(() => {
+    function handleInvalidSession(message) {
+      localStorage.removeItem("token");
+      setUser(null);
+      window.alert(message || DEFAULT_SESSION_INVALID_MESSAGE);
+    }
+    registerAuthSessionInvalidationHandler(handleInvalidSession);
+    return () => registerAuthSessionInvalidationHandler(null);
   }, []);
 
   /**

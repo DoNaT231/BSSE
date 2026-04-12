@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { installFetchAuthInterceptor } from './auth/installFetchAuthInterceptor';
 import './index.css';
+
+installFetchAuthInterceptor();
 import App from './pages/Home/App.js';
 import reportWebVitals from './reportWebVitals';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
