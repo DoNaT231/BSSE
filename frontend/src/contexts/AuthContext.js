@@ -54,7 +54,14 @@ export function AuthProvider({ children }) {
     function handleInvalidSession(message) {
       localStorage.removeItem("token");
       setUser(null);
-      window.alert(message || DEFAULT_SESSION_INVALID_MESSAGE);
+      window.dispatchEvent(
+        new CustomEvent("bsse:open-login-modal", {
+          detail: {
+            reason: "invalid-session",
+            message: message || DEFAULT_SESSION_INVALID_MESSAGE,
+          },
+        })
+      );
     }
     registerAuthSessionInvalidationHandler(handleInvalidSession);
     return () => registerAuthSessionInvalidationHandler(null);

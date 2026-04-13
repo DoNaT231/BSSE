@@ -261,20 +261,24 @@ export async function syncWeeklyReservations({
 }
 
 /**
- * Saját reservation törlése slot alapján
+ * Reservation törlése slot alapján.
  *
  * Logika:
  * - lekéri a slotot és az eventet
  * - ellenőrzi, hogy reservation típusú-e
- * - ellenőrzi, hogy a user a létrehozó-e
+ * - ha nem admin, ellenőrzi, hogy a user a létrehozó-e
  * - ha igen, az egész eventet törli
  *
  * @param {Object} params
  * @param {number} params.slotId
- * @param {number} params.userId
+ * @param {Object} params.currentUser
  * @returns {Promise<Object>}
  */
-export async function deleteOwnReservationBySlotId({ slotId, userId }) {
+export async function deleteReservationBySlotId({ slotId, currentUser }) {
+  if (!currentUser?.id) {
+    throw new Error("Nincs bejelentkezett user.");
+  }
+
   const slot = await calendarRepository.getSlotWithEventBySlotId(slotId);
 
   if (!slot) {
@@ -285,7 +289,10 @@ export async function deleteOwnReservationBySlotId({ slotId, userId }) {
     throw new Error("Csak reservation típusú foglalás törölhető.");
   }
 
-  if (Number(slot.createdByUserId) !== Number(userId)) {
+  const isAdmin =
+    String(currentUser?.user_type || "").toLowerCase() === "admin";
+
+  if (!isAdmin && Number(slot.createdByUserId) !== Number(currentUser.id)) {
     throw new Error("Nincs jogosultságod törölni ezt a foglalást.");
   }
 

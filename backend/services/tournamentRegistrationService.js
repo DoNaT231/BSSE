@@ -265,13 +265,32 @@ export async function deleteOwnTournamentRegistration({
 }
 
 export async function getTournamentRegistrations(tournamentId) {
-  const tournament = await tournamentRepository.findDetailedById(tournamentId);
+  const numericTournamentId = Number(tournamentId);
+  if (!Number.isFinite(numericTournamentId) || numericTournamentId <= 0) {
+    throw new Error("Érvénytelen verseny azonosító.");
+  }
+
+  // Kompatibilitás:
+  // egyes környezetekben a frontend eventId-t küldhet tournamentId helyett.
+  let tournament = await tournamentRepository.findDetailedById(numericTournamentId);
+  let effectiveTournamentId = numericTournamentId;
+
+  if (!tournament) {
+    const byEventId = await tournamentRepository.findByEventId(numericTournamentId);
+    if (byEventId?.id) {
+      effectiveTournamentId = Number(byEventId.id);
+      tournament = await tournamentRepository.findDetailedById(effectiveTournamentId);
+    }
+  }
+
   if (!tournament) {
     throw new Error("Nincs ilyen verseny.");
   }
 
   const registrations =
-    await tournamentRegistrationRepository.findAllDetailedByTournamentId(tournamentId);
+    await tournamentRegistrationRepository.findAllDetailedByTournamentId(
+      effectiveTournamentId
+    );
 
   return {
     tournament: {

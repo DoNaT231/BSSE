@@ -15,7 +15,8 @@ import PrintableSchedule from "../components/PrintableSchedule.js";
 import { apiGetPrintableReservationsAll } from "../api/reservations.api.js";
 
 function WeeklyCalendar() {
-  const { role, user } = useAuth();
+  const { user } = useAuth();
+  const role = String(user?.user_type || "").toLowerCase();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [printData, setPrintData] = useState(null);
@@ -41,6 +42,8 @@ function WeeklyCalendar() {
     isAdminModalVisible,
     selectedBlockedSlot,
     closeAdminModal,
+    deleteSelectedBlockedSlot,
+    isDeletingAdminReservation,
 
     isConfirmModalOpen,
     pendingChanges,
@@ -228,6 +231,8 @@ function WeeklyCalendar() {
             isOpen={isAdminModalVisible}
             selectedSlot={selectedBlockedSlot}
             onClose={closeAdminModal}
+            onDelete={deleteSelectedBlockedSlot}
+            isDeleting={isDeletingAdminReservation}
           />
 
           {printData && (

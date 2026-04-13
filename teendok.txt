@@ -1,0 +1,3 @@
+logokhoz gyors eleresi utak
+admin feluleten lehessen kitörölni foglalasaokat
+hiba a jelentkezők megjelenitesenel

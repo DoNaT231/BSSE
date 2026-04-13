@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import LoginModal from "../features/auth/components/LoginModal";
@@ -29,6 +29,22 @@ function Header() {
     setIsOpen(false);
     navigate(page);
   };
+
+  useEffect(() => {
+    function handleOpenLoginModalEvent() {
+      setIsLoginOpen(true);
+      setIsOpen(false);
+      setShowLogout(false);
+    }
+
+    window.addEventListener("bsse:open-login-modal", handleOpenLoginModalEvent);
+    return () => {
+      window.removeEventListener(
+        "bsse:open-login-modal",
+        handleOpenLoginModalEvent
+      );
+    };
+  }, []);
 
   return (
     <header

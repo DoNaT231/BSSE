@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoginModal from "../features/auth/components/LoginModal";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -53,6 +53,12 @@ export default function AuthFrostLock({children }) {
    * ha nincs bejelentkezve → modal nyitva
    */
   const [showModal, setShowModal] = useState(!user);
+
+  useEffect(() => {
+    if (!user) {
+      setShowModal(true);
+    }
+  }, [user]);
 
 
   /**

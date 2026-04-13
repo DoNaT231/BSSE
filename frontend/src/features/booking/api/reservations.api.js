@@ -174,6 +174,33 @@ export async function apiSyncWeekReservations({
 }
 
 /**
+ * DELETE /api/reservations/:slotId
+ *
+ * Reservation törlése slot azonosító alapján.
+ * Admin jogosultsággal más felhasználó foglalása is törölhető.
+ */
+export async function apiDeleteReservationBySlotId({ slotId, token }) {
+  const res = await fetch(`${API_BASE_URL}/api/reservations/${slotId}`, {
+    method: "DELETE",
+    headers: {
+      ...buildAuthHeaders(token),
+    },
+  });
+
+  const json = await parseJsonSafe(res);
+
+  if (!res.ok) {
+    const msg = json?.message || "A foglalás törlése sikertelen.";
+    const err = new Error(msg);
+    err.status = res.status;
+    err.data = json;
+    throw err;
+  }
+
+  return json;
+}
+
+/**
  * GET /api/calendar/print?courtId=...&weekStart=...&userType=...
  *
  * Nyomtatási célra visszaadja a reservation típusú event_slots-ot

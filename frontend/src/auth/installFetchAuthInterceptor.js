@@ -95,7 +95,10 @@ export function installFetchAuthInterceptor() {
   window.fetch = async (input, init) => {
     const response = await originalFetch(input, init);
 
-    if (response.status !== 401) {
+    const isSessionInvalidStatus =
+      response.status === 401 || response.status === 403;
+
+    if (!isSessionInvalidStatus) {
       return response;
     }
 

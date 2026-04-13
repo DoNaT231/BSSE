@@ -122,7 +122,8 @@ router.post("/sync", async (req, res) => {
 /**
  * DELETE /api/reservations/:slotId
  *
- * A bejelentkezett user saját reservationjének törlése slot alapján.
+ * Reservation törlése slot alapján.
+ * Admin jogosultsággal más user foglalása is törölhető.
  *
  * Megjegyzés:
  * - authMiddleware szükséges
@@ -130,17 +131,17 @@ router.post("/sync", async (req, res) => {
 router.delete("/:slotId", async (req, res) => {
   try {
     const { slotId } = req.params;
-    const userId = req.user?.id;
+    const currentUser = req.user;
 
-    if (!userId) {
+    if (!currentUser?.id) {
       return res.status(401).json({
         message: "Nincs bejelentkezett user.",
       });
     }
 
-    const deletedEvent = await reservationService.deleteOwnReservationBySlotId({
+    const deletedEvent = await reservationService.deleteReservationBySlotId({
       slotId: Number(slotId),
-      userId: Number(userId),
+      currentUser,
     });
 
     return res.status(200).json({

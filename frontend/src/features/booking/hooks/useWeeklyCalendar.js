@@ -4,6 +4,7 @@ import {
   apiGetWeeklyCalendarSlots,
   apiGetOwnWeeklyReservations,
   apiSyncWeekReservations,
+  apiDeleteReservationBySlotId,
 } from "../api/reservations.api.js";
 import { diffReservations } from "../utils/reservationDiff.js";
 import {
@@ -108,6 +109,8 @@ export default function useWeeklyCalendar({ user, role, token }) {
    * Admin modal láthatósága
    */
   const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
+  const [isDeletingAdminReservation, setIsDeletingAdminReservation] =
+    useState(false);
 
   /**
    * Mentés megerősítő modal állapota
@@ -371,6 +374,34 @@ export default function useWeeklyCalendar({ user, role, token }) {
     setSelectedBlockedSlot(null);
   }
 
+  async function deleteSelectedBlockedSlot() {
+    if (isDeletingAdminReservation) return;
+    if (String(role || "").toLowerCase() !== "admin") return;
+
+    const slotId = Number(selectedBlockedSlot?.slotId);
+    if (!slotId) {
+      openErrorModal("A foglalás nem törölhető: hiányzó slot azonosító.");
+      return;
+    }
+
+    try {
+      setIsDeletingAdminReservation(true);
+
+      await apiDeleteReservationBySlotId({
+        slotId,
+        token,
+      });
+
+      closeAdminModal();
+      await loadCalendarData();
+      openInfoModal("A foglalás sikeresen törölve lett.");
+    } catch (err) {
+      openErrorModal(err.message || "A foglalás törlése sikertelen.");
+    } finally {
+      setIsDeletingAdminReservation(false);
+    }
+  }
+
   /**
    * Egy naptárcella kattintásának kezelése.
    *
@@ -424,6 +455,13 @@ export default function useWeeklyCalendar({ user, role, token }) {
      * ellenőrizzük, hogy saját reservation-e.
      */
     if (existingSlot) {
+      const isReservationSlot = existingSlot.eventType === "reservation";
+      if (String(role || "").toLowerCase() === "admin" && isReservationSlot) {
+        setSelectedBlockedSlot(existingSlot);
+        setIsAdminModalVisible(true);
+        return;
+      }
+
       const isOwnReservation =
         existingSlot.eventType === "reservation" &&
         Number(existingSlot.createdByUserId) === Number(user?.id);
@@ -513,6 +551,8 @@ export default function useWeeklyCalendar({ user, role, token }) {
     isAdminModalVisible,
     selectedBlockedSlot,
     closeAdminModal,
+    deleteSelectedBlockedSlot,
+    isDeletingAdminReservation,
 
     isConfirmModalOpen,
     pendingChanges,
