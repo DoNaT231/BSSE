@@ -2,9 +2,9 @@ import React from "react";
 import PartnerPdfLogo from "../../../components/PartnerPdfLogo";
 
 const PARTNER_LOGOS = [
-  { file: "maw_logo.pdf", label: "Man at Work" },
-  { file: "MD_logo_4C.pdf", label: "Meló-Diák" },
-  { file: "szomszedok-age-logo.pdf", label: "Szomszédok" },
+  { file: "maw_logo.pdf", label: "Man at Work", link: "https://manatwork.hu" },
+  { file: "MD_logo_4C.pdf", label: "Meló-Diák", link: "https://melodiak.hu" },
+  { file: "szomszedok-age-logo.pdf", label: "Szomszédok", link: "https://szomszedok.eu" },
 ];
 
 export default function SponsorSection() {
@@ -30,13 +30,13 @@ export default function SponsorSection() {
 
       {/* Logók */}
       <div className="grid grid-cols-3 gap-5 max-[600px]:grid-cols-1">
-        {PARTNER_LOGOS.map(({ file, label }) => {
+        {PARTNER_LOGOS.map(({ file, label, link }) => {
           const href = `/logos/${file}`;
 
           return (
             <a
               key={file}
-              href={href}
+              href={link}
               target="_blank"
               rel="noopener noreferrer"
               className="

@@ -4,17 +4,17 @@ import LocationMap from "./Map";
 import PartnerPdfLogo from "./PartnerPdfLogo";
 
 const PARTNER_LOGOS = [
-  { file: "maw_logo.pdf", label: "Man at Work" },
-  { file: "MD_logo_4C.pdf", label: "Meló-Diák" },
-  { file: "szomszedok-age-logo.pdf", label: "Szomszédok" },
+  { file: "maw_logo.pdf", label: "Man at Work", link: "https://manatwork.hu" },
+  { file: "MD_logo_4C.pdf", label: "Meló-Diák", link: "https://melodiak.hu" },
+  { file: "szomszedok-age-logo.pdf", label: "Szomszédok", link: "https://szomszedok.eu" },
 ];
 
-function PartnerLogoLink({ file, label }) {
+function PartnerLogoLink({ file, label, link}) {
   const href = `/logos/${file}`;
 
   return (
       <a
-      href={href}
+      href={link}
       target="_blank"
       rel="noopener noreferrer"
       className="
