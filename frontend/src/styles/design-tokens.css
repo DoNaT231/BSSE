@@ -19,7 +19,7 @@
   --bsse-color-border-subtle: #e2e8f0;
 
   /* --- Márka (smash_by_melodiak_final.svg: #1ea4de, #231f20, #fff, #000600) --- */
-  --bsse-color-brand-cyan: #1ea4de;
+  --bsse-color-brand-cyan: #1ea4de; /* MD */
   --bsse-color-brand-cyan-strong: #1589b8;
   /** Márka sötét (Tailwind: `text-brandDark`, `bg-blackSoft`, stb.) */
   --bsse-color-brand-dark: #231f20;

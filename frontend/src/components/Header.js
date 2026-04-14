@@ -103,7 +103,7 @@ function Header() {
         "
       >
         <h1 className="pl-[200px] text-lg font-semibold hidden md:block">
-          BALATONI STRANDSPORT EGYESÜLET
+          SMASH
         </h1>
       </div>
 

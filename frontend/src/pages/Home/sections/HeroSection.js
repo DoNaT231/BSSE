@@ -31,9 +31,9 @@ export default function HeroSection() {
             leading-none
             text-transparent
 
-            text-[12rem]
-            sm:text-[16rem]
-            md:text-[20rem]
+            text-[8rem]
+            sm:text-[12rem]
+            md:text-[18rem]
             lg:text-[22rem]
             xl:text-[26rem]
             2xl:text-[32rem]
@@ -53,7 +53,7 @@ export default function HeroSection() {
             WebkitTextFillColor: "transparent",
         }}
         >
-        BSSE
+        SMASH
         </h1>
 
 
