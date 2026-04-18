@@ -127,15 +127,6 @@ function manifestPathToWebpRelative(manifestPath) {
   return null;
 }
 
-function webpImageSrc(manifestPath, size) {
-  const rel = manifestPathToWebpRelative(manifestPath);
-  if (!rel) {
-    const clean = String(manifestPath).replace(/^\/+/, "");
-    return `/images/${encodePath(clean)}`;
-  }
-  return `/webp/${size}/${encodePath(rel)}`;
-}
-
 function getImageSourceCandidates(manifestPath, size) {
   const clean = String(manifestPath).replace(/^\/+/, "");
   const encodedManifestPath = encodePath(clean);
@@ -305,8 +296,8 @@ export default function GalleryPage() {
                   <span className="type-page-title-accent">pillanatkepei</span>
                 </h1>
                 <p className="type-lead">
-                  Eseményenként rendezve jelennek meg a képek. Az utolso csempe + jellel
-                  nyithato ki az adott blokk osszes fotoja.
+                  Eseményenként rendezve jelennek meg a képek. Az utolsó csempe + jellel
+                  nyithat ki az adott blokk összes fényképét.
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -336,7 +327,7 @@ export default function GalleryPage() {
             </div>
 
             <div className="mt-8 space-y-10">
-            {isLoading && <p className="text-slate-600">Galeria betoltese...</p>}
+            {isLoading && <p className="text-slate-600">Galéria betöltése...</p>}
             {error && <p className="font-semibold text-red-600">{error}</p>}
 
             {!isLoading &&
@@ -375,7 +366,11 @@ export default function GalleryPage() {
 
                     <div className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-gradient-to-b from-slate-50 to-white p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                       <div
-                        className="flex min-h-[13rem] flex-nowrap items-center gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 pt-0.5 [scrollbar-color:rgba(148,163,184,0.85)_transparent] [scrollbar-width:thin] snap-x snap-proximity [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/80 [&::-webkit-scrollbar-track]:bg-transparent"
+                        className={
+                          isOpen
+                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+                            : "flex min-h-[13rem] flex-nowrap items-center gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 pt-0.5 [scrollbar-color:rgba(148,163,184,0.85)_transparent] [scrollbar-width:thin] snap-x snap-proximity [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/80 [&::-webkit-scrollbar-track]:bg-transparent"
+                        }
                         role="list"
                         aria-label={`${event.title} kepek sora`}
                       >
@@ -405,7 +400,9 @@ export default function GalleryPage() {
                                   title: event.title,
                                 })
                               }
-                              className="group inline-flex h-52 max-h-52 shrink-0 snap-start overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-0 transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-lightBlue"
+                              className={`group inline-flex h-52 max-h-52 overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-0 transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-lightBlue ${
+                                isOpen ? "w-full items-center justify-center" : "shrink-0 snap-start"
+                              }`}
                             >
                               <img
                                 src={thumbSrc}

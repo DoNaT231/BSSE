@@ -103,7 +103,7 @@ function Header() {
         "
       >
         <h1 className="pl-[200px] text-lg font-semibold hidden md:block">
-          SMASH
+          SMASH Strandröplabda Bajnokság
         </h1>
       </div>
 
