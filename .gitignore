@@ -13,3 +13,5 @@ backend/appsettings.Development.json
 .env
 *.log
 .DS_Store
+teendok
+vps adatok
