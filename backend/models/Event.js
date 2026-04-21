@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                             Event.js                             |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * Event.js - Sequelize modell definicio
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Adatstruktura es relaciok deklaralasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 export default class Event {
   constructor(
     id,

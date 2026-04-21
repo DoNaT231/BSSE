@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                            service.js                            |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * service.js - Uzleti logika szerviz reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Domain szabalyok vegrehajtasa es repository hivasok koordinalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import { getBrevoTransactionalApi } from "./brevoClient.js";
 import { EMAIL_TEMPLATES } from "./templates.js";
 import { formatHungarianDate } from "../../utils/date.js";

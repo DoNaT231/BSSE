@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                             index.js                             |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * index.js - Backend API belepesi pont
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Szerver inicializalasa es route-ok bekotese
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 /**
  * server.js / index.js
  * ------------------------------------------------------------------
@@ -44,7 +61,29 @@ dotenv.config();                   // .env betöltése
 const app = express();             // Express alkalmazás létrehozása
 
 // Globális middleware-ek
-app.use(cors());                   // CORS engedélyezése
+const allowedOrigins = [
+  "https://balatonsse.hu",
+  "https://www.balatonsse.hu",
+  "http://localhost:3000",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Szerver-szerver és CLI/Postman hívásoknál lehet üres origin.
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS: Ez az origin nem engedélyezett."));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false,
+  })
+);
 app.use(express.json());           // JSON body parsing
 
 // API route-ok regisztrálása
@@ -73,7 +112,6 @@ app.use("/api/tournament-registrations", authMiddleware, tournamentRegistrations
 console.log('Routerek bekötve: auth, courts, users, reservations');
 
 // Kérés–válasz logger middleware
-// Minden bejövő API hívást naplóz
 app.use((req, res, next) => {
   const start = Date.now();
 

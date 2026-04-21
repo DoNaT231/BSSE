@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                       reservationRoutes.js                       |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * reservationRoutes.js - HTTP route definiciok
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Endpointok regisztralasa es middleware lanc osszeallitasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import express from "express";
 import * as reservationService from "../services/reservationService.js";
 import { buildWeekRangeFromWeekStart } from "../utils/bookingTime.js";

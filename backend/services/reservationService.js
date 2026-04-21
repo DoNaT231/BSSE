@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                      reservationService.js                       |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * reservationService.js - Uzleti logika szerviz reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Domain szabalyok vegrehajtasa es repository hivasok koordinalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import pool from "../db.js";
 import * as reservationSyncRepository from "../repositories/reservationSyncRepository.js";
 import * as eventWriteRepository from "../repositories/eventWriteRepository.js";
@@ -190,6 +207,8 @@ export async function syncWeeklyReservations({
         client
       );
 
+      // Csak azokat az átfedéseket tekintjük blokkolónak, amelyek nem maradnak meg
+      // és nem törlődnek ebben a tranzakcióban.
       const blockingOverlap = overlaps.find((overlap) => {
         const overlapEventId = Number(overlap.eventId);
         if (keepEventIds.has(overlapEventId)) return false;

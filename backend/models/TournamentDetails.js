@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                       TournamentDetails.js                       |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * TournamentDetails.js - Sequelize modell definicio
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Adatstruktura es relaciok deklaralasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import { max } from "date-fns";
 
 export default class TournamentDetails{

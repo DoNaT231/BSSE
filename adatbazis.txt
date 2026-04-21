@@ -1,0 +1,13 @@
+/// jelszo: nehezjelszo123
+/*
+PORT=5000
+JWT_SECRET=valami_nagyon_titkos
+
+DATABASE_URL=postgresql://backenduser:nagyonnehezjelszo123@localhost:5432/foglalas
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=backenduser
+DB_PASSWORD=nehezjelszo123
+DB_NAME=foglalas
+
+*/

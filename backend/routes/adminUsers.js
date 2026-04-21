@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                          adminUsers.js                           |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * adminUsers.js - HTTP route definiciok
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Endpointok regisztralasa es middleware lanc osszeallitasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import express from "express";
 import * as usersService from "../services/usersService.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -42,10 +59,7 @@ router.get("/:id", authMiddleware, async (req, res) => {
 /**
  * Csütörtöki pontok módosítása (delta: +N / −N, minimum 0)
  */
-router.patch(
-  "/:id/thursday-points",
-  authMiddleware,
-  async (req, res) => {
+router.patch("/:id/thursday-points",authMiddleware, async (req, res) => {
     try {
       const delta = req.body?.delta;
 

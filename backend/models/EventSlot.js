@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                           EventSlot.js                           |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * EventSlot.js - Sequelize modell definicio
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Adatstruktura es relaciok deklaralasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 export default class EventSlot {
   constructor(
     id,

@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                              db.js                               |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * db.js - Adatbazis kapcsolat konfiguracio
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Sequelize kapcsolat letrehozasa es exportalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import pg from 'pg';
 import dotenv from 'dotenv';
 
@@ -7,19 +24,7 @@ console.log("� ENV:", process.env.DATABASE_URL);
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
-/// jelszo: nehezjelszo123
-/*
-PORT=5000
-JWT_SECRET=valami_nagyon_titkos
 
-DATABASE_URL=postgresql://backenduser:nagyonnehezjelszo123@localhost:5432/foglalas
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=backenduser
-DB_PASSWORD=nehezjelszo123
-DB_NAME=foglalas
-
-*/
 db.connect()
   .then(() => console.log('✅ Sikeres kapcsolat az adatbázissal!'))
   .catch((err) => console.error('❌ Adatbázis kapcsolat hiba:', err));

@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                        calendarService.js                        |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * calendarService.js - Uzleti logika szerviz reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Domain szabalyok vegrehajtasa es repository hivasok koordinalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import * as calendarRepository from "../repositories/calendarRepository.js";
 
 /**

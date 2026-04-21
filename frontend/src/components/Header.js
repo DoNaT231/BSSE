@@ -116,7 +116,7 @@ function Header() {
           pt-4 pb-4 md:pb-0 md:pt-0
           bg-lightBlue shadow-lg
           transition-transform duration-300 ease-out
-          ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%-48px)]"}
+          ${isOpen ? "translate-y-0" : "-translate-y-[calc(100%)]"}
           ${isOpen ? "pointer-events-auto" : "pointer-events-none"}
           overflow-hidden
           max-h-[calc(100vh-54px)]

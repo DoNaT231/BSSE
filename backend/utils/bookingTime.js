@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                          bookingTime.js                          |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * bookingTime.js - Seged fuggvenyek gyujtemenye
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Ujrafelhasznalhato technikai segedlogika biztositasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 /**
  * Time helpers for "timestamp without time zone" fields (wall-clock).
  *

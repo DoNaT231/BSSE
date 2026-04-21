@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                        authMiddleware.js                         |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * authMiddleware.js - Express middleware modul
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Keresek elofeldolgozasa, jogosultsag es auth ellenorzes
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import jwt from "jsonwebtoken";
 
 /**
@@ -48,6 +65,7 @@ export default function authMiddleware(req, res, next) {
     });
   }
 
+  // A fejléc formátuma: "Bearer <token>", ezért a második elem maga a JWT.
   const token = authHeader.split(" ")[1];
 
   try {

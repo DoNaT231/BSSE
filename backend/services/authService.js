@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                          authService.js                          |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * authService.js - Uzleti logika szerviz reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Domain szabalyok vegrehajtasa es repository hivasok koordinalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import bcrypt from "bcrypt";
 import * as usersRepository from "../repositories/usersRepository.js";
 

@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                        formatBookings.js                         |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * formatBookings.js - Seged fuggvenyek gyujtemenye
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Ujrafelhasznalhato technikai segedlogika biztositasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import dayjs from "dayjs";
 import hu from "dayjs/locale/hu.js";
 import db from "../db.js";

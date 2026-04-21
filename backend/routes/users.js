@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                             users.js                             |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * users.js - HTTP route definiciok
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Endpointok regisztralasa es middleware lanc osszeallitasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import express from 'express';
 import db from '../db.js';
 import authMiddleware from '../middleware/authMiddleware.js';

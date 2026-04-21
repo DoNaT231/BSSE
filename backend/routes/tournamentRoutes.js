@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                       tournamentRoutes.js                        |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * tournamentRoutes.js - HTTP route definiciok
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Endpointok regisztralasa es middleware lanc osszeallitasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminOnly.js";

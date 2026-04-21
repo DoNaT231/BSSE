@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                    authOptionalMiddleware.js                     |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * authOptionalMiddleware.js - Express middleware modul
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Keresek elofeldolgozasa, jogosultsag es auth ellenorzes
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import jwt from "jsonwebtoken";
 
 /**

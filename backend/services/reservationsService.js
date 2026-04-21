@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                      reservationsService.js                      |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * reservationsService.js - Uzleti logika szerviz reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Domain szabalyok vegrehajtasa es repository hivasok koordinalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import pool from "../db.js";
 import * as eventsRepository from "../repositories/eventsRepository.js";
 import * as eventSlotsRepository from "../repositories/eventSlotsRepository.js";

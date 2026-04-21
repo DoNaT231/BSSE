@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                   thursdayLeaderboardRoutes.js                   |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * thursdayLeaderboardRoutes.js - HTTP route definiciok
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Endpointok regisztralasa es middleware lanc osszeallitasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import express from "express";
 import * as usersRepository from "../repositories/usersRepository.js";
 

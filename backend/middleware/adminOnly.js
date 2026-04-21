@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                           adminOnly.js                           |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * adminOnly.js - Express middleware modul
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Keresek elofeldolgozasa, jogosultsag es auth ellenorzes
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 /**
  * middleware/adminOnly.js
  * --------------------------------------------------

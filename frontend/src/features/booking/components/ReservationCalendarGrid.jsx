@@ -20,6 +20,11 @@ export default function ReservationCalendarGrid({
   const safeInitialReservations = Array.isArray(initialReservations)
     ? initialReservations
     : [];
+  const shortDayLabels = {
+    Szerda: "Sze",
+    "Csütörtök": "Cs",
+    Szombat: "Szo",
+  };
 
   return (
     <div className="w-full max-w-[1024px] mx-auto bg-white border border-border rounded-card overflow-hidden shadow-soft">
@@ -27,9 +32,12 @@ export default function ReservationCalendarGrid({
       {/* header */}
       <div className="grid grid-cols-[80px_repeat(7,minmax(0,1fr))] bg-primaryLight font-semibold text-center text-sm border-b border-border">
         <div></div>
-        {days.map(day => (
+        {days.map((day) => (
           <div key={day} className="py-3">
-            {day}
+            <span className="sm:hidden" aria-label={day}>
+              {shortDayLabels[day] ?? day.charAt(0)}
+            </span>
+            <span className="hidden sm:inline">{day}</span>
           </div>
         ))}
       </div>

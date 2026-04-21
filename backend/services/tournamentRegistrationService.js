@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                 tournamentRegistrationService.js                 |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * tournamentRegistrationService.js - Uzleti logika szerviz reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Domain szabalyok vegrehajtasa es repository hivasok koordinalasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import * as tournamentRegistrationRepository from "../repositories/tournamentRegistrationRepository.js";
 import * as tournamentRepository from "../repositories/tournamentRepository.js";
 import {

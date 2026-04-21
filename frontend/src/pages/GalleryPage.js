@@ -5,13 +5,13 @@ import SiteFooter from "../components/SiteFooter";
 const PREVIEW_COUNT = 5;
 
 const MONTH_ORDER = {
-  januar: 1,
-  februari: 2,
-  marcius: 3,
-  aprilis: 4,
-  majus: 5,
-  junius: 6,
-  julius: 7,
+  január: 1,
+  február: 2,
+  március: 3,
+  április: 4,
+  május: 5,
+  június: 6,
+  július: 7,
   augusztus: 8,
   szeptember: 9,
   oktober: 10,
@@ -27,13 +27,13 @@ function extract2024MeccsekPhotoId(fileName) {
   return m ? parseInt(m[1], 10) : NaN;
 }
 
-/** Régi kétlépcsős manifest vagy új 2024/07-julius | 2024/08-augusztus mappa. */
+/** Régi kétlépcsős manifest vagy új 2024/07-július | 2024/08-augusztus mappa. */
 function get2024MeccsekMonthSlug(parts) {
   if (parts[0] !== "2024" || parts.length < 2) return null;
 
   if (parts.length >= 3 && /^Meccsek_/i.test(parts[2] ?? "")) {
     const folder = parts[1];
-    if (folder === "07-julius" || folder === "08-augusztus") return folder;
+    if (folder === "07-július" || folder === "08-augusztus") return folder;
   }
 
   const file = parts[1];
@@ -42,16 +42,16 @@ function get2024MeccsekMonthSlug(parts) {
   }
 
   const id = extract2024MeccsekPhotoId(file);
-  if (!Number.isFinite(id)) return "07-julius";
+  if (!Number.isFinite(id)) return "07-július";
 
-  return id >= LEGACY_2024_MEccsek_AUGUSZTUS_FROM_ID ? "08-augusztus" : "07-julius";
+  return id >= LEGACY_2024_MEccsek_AUGUSZTUS_FROM_ID ? "08-augusztus" : "07-július";
 }
 
 function webpRelative2024MeccsekFile(fileName, monthSlug) {
   const rest = String(fileName).slice("Meccsek_".length);
   const day = rest.split("_")[0];
   if (!day || !rest) return null;
-  const monthFolder = monthSlug === "07-julius" ? "2024 július" : "2024 augusztus";
+  const monthFolder = monthSlug === "07-július" ? "2024 július" : "2024 augusztus";
   return `${monthFolder}/${day}/Meccsek/${rest}`;
 }
 
@@ -82,7 +82,7 @@ function manifestPathToWebpRelative(manifestPath) {
   const second = parts[1];
   const third = parts[2];
 
-  if (year === "2023" && second === "07-julius" && third) {
+  if (year === "2023" && second === "07-július" && third) {
     const idx = third.indexOf("__");
     if (idx === -1) return null;
     const folderPart = third.slice(0, idx);
@@ -105,7 +105,7 @@ function manifestPathToWebpRelative(manifestPath) {
     return `2024 augusztus/${day}/${category}/${webpFile}`;
   }
 
-  if (year === "2024" && parts.length === 3 && (second === "07-julius" || second === "08-augusztus") && third?.startsWith("Meccsek_")) {
+  if (year === "2024" && parts.length === 3 && (second === "07-július" || second === "08-augusztus") && third?.startsWith("Meccsek_")) {
     return webpRelative2024MeccsekFile(third, second);
   }
 
@@ -115,7 +115,7 @@ function manifestPathToWebpRelative(manifestPath) {
     return webpRelative2024MeccsekFile(second, slug);
   }
 
-  if (year === "2025" && second === "07-julius" && third?.startsWith("Meccsek_")) {
+  if (year === "2025" && second === "07-július" && third?.startsWith("Meccsek_")) {
     const rest = third.slice("Meccsek_".length);
     return `2025 július/Szombat/Meccsek/${rest}`;
   }
@@ -140,7 +140,7 @@ function getImageSourceCandidates(manifestPath, size) {
   // Régi 2024/Meccsek_...: a fájlok gyakran csak egyik hónap mappájában vannak; próbáljuk a másikat is.
   if (/^2024\/Meccsek_/i.test(clean) && mappedRelative) {
     const file = clean.split("/")[1];
-    const julyRel = webpRelative2024MeccsekFile(file, "07-julius");
+    const julyRel = webpRelative2024MeccsekFile(file, "07-július");
     const augRel = webpRelative2024MeccsekFile(file, "08-augusztus");
     const altRel = mappedRelative === julyRel ? augRel : julyRel;
     if (altRel) {
@@ -157,7 +157,7 @@ function getImageSourceCandidates(manifestPath, size) {
 }
 
 function getGroupKey(parts) {
-  if (parts.length < 2) return parts[0] ?? "Egyeb";
+  if (parts.length < 2) return parts[0] ?? "Egyéb";
 
   const secondPartIsFile = /\.[a-z0-9]+$/i.test(parts[1] ?? "");
   if (/^\d{4}$/.test(parts[0]) && !secondPartIsFile) {
@@ -187,7 +187,20 @@ function getGroupSortKey(groupKey) {
 function formatGroupTitle(groupKey) {
   const [year, month] = groupKey.split("/");
   if (!month) return groupKey;
-  const monthLabel = month.replace(/^\d{2}-/, "");
+  const monthLabel = month
+    .replace(/^\d{2}-/, "")
+    .replace("januar", "január")
+    .replace("februari", "február")
+    .replace("marcius", "március")
+    .replace("aprilis", "április")
+    .replace("majus", "május")
+    .replace("junius", "június")
+    .replace("julius", "július")
+    .replace("augusztus", "augusztus")
+    .replace("szeptember", "szeptember")
+    .replace("oktober", "október")
+    .replace("november", "november")
+    .replace("december", "december");
   return `${year} ${monthLabel}`;
 }
 
@@ -206,10 +219,10 @@ export default function GalleryPage() {
       try {
         setIsLoading(true);
         const res = await fetch("/gallery-manifest.json");
-        if (!res.ok) throw new Error("Nem sikerult betolteni a galeriat.");
+        if (!res.ok) throw new Error("Nem sikerült betölteni a galériát.");
 
         const data = await res.json();
-        if (!Array.isArray(data)) throw new Error("Hibas galeria adatformatum.");
+        if (!Array.isArray(data)) throw new Error("Hibás galéria adatformátum.");
 
         if (isMounted) {
           setImages(data);
@@ -217,7 +230,7 @@ export default function GalleryPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err.message || "Hiba tortent a galeria betoltesekor.");
+          setError(err.message || "Hiba történt a galéria betöltésekor.");
         }
       } finally {
         if (isMounted) {
@@ -292,8 +305,8 @@ export default function GalleryPage() {
               <div className="max-w-2xl">
                 <div className="type-kicker">Galéria</div>
                 <h1 className="mt-5 type-page-title">
-                  SMASH esemenyek
-                  <span className="type-page-title-accent">pillanatkepei</span>
+                  SMASH események
+                  <span className="type-page-title-accent">pillanatképei</span>
                 </h1>
                 <p className="type-lead">
                   Eseményenként rendezve jelennek meg a képek. Az utolsó csempe + jellel
@@ -308,7 +321,7 @@ export default function GalleryPage() {
                     <p className="mt-1 text-2xl font-extrabold text-brandDark">{groupedEvents.length}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kepek</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Képek</p>
                     <p className="mt-1 text-2xl font-extrabold text-brandDark">{images.length}</p>
                   </div>
                 </div>
@@ -319,7 +332,7 @@ export default function GalleryPage() {
                 <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-3 shadow-[0_30px_80px_-25px_rgba(35,31,32,0.28)]">
                   <img
                     src="/images/tournament_SMASH.jpg"
-                    alt="BSSE galeria"
+                    alt="BSSE galéria"
                     className="h-[240px] w-full rounded-[1.4rem] object-cover sm:h-[300px]"
                   />
                 </div>
@@ -346,7 +359,7 @@ export default function GalleryPage() {
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <h2 className="text-2xl font-bold text-brandDark">{event.title}</h2>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-slate-500">{event.images.length} kep</span>
+                        <span className="text-sm font-semibold text-slate-500">{event.images.length} kép</span>
                         {hiddenCount > 0 && (
                           <button
                             type="button"
@@ -368,11 +381,11 @@ export default function GalleryPage() {
                       <div
                         className={
                           isOpen
-                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+                            ? "columns-2 gap-3 sm:grid sm:grid-cols-3 lg:grid-cols-4"
                             : "flex min-h-[13rem] flex-nowrap items-center gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 pt-0.5 [scrollbar-color:rgba(148,163,184,0.85)_transparent] [scrollbar-width:thin] snap-x snap-proximity [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/80 [&::-webkit-scrollbar-track]:bg-transparent"
                         }
                         role="list"
-                        aria-label={`${event.title} kepek sora`}
+                        aria-label={`${event.title} képek sora`}
                       >
                         {visibleImages.map((imagePath) => {
                           const thumbCandidates = getImageSourceCandidates(
@@ -400,8 +413,10 @@ export default function GalleryPage() {
                                   title: event.title,
                                 })
                               }
-                              className={`group inline-flex h-52 max-h-52 overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-0 transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-lightBlue ${
-                                isOpen ? "w-full items-center justify-center" : "shrink-0 snap-start"
+                              className={`group inline-flex overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-0 transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-lightBlue ${
+                                isOpen
+                                  ? "mb-3 w-full break-inside-avoid items-center justify-center sm:mb-0 sm:h-52 sm:max-h-52"
+                                  : "h-52 max-h-52 shrink-0 snap-start"
                               }`}
                             >
                               <img
@@ -416,7 +431,9 @@ export default function GalleryPage() {
                                     [imagePath]: currentThumbIndex + 1,
                                   }));
                                 }}
-                                className="h-52 w-auto object-contain"
+                                className={`object-contain ${
+                                  isOpen ? "h-auto w-full sm:h-52 sm:w-auto" : "h-52 w-auto"
+                                }`}
                               />
                             </button>
                           );
@@ -433,7 +450,7 @@ export default function GalleryPage() {
                               }))
                             }
                             className="inline-flex h-52 min-w-[4.75rem] shrink-0 snap-start items-center justify-center rounded-xl border border-dashed border-slate-300/90 bg-white/90 px-3 text-2xl font-bold tracking-tight text-slate-600 shadow-sm transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-lightBlue"
-                            aria-label={`${event.title} osszes kep megjelenitese`}
+                            aria-label={`${event.title} összes kép megjelenítése`}
                           >
                             +{hiddenCount}
                           </button>
@@ -465,7 +482,7 @@ export default function GalleryPage() {
               type="button"
               onClick={() => setSelectedImage(null)}
               className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-3 py-1 text-xl font-bold text-white hover:bg-black/80"
-              aria-label="Kep bezarasa"
+              aria-label="Kép bezárása"
             >
               x
             </button>

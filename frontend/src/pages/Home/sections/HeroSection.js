@@ -24,41 +24,35 @@ export default function HeroSection() {
       "
     >
       <div className="flex flex-col items-center justify-center text-center">
-        {/* ÓRIÁSI BSSE FELIRAT */}
-        <h1
-        className="
-            font-[Anton] font-black
-            leading-none
-            text-transparent
-
-            text-[8rem]
-            sm:text-[12rem]
-            md:text-[18rem]
-            lg:text-[22rem]
-            xl:text-[26rem]
-            2xl:text-[32rem]
-
-            h-auto
-            mt-[10rem]
-            min-[768px]:mt-[7rem]
-            min-[1200px]:mt-[8rem]
-            mb-[3rem]
-        "
-        style={{
-            backgroundImage: "url(/images/kep8.jpg)",
-            backgroundPosition: "center",
-            backgroundSize: "cover",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-        }}
-        >
-        SMASH
-        </h1>
+        {/* ÓRIÁSI SMASH FELIRAT (mobilon is adaptív, stabil helyfoglalással) */}
+        <div className="mt-[6.25rem] mb-8 w-full px-2 sm:mt-[7rem] sm:px-4 lg:mt-[8rem]">
+          <div className="mx-auto flex h-[clamp(13rem,42vw,24rem)] w-full max-w-[1600px] items-center justify-center overflow-hidden rounded-2xl">
+            <h1
+              className="
+                font-[Anton] font-black
+                leading-[0.95]
+                tracking-[0.01em]
+                text-transparent
+                text-[clamp(7.2rem,31vw,23rem)]
+                px-1
+              "
+              style={{
+                backgroundImage: "url(/images/kep8.jpg)",
+                backgroundPosition: "center",
+                backgroundSize: "115% auto",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              SMASH
+            </h1>
+          </div>
+        </div>
 
 
         {/* CTA GOMBOK */}
-        <div className="z-50 mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="z-50 mt-4 flex flex-col items-center justify-center gap-4 sm:mt-8 sm:flex-row">
           <Link to="/palyafoglalas">
             <button
               className="

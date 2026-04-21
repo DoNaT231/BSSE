@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |               tournamentRegistrationRepository.js                |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * tournamentRegistrationRepository.js - Adateleresi repository reteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Perzisztencia muveletek izolalasa az uzleti logikatol
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 import pool from "../db.js";
 
 function mapRow(row) {

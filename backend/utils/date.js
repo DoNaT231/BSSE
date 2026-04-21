@@ -1,3 +1,20 @@
+// +------------------------------------------------------------------+
+// |                             date.js                              |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * date.js - Seged fuggvenyek gyujtemenye
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Ujrafelhasznalhato technikai segedlogika biztositasa
+ *
+ * Felelosseg:
+ * - A modul sajat retegen beluli feladatainak ellatasa.
+ */
+
 export function formatHungarianDate(isoDate, options = {}) {
   if (!isoDate) return "";
 
