@@ -6,6 +6,7 @@ import AboutSection from "./sections/AboutSection";
 import GallerySection from "./sections/GallerySection";
 import SponsorSection from "./sections/SponsorSection";
 import SiteFooter from "../../components/SiteFooter";
+import ContactSection from "../../features/contact/components/ContactSection";
 
 /**
  * HomePage (Landing)
@@ -34,6 +35,9 @@ export default function HomePage() {
 
         {/* SZPONZORÁCIÓ */}
         <SponsorSection />
+
+        {/* KONTAKT */}
+        <ContactSection/>
       </div>
 
       <SiteFooter />

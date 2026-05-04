@@ -6,9 +6,6 @@ import {
   BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
 
-/**
- * AboutSection — Smash bemutatkozó: folyó szöveg + ikonos „Mit kínálunk?” kártyák.
- */
 const OFFER_ITEMS = [
   {
     icon: TrophyIcon,
@@ -31,115 +28,95 @@ const OFFER_ITEMS = [
 export default function AboutSection() {
   return (
     <section
+      id="rolunk"
       aria-labelledby="about-heading"
-      className="
-        box-border bg-lightBlue px-4 sm:px-6 lg:px-8 pt-6 pb-16 font-[Montserrat] text-brandDark
-        max-[940px]:mt-[-30px] max-[700px]:mt-[-10px]
-        md:pt-8 md:pb-20
-      "
+      className="relative overflow-hidden bg-lightBlue px-5 py-24 font-[Montserrat] text-[#101820]"
     >
-      <div className="mx-auto max-w-6xl text-center">
-        <h1
-          id="about-heading"
-          className="
-            mt-0 font-[Anton] text-[2.65rem] font-normal leading-[1.08] tracking-[0.02em]
-            text-brandDark max-[700px]:text-[2.05rem]
-          "
-        >
-          Smash Strandröplabda Bajnokság
-        </h1>
+      <div className="pointer-events-none absolute -left-28 top-20 h-80 w-80 rounded-full bg-white/25 blur-2xl" />
+      <div className="pointer-events-none absolute -right-28 bottom-16 h-80 w-80 rounded-full bg-[#25AEE4]/15 blur-2xl" />
 
-        <p
-          className="
-            mx-auto mt-5 max-w-2xl text-[1.2rem] font-semibold leading-snug text-white
-            [text-shadow:0_1px_2px_rgba(35,31,32,0.18)] max-[700px]:mt-4 max-[700px]:text-[1.08rem]
-          "
-        >
-          Üdvözlünk a Smash strandröplabda bajnokság hívatalos weboldalán!
-        </p>
-      </div>
+      <div className="relative z-10 mx-auto max-w-6xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="mb-4 inline-block text-xs font-black uppercase tracking-[0.28em] text-white">
+            Rólunk
+          </span>
 
-      {/* Folyó bemutatkozó szöveg */}
-      <div
-        className="
-          mx-auto mt-10 max-w-6xl
-          grid gap-6 text-left
-          text-[1.05rem] leading-[1.8] text-white/95
-          md:grid-cols-2 md:gap-10
-        "
-      >
-        <p className="text-pretty text-justify text-brandDark">
-          A Smash Magyarország egyik legrégebbi és legmeghatározóbb amatőr strandröplabda
-          bajnokságsorozata, amely évek óta biztosít versenyzési lehetőséget mindazok számára, akik
-          szenvedélyesen szeretik a sportot és a közösségi élményeket. Célunk, hogy hidat képezzünk a
-          hobbi játékosok és a versenysport világa között, miközben egy inspiráló és támogató
-          közösséget építünk, ahol mindenki megtalálhatja a helyét.
-        </p>
-        <p className="text-pretty text-justify text-brandDark">
-          Bajnokságaink évről évre fejlődnek: egyre magasabb színvonalú szervezéssel,
-          professzionálisabb körülményekkel és bővülő lehetőségekkel várjuk a játékosokat. A Smash nem
-          csupán verseny, hanem egy életérzés, ahol a nyári hangulat, a sport iránti szenvedély és a
-          versenyszellem találkozik, valódi közösségi élményt teremtve minden résztvevő számára.
-        </p>
-      </div>
-
-      {/* Mit kínálunk */}
-      <div className="mx-auto mt-16 max-w-6xl max-[700px]:mt-12">
-        <div className="mb-9 text-center max-[700px]:mb-7">
-          <h2
-            className="
-              font-[Anton] text-[1.65rem] font-normal tracking-[0.04em] text-brandDark
-              [text-shadow:0_1px_2px_rgba(35,31,32,0.15)] max-[700px]:text-xl
-            "
+          <h1
+            id="about-heading"
+            className="text-4xl font-black leading-tight text-[#101820] md:text-6xl"
           >
-            Mit kínálunk?
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-[0.9rem] font-medium leading-snug text-white/85">
-            Amit a pályán és a bajnokságban egyaránt megkapsz.
+            Smash Strandröplabda Bajnokság
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-base font-semibold leading-8 text-[#101820]/75 md:text-lg">
+            Üdvözlünk a Smash strandröplabda bajnokság hivatalos weboldalán!
           </p>
         </div>
 
-        <ul className="grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-          {OFFER_ITEMS.map(({ icon: Icon, text }) => (
-            <li key={text} className="h-full">
-              <article
-                className="
-                  group flex h-full flex-col items-center gap-3.5 rounded-2xl border border-white/55
-                  bg-white/92 p-5 text-center shadow-[0_12px_36px_-18px_rgba(35,31,32,0.2)]
-                  backdrop-blur-[2px] transition duration-300 ease-out
-                  hover:-translate-y-1 hover:border-white/85 hover:bg-white/98
-                  hover:shadow-[0_20px_44px_-16px_rgba(35,31,32,0.28)]
-                  sm:gap-4 sm:p-6
-                "
-              >
-                <span
-                  className="
-                    flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-xl
-                    bg-primaryLight text-lightBlueStrong ring-1 ring-lightBlue/25
-                    transition duration-300 group-hover:ring-lightBlue/40
-                  "
-                  aria-hidden
-                >
-                  <Icon className="h-7 w-7" strokeWidth={1.85} />
-                </span>
-                <p className="text-[0.97rem] font-semibold leading-snug text-brandDark max-[700px]:text-[0.91rem]">
-                  {text}
-                </p>
-              </article>
-            </li>
-          ))}
-        </ul>
-      </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          <article className="rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_18px_45px_rgba(13,80,110,0.12)] backdrop-blur-md md:p-8">
+            <p className="text-justify text-base font-semibold leading-8 text-[#101820]/75 md:text-[1.05rem]">
+              A Smash Magyarország egyik legrégebbi és legmeghatározóbb amatőr
+              strandröplabda bajnokságsorozata, amely évek óta biztosít
+              versenyzési lehetőséget mindazok számára, akik szenvedélyesen
+              szeretik a sportot és a közösségi élményeket. Célunk, hogy hidat
+              képezzünk a hobbi játékosok és a versenysport világa között,
+              miközben egy inspiráló és támogató közösséget építünk, ahol
+              mindenki megtalálhatja a helyét.
+            </p>
+          </article>
 
-      <p
-        className="
-          mx-auto mt-10 max-w-3xl text-center text-[1.08rem] font-semibold leading-relaxed text-white
-          drop-shadow-sm max-[700px]:mt-8 max-[700px]:text-[1rem]
-        "
-      >
-        Csatlakozz hozzánk, és tapasztald meg a Smash életérzést – ahol a sport,
-        a verseny és a közösség találkozik!
-      </p>
+          <article className="rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_18px_45px_rgba(13,80,110,0.12)] backdrop-blur-md md:p-8">
+            <p className="text-justify text-base font-semibold leading-8 text-[#101820]/75 md:text-[1.05rem]">
+              Bajnokságaink évről évre fejlődnek: egyre magasabb színvonalú
+              szervezéssel, professzionálisabb körülményekkel és bővülő
+              lehetőségekkel várjuk a játékosokat. A Smash nem csupán verseny,
+              hanem egy életérzés, ahol a nyári hangulat, a sport iránti
+              szenvedély és a versenyszellem találkozik, valódi közösségi
+              élményt teremtve minden résztvevő számára.
+            </p>
+          </article>
+        </div>
+
+        <div className="mt-16">
+          <div className="mx-auto mb-9 max-w-2xl text-center">
+            <span className="mb-3 inline-block text-xs font-black uppercase tracking-[0.25em] text-[#25AEE4]">
+              Amit adunk
+            </span>
+
+            <h2 className="text-3xl font-black leading-tight text-[#101820] md:text-4xl">
+              Mit kínálunk?
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-md text-sm font-semibold leading-6 text-[#101820]/60 md:text-base">
+              Amit a pályán és a bajnokságban egyaránt megkapsz.
+            </p>
+          </div>
+
+          <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
+            {OFFER_ITEMS.map(({ icon: Icon, text }) => (
+              <li key={text} className="h-full">
+                <article className="group flex h-full flex-col items-center justify-center rounded-[2rem] border border-white/70 bg-white/80 p-6 text-center shadow-[0_18px_45px_rgba(13,80,110,0.12)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_60px_rgba(13,80,110,0.2)]">
+                  <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-[#25AEE4]/10 text-[#25AEE4] ring-1 ring-[#25AEE4]/20 transition duration-300 group-hover:bg-[#25AEE4] group-hover:text-white">
+                    <Icon className="h-8 w-8" strokeWidth={1.8} />
+                  </div>
+
+                  <p className="text-sm font-black leading-6 text-[#101820] md:text-[0.97rem]">
+                    {text}
+                  </p>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mx-auto mt-12 max-w-3xl rounded-[2rem] border border-white/70 bg-[#101820] px-6 py-7 text-center shadow-[0_20px_50px_rgba(16,24,32,0.18)] md:px-10">
+          <p className="text-base font-bold leading-8 text-white md:text-lg">
+            Csatlakozz hozzánk, és tapasztald meg a Smash életérzést – ahol a
+            sport, a verseny és a közösség találkozik!
+          </p>
+        </div>
+      </div>
     </section>
   );
 }

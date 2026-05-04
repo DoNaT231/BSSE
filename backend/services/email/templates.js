@@ -32,8 +32,8 @@ export const EMAIL_TEMPLATES = {
     id: 4, // majd Brevo-ban létrehozod
     subject: "Foglalás lemondva",
   },
-  ADMIN_CONFLICT: {
-    id: 6, // majd Brevo-ban létrehozod
-    subject: "Ütközés / admin értesítés",
+  CONTACT_MESSAGE: {
+    id: 6, // ezt majd írd át arra az ID-ra, amit a Brevo template kap
+    subject: "Új üzenet érkezett a Smash weboldalról",
   },
 };

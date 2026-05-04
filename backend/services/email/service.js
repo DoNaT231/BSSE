@@ -35,6 +35,7 @@ async function sendTemplateEmail({
   subject,
   params = {},
   sender = DEFAULT_SENDER,
+  replyTo,
 }) {
   if (!toEmail) throw new Error("toEmail is required");
 
@@ -51,6 +52,13 @@ async function sendTemplateEmail({
       ...params,
     },
   };
+
+  if (replyTo?.email) {
+    payload.replyTo = {
+      email: replyTo.email,
+      name: safeName(replyTo.name),
+    };
+  }
 
   return api.sendTransacEmail(payload);
 }
@@ -174,6 +182,37 @@ export async function sendAdminConflictNotificationEmail({
     subject: t.subject,
     params: {
       conflict: conflictText || "—",
+    },
+  });
+}
+
+export async function sendContactMessageEmail({
+  toEmail,
+  toName,
+  name,
+  email,
+  phone,
+  message,
+}) {
+  const t = EMAIL_TEMPLATES.CONTACT_MESSAGE;
+
+  return sendTemplateEmail({
+    toEmail,
+    toName,
+    templateId: t.id,
+    subject: t.subject,
+    replyTo: {
+      email,
+      name,
+    },
+    params: {
+      contactName: name || "",
+      contactEmail: email || "",
+      contactPhone: phone || "Nincs megadva",
+      contactMessage: message || "",
+      receivedAt: new Date().toLocaleString("hu-HU", {
+        timeZone: "Europe/Budapest",
+      }),
     },
   });
 }

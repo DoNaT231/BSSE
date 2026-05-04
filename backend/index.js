@@ -44,6 +44,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import tournamentRoutes from "./routes/tournamentRoutes.js";
 import tournamentRegistrations from './routes/tournamentRegistrationRoutes.js';
 import thursdayLeaderboardRoutes from './routes/thursdayLeaderboardRoutes.js';
+import contactRoutes from "./routes/contactRoutes.js";
 
 // MiddleWarek
 import authMiddleware from './middleware/authMiddleware.js';
@@ -97,6 +98,8 @@ console.log("Mount /api/user");
 try { app.use('/api/user', userRoutes); } catch (e) { console.error("Failed mount userRoutes", e); throw e; }
 console.log("Mount /api/calendar");
 try { app.use("/api/calendar", calendarRoutes); } catch (e) { console.error("Failed mount calendarRoutes", e); throw e; }
+console.log("Mount /api/contact")
+try { app.use("/api/contact", contactRoutes); } catch (e) { console.error("Failed mount contactRoutes", e); throw e; }
 // Tournament route-ok:
 // - minden /api/tournaments kéréshez kell bejelentkezés
 // - adminOnly middleware-t a routeren belül, csak admin végpontokra tesszük
