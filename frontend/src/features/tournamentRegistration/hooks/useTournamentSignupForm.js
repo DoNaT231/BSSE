@@ -10,6 +10,10 @@ export default function useTournamentSignupForm({
   const [teamName, setTeamName] = useState("");
   const [email, setEmail] = useState(userEmail || "");
   const [telNumber, setTelNumber] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [taxNumber, setTaxNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [billingName, setBillingName] = useState("");
   const [players, setPlayers] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitMsg, setSubmitMsg] = useState("");
@@ -40,10 +44,18 @@ export default function useTournamentSignupForm({
       const team = existing.team_name ?? existing.teamName ?? "";
       const tel = existing.tel_number ?? existing.telNumber ?? "";
       const contact = existing.contact_email ?? existing.contactEmail ?? userEmail ?? "";
+      const company = existing.company_name ?? existing.companyName ?? "";
+      const tax = existing.tax_number ?? existing.taxNumber ?? "";
+      const addr = existing.address ?? "";
+      const billing = existing.billing_name ?? existing.billingName ?? "";
 
       setTeamName(team);
       setTelNumber(tel);
       setEmail(contact);
+      setCompanyName(company);
+      setTaxNumber(tax);
+      setAddress(addr);
+      setBillingName(billing);
 
       const required = Number(
         tournaments.find((t) => t.id === tournamentId)?.team_size ?? 0
@@ -63,6 +75,10 @@ export default function useTournamentSignupForm({
       setTeamName("");
       setTelNumber("");
       setEmail(userEmail || "");
+      setCompanyName("");
+      setTaxNumber("");
+      setAddress("");
+      setBillingName("");
       setPlayers(Array.from({ length: required > 0 ? required : 0 }, () => ""));
     }
 
@@ -75,6 +91,10 @@ export default function useTournamentSignupForm({
     setTeamName("");
     setTelNumber("");
     setEmail(userEmail || "");
+    setCompanyName("");
+    setTaxNumber("");
+    setAddress("");
+    setBillingName("");
     setPlayers([]);
     setSubmitLoading(false);
     setSubmitMsg("");
@@ -99,6 +119,14 @@ export default function useTournamentSignupForm({
     setEmail,
     telNumber,
     setTelNumber,
+    companyName,
+    setCompanyName,
+    taxNumber,
+    setTaxNumber,
+    address,
+    setAddress,
+    billingName,
+    setBillingName,
     players,
     setPlayers,
     updatePlayer,

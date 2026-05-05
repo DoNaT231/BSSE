@@ -22,6 +22,14 @@ export default function TournamentModal({
   setEmail,
   telNumber,
   setTelNumber,
+  companyName,
+  setCompanyName,
+  taxNumber,
+  setTaxNumber,
+  address,
+  setAddress,
+  billingName,
+  setBillingName,
   players,
   updatePlayer,
 }) {
@@ -39,7 +47,7 @@ export default function TournamentModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)] border border-white/60"
+        className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)] border border-white/60 flex flex-col"
       >
         <div className="bg-lightBlue px-5 py-4">
           <div className="flex items-start justify-between gap-4">
@@ -64,7 +72,7 @@ export default function TournamentModal({
           </div>
         </div>
 
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto flex-1">
           <form onSubmit={onSubmit} className="space-y-4">
             <TournamentFormFields
               teamName={teamName}
@@ -73,6 +81,14 @@ export default function TournamentModal({
               setEmail={setEmail}
               telNumber={telNumber}
               setTelNumber={setTelNumber}
+              companyName={companyName}
+              setCompanyName={setCompanyName}
+              taxNumber={taxNumber}
+              setTaxNumber={setTaxNumber}
+              address={address}
+              setAddress={setAddress}
+              billingName={billingName}
+              setBillingName={setBillingName}
             />
 
             <TournamentPlayersFields
@@ -100,36 +116,38 @@ export default function TournamentModal({
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="submit"
-                disabled={submitLoading}
-                className="w-full rounded-2xl bg-yellow px-4 py-3 text-sm font-extrabold text-blackSoft shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {submitLoading
-                  ? "Mentés..."
-                  : activeRegistration?.id
-                  ? "Módosítás mentése"
-                  : willBeWaitlisted
-                  ? "Várólistára jelentkezem"
-                  : "Jelentkezés elküldése"}
-              </button>
-
-              {activeRegistration?.id && (
+            <div className="mt-6 space-y-4 border-t border-slate-200 pt-4">
+              <div className="grid grid-cols-2 gap-4">
                 <button
-                  type="button"
-                  onClick={onDeleteRegistration}
+                  type="submit"
                   disabled={submitLoading}
-                  className="w-full px-4 py-3 text-sm font-extrabold text-red-700 transition border border-red-200 shadow-sm rounded-2xl bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-200/60 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-2xl bg-yellow px-4 py-3 text-sm font-extrabold text-blackSoft shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {submitLoading ? "Törlés..." : "Nevezés törlése"}
+                  {submitLoading
+                    ? "Mentés..."
+                    : activeRegistration?.id
+                    ? "Módosítás mentése"
+                    : willBeWaitlisted
+                    ? "Várólistára jelentkezem"
+                    : "Jelentkezés elküldése"}
                 </button>
-              )}
-            </div>
 
-            <p className="text-xs text-slate-500">
-              Ha 401/403 hibát kapsz, a nevezéshez be kell jelentkezni.
-            </p>
+                {activeRegistration?.id && (
+                  <button
+                    type="button"
+                    onClick={onDeleteRegistration}
+                    disabled={submitLoading}
+                    className="w-full px-4 py-3 text-sm font-extrabold text-red-700 transition border border-red-200 shadow-sm rounded-2xl bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-200/60 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {submitLoading ? "Törlés..." : "Nevezés törlése"}
+                  </button>
+                )}
+              </div>
+
+              <p className="text-xs text-slate-500">
+                Ha 401/403 hibát kapsz, a nevezéshez be kell jelentkezni.
+              </p>
+            </div>
           </form>
         </div>
       </div>

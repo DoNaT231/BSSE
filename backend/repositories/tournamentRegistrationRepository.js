@@ -28,6 +28,10 @@ function mapRow(row) {
     players: row.players,
     teamName: row.team_name,
     contactEmail: row.contact_email,
+    billingName: row.billing_name,
+    companyName: row.company_name,
+    taxNumber: row.tax_number,
+    address: row.address,
     status: row.status ?? row.registration_status ?? "CONFIRMED",
     paid: row.paid ?? row.registration_paid ?? false,
     createdAt: row.created_at,
@@ -42,6 +46,10 @@ export async function create(
     players = null,
     teamName = null,
     contactEmail = null,
+    billingName,
+    companyName = null,
+    taxNumber = null,
+    address = null,
     status = "CONFIRMED",
     paid = false,
   },
@@ -56,14 +64,18 @@ export async function create(
         players,
         team_name,
         contact_email,
+        billing_name,
+        company_name,
+        tax_number,
+        address,
         paid,
         status,
         created_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
       RETURNING *
     `,
-    [tournamentId, userId, telNumber, players, teamName, contactEmail, paid, status]
+    [tournamentId, userId, telNumber, players, teamName, contactEmail, billingName, companyName, taxNumber, address, paid, status]
   );
 
   return mapRow(rows[0]);
@@ -155,7 +167,7 @@ export async function countByTournamentId(tournamentId, client = pool) {
 
 export async function updateById(
   id,
-  { telNumber, players, teamName, contactEmail, status, paid },
+  { telNumber, players, teamName, contactEmail, billingName, companyName, taxNumber, address, status, paid },
   client = pool
 ) {
   const fields = [];
@@ -180,6 +192,26 @@ export async function updateById(
   if (contactEmail !== undefined) {
     fields.push(`contact_email = $${index++}`);
     values.push(contactEmail);
+  }
+
+  if (billingName !== undefined) {
+    fields.push(`billing_name = $${index++}`);
+    values.push(billingName);
+  }
+
+  if (companyName !== undefined) {
+    fields.push(`company_name = $${index++}`);
+    values.push(companyName);
+  }
+
+  if (taxNumber !== undefined) {
+    fields.push(`tax_number = $${index++}`);
+    values.push(taxNumber);
+  }
+
+  if (address !== undefined) {
+    fields.push(`address = $${index++}`);
+    values.push(address);
   }
 
   if (status !== undefined) {
@@ -235,6 +267,10 @@ export async function findAllDetailedByTournamentId(tournamentId, client = pool)
         tr.tel_number,
         tr.team_name,
         tr.players,
+        tr.billing_name,
+        tr.company_name,
+        tr.tax_number,
+        tr.address,
         tr.status,
         tr.paid,
         tr.created_at,

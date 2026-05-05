@@ -25,6 +25,10 @@ export default class TournamentRegistration {
     tel_number,
     contact_email,
     registration_status,
+    billing_name,
+    company_name,
+    tax_number,
+    address,
     created_at
   ) {
     this.id = id;
@@ -35,6 +39,10 @@ export default class TournamentRegistration {
     this.tel_number = tel_number;
     this.contact_email = contact_email;
     this.registration_status = registration_status;
+    this.billing_name = billing_name;
+    this.company_name = company_name;
+    this.tax_number = tax_number;
+    this.address = address;
     this.created_at = created_at;
   }
 }

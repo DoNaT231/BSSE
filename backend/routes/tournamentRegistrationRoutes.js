@@ -36,6 +36,10 @@ router.post("/", authMiddleware, async (req, res) => {
         teamName: req.body.teamName ?? req.body.team_name,
         telNumber: req.body.telNumber ?? req.body.tel_number,
         contactEmail: req.body.contactEmail ?? req.body.contact_email,
+        billingName: req.body.billingName ?? req.body.billing_name,
+        companyName: req.body.companyName ?? req.body.company_name,
+        taxNumber: req.body.taxNumber ?? req.body.tax_number,
+        address: req.body.address,
         players: req.body.players ?? [],
       });
 
@@ -75,6 +79,10 @@ router.put("/:id", authMiddleware, async (req, res) => {
         teamName: req.body.teamName ?? req.body.team_name,
         telNumber: req.body.telNumber ?? req.body.tel_number,
         contactEmail: req.body.contactEmail ?? req.body.contact_email,
+        billingName: req.body.billingName ?? req.body.billing_name,
+        companyName: req.body.companyName ?? req.body.company_name,
+        taxNumber: req.body.taxNumber ?? req.body.tax_number,
+        address: req.body.address,
         players: req.body.players,
       });
 

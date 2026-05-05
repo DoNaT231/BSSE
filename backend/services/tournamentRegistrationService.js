@@ -95,6 +95,10 @@ export async function registerToTournament({
   teamName,
   telNumber,
   contactEmail,
+  billingName,
+  companyName,
+  taxNumber,
+  address,
   players = [],
 }) {
   if (!userId) {
@@ -168,6 +172,10 @@ export async function registerToTournament({
     players: players ?? null,
     teamName: teamName?.trim() || null,
     contactEmail: contactEmail?.trim() || null,
+    billingName: billingName?.trim(),
+    companyName: companyName?.trim() || null,
+    taxNumber: taxNumber?.trim() || null,
+    address: address?.trim() || null,
     status: registrationStatus,
   });
 
@@ -177,6 +185,9 @@ export async function registerToTournament({
     telNumber: created.telNumber,
     registrationDate: created.createdAt,
     contactEmail: created.contactEmail,
+    companyName: created.companyName,
+    taxNumber: created.taxNumber,
+    address: created.address,
     status: created.status ?? registrationStatus,
   });
 
@@ -197,6 +208,10 @@ export async function updateOwnTournamentRegistration({
   teamName,
   telNumber,
   contactEmail,
+  billingName,
+  companyName,
+  taxNumber,
+  address,
   players,
 }) {
   const registration = await tournamentRegistrationRepository.findById(registrationId);
@@ -256,6 +271,10 @@ export async function updateOwnTournamentRegistration({
     teamName: teamName !== undefined ? teamName?.trim() || null : undefined,
     contactEmail:
       contactEmail !== undefined ? contactEmail?.trim() || null : undefined,
+    billingName: billingName !== undefined ? billingName?.trim() : undefined,
+    companyName: companyName !== undefined ? companyName?.trim() || null : undefined,
+    taxNumber: taxNumber !== undefined ? taxNumber?.trim() || null : undefined,
+    address: address !== undefined ? address?.trim() || null : undefined,
   });
 }
 

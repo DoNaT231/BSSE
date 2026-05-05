@@ -41,6 +41,14 @@ export default function TournamentSignupSection() {
     setEmail,
     telNumber,
     setTelNumber,
+    companyName,
+    setCompanyName,
+    taxNumber,
+    setTaxNumber,
+    address,
+    setAddress,
+    billingName,
+    setBillingName,
     players,
     updatePlayer,
     submitLoading,
@@ -123,6 +131,10 @@ export default function TournamentSignupSection() {
           teamName: teamName.trim() || null,
           telNumber: telNumber.trim(),
           contactEmail: email.trim(),
+          billingName: billingName.trim(),
+          companyName: companyName.trim() || null,
+          taxNumber: taxNumber.trim() || null,
+          address: address.trim(),
           players: players.map((p) => p.trim()),
         },
         token,
@@ -306,6 +318,14 @@ export default function TournamentSignupSection() {
             setEmail={setEmail}
             telNumber={telNumber}
             setTelNumber={setTelNumber}
+            companyName={companyName}
+            setCompanyName={setCompanyName}
+            taxNumber={taxNumber}
+            setTaxNumber={setTaxNumber}
+            address={address}
+            setAddress={setAddress}
+            billingName={billingName}
+            setBillingName={setBillingName}
             players={players}
             updatePlayer={updatePlayer}
           />
