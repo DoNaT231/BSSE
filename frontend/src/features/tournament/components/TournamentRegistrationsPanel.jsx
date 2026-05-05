@@ -1,3 +1,23 @@
+// +------------------------------------------------------------------+
+// |                TournamentRegistrationsPanel.jsx                   |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * TournamentRegistrationsPanel.jsx - Jelentkezők listázása
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Versenyjelentkezők listázása és kezelése
+ * - Státusz módosítása és fizetési állapot kezelése
+ *
+ * Felelosseg:
+ * - Jelentkezők megjelenítése
+ * - Számlázási adatok listázása
+ * - Admin műveletek kezelése
+ */
+
 import React from "react";
 
 export default function TournamentRegistrationsPanel({
@@ -54,6 +74,12 @@ export default function TournamentRegistrationsPanel({
                 const isUpdating = Number(statusUpdateLoadingId) === Number(r.id);
                 const paid = Boolean(r.paid ?? r.registration_paid ?? false);
                 const isPaidUpdating = Number(paidUpdateLoadingId) === Number(r.id);
+                
+                // Új számlázási mezők
+                const billingName = r.billingName ?? r.billing_name ?? "";
+                const companyName = r.companyName ?? r.company_name ?? "";
+                const taxNumber = r.taxNumber ?? r.tax_number ?? "";
+                const address = r.address ?? "";
 
                 return (
                   <>
@@ -71,6 +97,25 @@ export default function TournamentRegistrationsPanel({
 
               <div className="text-xs text-gray-600">
                 Felhasználó email: {userEmail || "—"}
+              </div>
+
+              {/* Számlázási információk - mindig megjelenik */}
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-xs font-semibold text-blue-800 mb-1">
+                  📄 Számlázási adatok:
+                </div>
+                <div className="text-xs text-gray-700">
+                  Számlázási név: <span className="font-medium">{billingName || "—"}</span>
+                </div>
+                <div className="text-xs text-gray-700">
+                  Cégnév: <span className="font-medium">{companyName || "—"}</span>
+                </div>
+                <div className="text-xs text-gray-700">
+                  Adószám: <span className="font-medium">{taxNumber || "—"}</span>
+                </div>
+                <div className="text-xs text-gray-700">
+                  Cím: <span className="font-medium">{address || "—"}</span>
+                </div>
               </div>
 
               <div className="text-xs text-gray-600">

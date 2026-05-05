@@ -36,4 +36,12 @@ export const EMAIL_TEMPLATES = {
     id: 6, // ezt majd írd át arra az ID-ra, amit a Brevo template kap
     subject: "Új üzenet érkezett a Smash weboldalról",
   },
+    TOURNAMENT_STATUS_CONFIRMED: {
+    id: 7, 
+    subject: "Versenyjelentkezésed aktiválva",
+  },
+    TOURNAMENT_STATUS_WAITLISTED: {
+    id: 8, 
+    subject: "Versenyjelentkezésed várólistára került",
+  },
 };

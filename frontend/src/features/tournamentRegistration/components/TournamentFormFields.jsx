@@ -1,3 +1,23 @@
+// +------------------------------------------------------------------+
+// |                  TournamentFormFields.jsx                         |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * TournamentFormFields.jsx - Versenyregisztrációs űrlap mezők
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Versenyregisztrációs űrlap mezőinek megjelenítése
+ * - Feltételes mezők logikája (cégnév, adószám)
+ *
+ * Felelosseg:
+ * - Form mezők renderelése
+ * - Validációs hibák megjelenítése
+ * - Help textek kezelése
+ */
+
 import React, { useState } from "react";
 import TournamentField from "./TournamentField.jsx";
 

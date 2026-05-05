@@ -1,3 +1,22 @@
+// +------------------------------------------------------------------+
+// |            tournamentRegistrationPublicApi.js                     |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * tournamentRegistrationPublicApi.js - API kommunikációs réteg
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Versenyregisztrációs API hívások kezelése
+ * - Adatok küldése és fogadása a backend felé
+ *
+ * Felelosseg:
+ * - API kérések formázása és küldése
+ * - Válaszok feldolgozása és hibakezelés
+ */
+
 import { API_BASE_URL } from "../../../config";
 
 function getAuthHeaders(token, extra = {}) {
@@ -31,6 +50,10 @@ function mapRegistrationPayload(payload) {
     players: payload.players,
     team_name: payload.teamName,
     contact_email: payload.contactEmail,
+    billing_name: payload.billingName,
+    company_name: payload.companyName,
+    tax_number: payload.taxNumber,
+    address: payload.address,
   };
 }
 

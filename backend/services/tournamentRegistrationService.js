@@ -18,6 +18,10 @@
 import * as tournamentRegistrationRepository from "../repositories/tournamentRegistrationRepository.js";
 import * as tournamentRepository from "../repositories/tournamentRepository.js";
 import {
+  sendTournamentStatusWaitlistedEmail,
+  sendTournamentStatusConfirmedEmail,
+} from "../services/email/service.js";
+import {
   sendTournamentRegistrationSuccessEmail,
   sendTournamentRegistrationWaitlistEmail,
 } from "./email/service.js";
@@ -353,9 +357,56 @@ export async function updateRegistrationStatusByAdmin({
     throw new Error("A jelentkezés nem található.");
   }
 
+  // Email küldés státuszváltozáskor
+  await sendStatusChangeEmail({
+    registration,
+    newStatus: normalizedStatus,
+  });
+
   return tournamentRegistrationRepository.updateById(registrationId, {
     status: normalizedStatus,
   });
+}
+
+async function sendStatusChangeEmail({ registration, newStatus }) {
+  try {
+    const tournament = await tournamentRepository.findDetailedById(registration.tournamentId);
+    if (!tournament || !registration.contactEmail) return;
+
+    const { rows } = await pool.query(
+      `SELECT username FROM users WHERE id = $1`,
+      [registration.userId]
+    );
+
+    if (!rows.length) return;
+
+    const username = rows[0].username;
+    const tournamentStart = await getTournamentStartFromSlots(tournament.eventId);
+
+    const emailPayload = {
+      toEmail: registration.contactEmail,
+      toName: username,
+      tournamentName: tournament.title,
+      teamName: registration.teamName || "",
+      phoneNumber: registration.telNumber,
+      statusChangeDate: new Date(),
+      tournamentDate: tournamentStart
+        ? new Date(tournamentStart).toLocaleString("hu-HU")
+        : "Nincs megadva",
+      entryFee:
+        tournament.entry_fee == null || Number(tournament.entry_fee) === 0
+          ? "Ingyenes"
+          : `${tournament.entry_fee} Ft`,
+    };
+
+    if (newStatus === "WAITLISTED") {
+      await sendTournamentStatusWaitlistedEmail(emailPayload);
+    } else if (newStatus === "CONFIRMED") {
+      await sendTournamentStatusConfirmedEmail(emailPayload);
+    }
+  } catch (e) {
+    console.error("Status change email failed:", e);
+  }
 }
 
 /**

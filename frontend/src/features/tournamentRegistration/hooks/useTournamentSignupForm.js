@@ -1,14 +1,39 @@
+// +------------------------------------------------------------------+
+// |                useTournamentSignupForm.js                        |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * useTournamentSignupForm.js - React Hook versenyregisztrációhoz
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Versenyregisztrációs űrlap állapotkezelése
+ * - Adatok validálása és küldése
+ *
+ * Felelosseg:
+ * - Form állapotok kezelése
+ * - API hívások indítása
+ * - Hibaüzenetek kezelése
+ */
+
 import { useMemo, useState } from "react";
+import { useAuth } from "../../../contexts/AuthContext";
+import { fetchPublicTournaments, fetchMyTournamentRegistrations } from "../api/tournamentRegistrationPublicApi";
 
 export default function useTournamentSignupForm({
   tournaments,
   regByTournamentId,
-  myRegistrations = [],
-  userEmail,
+  myRegistrations,
+  reloadTournamentData,
+  refreshMyRegistrations,
 }) {
+  const { user } = useAuth();
+  const userEmail = user?.email;
   const [openTournamentId, setOpenTournamentId] = useState(null);
   const [teamName, setTeamName] = useState("");
-  const [email, setEmail] = useState(userEmail || "");
+  const [email, setEmail] = useState("");
   const [telNumber, setTelNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [taxNumber, setTaxNumber] = useState("");

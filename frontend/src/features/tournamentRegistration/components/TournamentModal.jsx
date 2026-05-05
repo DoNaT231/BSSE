@@ -1,3 +1,23 @@
+// +------------------------------------------------------------------+
+// |                     TournamentModal.jsx                            |
+// |                   Copyright (c) 2026, Komoroczy Donat            |
+// |                    donatkomoroczy@gmail.com                     |
+// +------------------------------------------------------------------+
+/*
+ * =====================================================================
+ * TournamentModal.jsx - Versenyregisztrációs modal
+ * =====================================================================
+ *
+ * Funkcio:
+ * - Versenyregisztrációs modal megjelenítése
+ * - Form adatok küldése és kezelése
+ *
+ * Felelosseg:
+ * - Modal renderelése
+ * - Form események kezelése
+ * - Hibaüzenetek megjelenítése
+ */
+
 import React from "react";
 import TournamentFormFields from "./TournamentFormFields.jsx";
 import TournamentPlayersFields from "./TournamentPlayersFields.jsx";
@@ -11,11 +31,11 @@ export default function TournamentModal({
   selectedTournament,
   closeForm,
   onSubmit,
+  onDeleteRegistration,
   activeRegistration,
   submitLoading,
   submitErr,
   submitMsg,
-  onDeleteRegistration,
   teamName,
   setTeamName,
   email,

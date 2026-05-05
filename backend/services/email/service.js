@@ -217,6 +217,60 @@ export async function sendContactMessageEmail({
   });
 }
 
+export async function sendTournamentStatusWaitlistedEmail({
+  toEmail,
+  toName,
+  tournamentName,
+  teamName,
+  phoneNumber,
+  statusChangeDate,
+  tournamentDate,
+  entryFee,
+}) {
+  const t = EMAIL_TEMPLATES.TOURNAMENT_STATUS_WAITLISTED;
+  return sendTemplateEmail({
+    toEmail,
+    toName,
+    templateId: t.id,
+    subject: t.subject,
+    params: {
+      tournamentName: tournamentName || "",
+      teamName: teamName || "",
+      phoneNumber: phoneNumber || "",
+      statusChangeDate: formatHungarianDate(statusChangeDate) || "",
+      tournamentDate: formatHungarianDate(tournamentDate) || "",
+      entryFee: entryFee || "",
+    },
+  });
+}
+
+export async function sendTournamentStatusConfirmedEmail({
+  toEmail,
+  toName,
+  tournamentName,
+  teamName,
+  phoneNumber,
+  statusChangeDate,
+  tournamentDate,
+  entryFee,
+}) {
+  const t = EMAIL_TEMPLATES.TOURNAMENT_STATUS_CONFIRMED;
+  return sendTemplateEmail({
+    toEmail,
+    toName,
+    templateId: t.id,
+    subject: t.subject,
+    params: {
+      tournamentName: tournamentName || "",
+      teamName: teamName || "",
+      phoneNumber: phoneNumber || "",
+      statusChangeDate: formatHungarianDate(statusChangeDate) || "",
+      tournamentDate: formatHungarianDate(tournamentDate) || "",
+      entryFee: entryFee || "",
+    },
+  });
+}
+
 /**
  * Optional: exportáljuk az alap küldőt is ha kell
  */
