@@ -32,11 +32,11 @@ export default function AboutSection() {
       aria-labelledby="about-heading"
       className="relative overflow-hidden bg-lightBlue px-5 py-24 font-[Montserrat] text-[#101820]"
     >
-      <div className="pointer-events-none absolute -left-28 top-20 h-80 w-80 rounded-full bg-white/25 blur-2xl" />
+      <div className="absolute rounded-full pointer-events-none -left-28 top-20 h-80 w-80 bg-white/25 blur-2xl" />
       <div className="pointer-events-none absolute -right-28 bottom-16 h-80 w-80 rounded-full bg-[#25AEE4]/15 blur-2xl" />
 
-      <div className="relative z-10 mx-auto max-w-6xl">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center">
           <span className="mb-4 inline-block text-xs font-black uppercase tracking-[0.28em] text-white">
             Rólunk
           </span>
@@ -53,7 +53,7 @@ export default function AboutSection() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 mt-12 md:grid-cols-2">
           <article className="rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_18px_45px_rgba(13,80,110,0.12)] backdrop-blur-md md:p-8">
             <p className="text-justify text-base font-semibold leading-8 text-[#101820]/75 md:text-[1.05rem]">
               A Smash Magyarország egyik legrégebbi és legmeghatározóbb amatőr
@@ -78,8 +78,15 @@ export default function AboutSection() {
           </article>
         </div>
 
-        <div className="mt-16">
-          <div className="mx-auto mb-9 max-w-2xl text-center">
+        <p className="mx-auto text-center mt-10 max-w-3xl text-base font-semibold leading-8 text-[#101820]/75 md:text-lg">
+            A SMASH by Meló-Diák strandröplabda közösségi program a Veszprém Balaton Európa Sportrégiója 2026 Program keretében valósul meg.
+          </p>
+          <a href="https://sportregio2026.hu"  className="w-100%  h-20 flex justify-center">
+            <img className="self-center justify-center h-28 hover:scale-[1.2] transition hover:cursor-pointer duration-0.3s" src="/logos/veb-2026-logo.png" alt="aztapszta" />
+          </a>
+
+        <div className="mt-12">
+          <div className="max-w-2xl mx-auto text-center mb-9">
             <span className="mb-3 inline-block text-xs font-black uppercase tracking-[0.25em] text-[#25AEE4]">
               Amit adunk
             </span>
@@ -93,12 +100,12 @@ export default function AboutSection() {
             </p>
           </div>
 
-          <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-5 p-0 list-none sm:grid-cols-2 lg:grid-cols-4">
             {OFFER_ITEMS.map(({ icon: Icon, text }) => (
               <li key={text} className="h-full">
                 <article className="group flex h-full flex-col items-center justify-center rounded-[2rem] border border-white/70 bg-white/80 p-6 text-center shadow-[0_18px_45px_rgba(13,80,110,0.12)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_60px_rgba(13,80,110,0.2)]">
                   <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-[#25AEE4]/10 text-[#25AEE4] ring-1 ring-[#25AEE4]/20 transition duration-300 group-hover:bg-[#25AEE4] group-hover:text-white">
-                    <Icon className="h-8 w-8" strokeWidth={1.8} />
+                    <Icon className="w-8 h-8" strokeWidth={1.8} />
                   </div>
 
                   <p className="text-sm font-black leading-6 text-[#101820] md:text-[0.97rem]">
