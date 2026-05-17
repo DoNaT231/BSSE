@@ -78,11 +78,15 @@ export default function AboutSection() {
           </article>
         </div>
 
-        <p className="mx-auto text-center mt-10 max-w-3xl text-base font-semibold leading-8 text-[#101820]/75 md:text-lg">
-            A SMASH by Meló-Diák strandröplabda közösségi program a Veszprém Balaton Európa Sportrégiója 2026 Program keretében valósul meg.
-          </p>
-          <a href="https://sportregio2026.hu"  className="w-100%  h-20 flex justify-center">
-            <img className="self-center justify-center h-28 hover:scale-[1.2] transition hover:cursor-pointer duration-0.3s" src="/logos/veb-2026-logo.png" alt="aztapszta" />
+          <p className="mx-auto max-w-3xl text-center font-semibold leading-8 text-[#101820]/75 md:text-lg mt-12">
+    A SMASH by Meló-Diák strandröplabda közösségi program a{" "}
+    <span className="font-black text-[#101820]">
+      Veszprém Balaton Európa Sportrégiója 2026
+    </span>{" "}
+    Program keretében valósul meg.
+  </p>
+          <a href="https://sportregio2026.hu"  className="w-100%  h-20 flex justify-center mt-10">
+            <img className="self-center justify-center h-52 hover:scale-[1.2] transition hover:cursor-pointer duration-0.3s" src="/logos/veb-2026-logo.png" alt="aztapszta" />
           </a>
 
         <div className="mt-12">
