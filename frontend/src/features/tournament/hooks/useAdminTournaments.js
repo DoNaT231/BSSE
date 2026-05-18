@@ -52,6 +52,7 @@ export default function useAdminTournaments(token) {
     try {
       setError("");
       setLoadingList(true);
+
       const data = await fetchAdminTournaments(token);
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -100,7 +101,12 @@ export default function useAdminTournaments(token) {
     let endLocal;
 
     if (slotForm.allDay) {
-      startLocal = `${slotForm.day}T${slotForm.startTime}`;
+      const startPart =
+        slotForm.startTime && String(slotForm.startTime).trim()
+          ? String(slotForm.startTime).trim()
+          : "00:00";
+
+      startLocal = `${slotForm.day}T${startPart}`;
       endLocal = `${slotForm.day}T23:59`;
     } else {
       if (!slotForm.startTime || !slotForm.endTime) {
@@ -121,12 +127,16 @@ export default function useAdminTournaments(token) {
     }
 
     if (new Date(startIso) >= new Date(endIso)) {
-      setError("A slot kezdő időpontjának kisebbnek kell lennie, mint a záró időpont.");
+      setError(
+        "A slot kezdő időpontjának kisebbnek kell lennie, mint a záró időpont."
+      );
       return;
     }
 
     setError("");
+
     const selectedAllCourts = slotForm.courtId === "__ALL__";
+
     const targetCourts = selectedAllCourts
       ? courts
       : courts.filter((court) => Number(court.id) === Number(slotForm.courtId));
@@ -141,6 +151,7 @@ export default function useAdminTournaments(token) {
 
       for (const court of targetCourts) {
         const courtIdNum = Number(court.id);
+
         const alreadyExists = next.some(
           (slot) =>
             Number(slot.courtId) === courtIdNum &&
@@ -196,9 +207,12 @@ export default function useAdminTournaments(token) {
         description: createForm.description?.trim() || null,
         organizerName,
         organizerEmail,
-        registrationDeadline: datetimeLocalToString(
-          createForm.registrationDeadline
-        ),
+        registrationDeadline: createForm.registrationDeadline
+          ? datetimeLocalToString(createForm.registrationDeadline)
+          : null,
+        availableFrom: createForm.availableFrom
+          ? datetimeLocalToString(createForm.availableFrom)
+          : null,
         maxTeams: createForm.maxTeams ? Number(createForm.maxTeams) : null,
         team_size: createForm.team_size ? Number(createForm.team_size) : null,
         entry_fee: createForm.entry_fee ? Number(createForm.entry_fee) : null,
@@ -231,10 +245,14 @@ export default function useAdminTournaments(token) {
 
   async function openEdit(tournament) {
     if (!tournament?.id) return;
+
     try {
       setError("");
+
       const detailed = await fetchTournamentById(tournament.id, token);
+
       setEditing(detailed);
+
       setEditForm({
         title: detailed?.title ?? "",
         description: detailed?.description ?? "",
@@ -243,9 +261,14 @@ export default function useAdminTournaments(token) {
         registrationDeadline: detailed?.registrationDeadline
           ? toDatetimeLocalValue(detailed.registrationDeadline)
           : "",
+        availableFrom: detailed?.availableFrom
+          ? toDatetimeLocalValue(detailed.availableFrom)
+          : "",
         maxTeams: detailed?.maxTeams != null ? String(detailed.maxTeams) : "",
-        team_size: detailed?.team_size != null ? String(detailed.team_size) : "2",
-        entry_fee: detailed?.entry_fee != null ? String(detailed.entry_fee) : "0",
+        team_size:
+          detailed?.team_size != null ? String(detailed.team_size) : "2",
+        entry_fee:
+          detailed?.entry_fee != null ? String(detailed.entry_fee) : "0",
         notes: detailed?.notes ?? "",
         status: detailed?.eventStatus ?? "published",
         visibility: detailed?.visibility ?? "public",
@@ -262,6 +285,7 @@ export default function useAdminTournaments(token) {
 
   async function handleSaveEdit(e) {
     e.preventDefault();
+
     if (!editing?.id) return;
 
     try {
@@ -277,6 +301,9 @@ export default function useAdminTournaments(token) {
         organizerEmail: editForm.organizerEmail?.trim() || null,
         registrationDeadline: editForm.registrationDeadline
           ? datetimeLocalToString(editForm.registrationDeadline)
+          : null,
+        availableFrom: editForm.availableFrom
+          ? datetimeLocalToString(editForm.availableFrom)
           : null,
         maxTeams: editForm.maxTeams ? Number(editForm.maxTeams) : null,
         team_size: editForm.team_size ? Number(editForm.team_size) : null,
@@ -305,11 +332,15 @@ export default function useAdminTournaments(token) {
 
   async function handleConfirmDelete() {
     if (!deleteConfirming?.id) return;
+
     const id = deleteConfirming.id;
+
     try {
       setError("");
       setDeleting(true);
+
       await deleteTournament(id, token);
+
       setItems((prev) => prev.filter((x) => x.id !== id));
       setDeleteConfirming(null);
     } catch (e) {
@@ -322,6 +353,7 @@ export default function useAdminTournaments(token) {
   async function addSlotToTournament(tournamentId, payload) {
     setError("");
     setSlotActionLoading(true);
+
     try {
       await createTournamentSlot(tournamentId, payload, token);
       await loadAll();
@@ -333,6 +365,7 @@ export default function useAdminTournaments(token) {
   async function updateSlot(tournamentId, slotId, payload) {
     setError("");
     setSlotActionLoading(true);
+
     try {
       await updateTournamentSlot(tournamentId, slotId, payload, token);
       await loadAll();
@@ -344,6 +377,7 @@ export default function useAdminTournaments(token) {
   async function deleteSlot(tournamentId, slotId) {
     setError("");
     setSlotActionLoading(true);
+
     try {
       await deleteTournamentSlot(tournamentId, slotId, token);
       await loadAll();

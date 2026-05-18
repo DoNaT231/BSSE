@@ -109,6 +109,7 @@ async function attachRegistrationStats(tournaments) {
         );
 
       const maxTeams = tournament.maxTeams ?? null;
+
       return {
         ...tournament,
         maxTeams,
@@ -132,12 +133,17 @@ export async function createTournament({
   organizerEmail,
   organizerLogoUrl = null,
   registrationDeadline = null,
+  availableFrom = null,
   maxTeams = null,
   team_size = null,
   entry_fee = null,
   notes = null,
   slots,
 }) {
+  const normalizedRegistrationDeadline =
+    normalizeOptionalDateTime(registrationDeadline);
+
+  const normalizedAvailableFrom = normalizeOptionalDateTime(availableFrom);
   const normalizedSlots = slots.map((slot) => {
     if (slot.day) {
       const day = slot.day;
@@ -235,7 +241,8 @@ export async function createTournament({
         organizerName,
         organizerEmail,
         organizerLogoUrl,
-        registrationDeadline,
+        registrationDeadline: normalizedRegistrationDeadline,
+        availableFrom: normalizedAvailableFrom,
         maxTeams,
         team_size,
         entry_fee,
@@ -294,8 +301,8 @@ export async function getAllTournaments() {
   return attachSlotsToTournaments(tournamentsWithStats, allSlots);
 }
 
-export async function getAllPublicTournaments() {
-  const tournaments = await tournamentRepository.findAllPublic();
+export async function getAllPublicTournaments(isLocalEarlyAccess = false) {
+  const tournaments = await tournamentRepository.findAllPublic(isLocalEarlyAccess);
   const tournamentsWithStats = await attachRegistrationStats(tournaments);
   const eventIds = tournamentsWithStats.map((t) => t.eventId).filter(Boolean);
 
@@ -320,7 +327,10 @@ export async function deleteTournamentById(id) {
     await client.query("BEGIN");
 
     await tournamentRepository.deleteById(id, client);
-    await eventWriteRepository.deleteEventSlotsByEventId(tournament.eventId, client);
+    await eventWriteRepository.deleteEventSlotsByEventId(
+      tournament.eventId,
+      client
+    );
     await eventWriteRepository.deleteEventById(tournament.eventId, client);
 
     await client.query("COMMIT");
@@ -340,9 +350,15 @@ export async function addTournamentSlot(
 ) {
   const normalizedStart = normalizeWallClockValue(startTime);
   const normalizedEnd = normalizeWallClockValue(endTime);
-  validateSingleSlot({ courtId, startTime: normalizedStart, endTime: normalizedEnd });
+
+  validateSingleSlot({
+    courtId,
+    startTime: normalizedStart,
+    endTime: normalizedEnd,
+  });
 
   const tournament = await tournamentRepository.findById(tournamentId);
+
   if (!tournament) {
     throw new Error("A tournament nem talalhato.");
   }
@@ -353,11 +369,16 @@ export async function addTournamentSlot(
     await client.query("BEGIN");
 
     const overlaps = await reservationSyncRepository.getOverlappingSlots(
-      { courtId: Number(courtId), startTime: normalizedStart, endTime: normalizedEnd },
+      {
+        courtId: Number(courtId),
+        startTime: normalizedStart,
+        endTime: normalizedEnd,
+      },
       client
     );
 
     const blocking = overlaps.filter((item) => item.eventType !== "reservation");
+
     if (blocking.length > 0) {
       throw new Error(
         `A slot utkozik mas esemennyel a(z) ${courtId} palyan: ${startTime} - ${endTime}`
@@ -411,9 +432,15 @@ export async function updateTournamentSlot(
 ) {
   const normalizedStart = normalizeWallClockValue(startTime);
   const normalizedEnd = normalizeWallClockValue(endTime);
-  validateSingleSlot({ courtId, startTime: normalizedStart, endTime: normalizedEnd });
+
+  validateSingleSlot({
+    courtId,
+    startTime: normalizedStart,
+    endTime: normalizedEnd,
+  });
 
   const tournament = await tournamentRepository.findById(tournamentId);
+
   if (!tournament) {
     throw new Error("A tournament nem talalhato.");
   }
@@ -431,12 +458,18 @@ export async function updateTournamentSlot(
     await client.query("BEGIN");
 
     const overlaps = await reservationSyncRepository.getOverlappingSlots(
-      { courtId: Number(courtId), startTime: normalizedStart, endTime: normalizedEnd },
+      {
+        courtId: Number(courtId),
+        startTime: normalizedStart,
+        endTime: normalizedEnd,
+      },
       client
     );
 
     const blocking = overlaps.filter(
-      (item) => item.eventType !== "reservation" && Number(item.slotId) !== Number(slotId)
+      (item) =>
+        item.eventType !== "reservation" &&
+        Number(item.slotId) !== Number(slotId)
     );
 
     if (blocking.length > 0) {
@@ -466,6 +499,7 @@ export async function updateTournamentSlot(
     );
 
     await client.query("COMMIT");
+
     return updated;
   } catch (error) {
     await client.query("ROLLBACK");
@@ -477,6 +511,7 @@ export async function updateTournamentSlot(
 
 export async function deleteTournamentSlot(tournamentId, slotId) {
   const tournament = await tournamentRepository.findById(tournamentId);
+
   if (!tournament) {
     throw new Error("A tournament nem talalhato.");
   }
@@ -498,7 +533,9 @@ export async function getTournamentById(id) {
     throw new Error("A tournament nem talalhato.");
   }
 
-  const slots = await calendarRepository.getEventSlotsByEventId(tournament.eventId);
+  const slots = await calendarRepository.getEventSlotsByEventId(
+    tournament.eventId
+  );
 
   return {
     ...tournament,
@@ -506,14 +543,19 @@ export async function getTournamentById(id) {
   };
 }
 
-export async function getPublicTournamentById(id) {
-  const tournament = await tournamentRepository.findPublicDetailedById(id);
+export async function getPublicTournamentById(id, isLocalEarlyAccess = false) {
+  const tournament = await tournamentRepository.findPublicDetailedById(
+    id,
+    isLocalEarlyAccess
+  );
 
   if (!tournament) {
     throw new Error("A tournament nem talalhato.");
   }
 
-  const slots = await calendarRepository.getEventSlotsByEventId(tournament.eventId);
+  const slots = await calendarRepository.getEventSlotsByEventId(
+    tournament.eventId
+  );
 
   return {
     ...tournament,
@@ -563,7 +605,8 @@ export async function updateTournamentFully(id, data) {
       organizerName: data.organizerName,
       organizerEmail: data.organizerEmail,
       organizerLogoUrl: data.organizerLogoUrl,
-      registrationDeadline: data.registrationDeadline,
+      registrationDeadline: normalizeOptionalDateTime(data.registrationDeadline),
+      availableFrom: normalizeOptionalDateTime(data.availableFrom),
       maxTeams: data.maxTeams,
       team_size: data.team_size,
       entry_fee: data.entry_fee,
@@ -581,4 +624,21 @@ export async function updateTournamentFully(id, data) {
   } finally {
     client.release();
   }
+}
+function normalizeOptionalDateTime(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  const raw = String(value).trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  return normalizeWallClockValue(raw);
 }

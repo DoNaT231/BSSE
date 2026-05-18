@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../../../config";
+
 /**
  * tournamentsAdminApi
  * -----------------------------------------------------------------------------
@@ -20,6 +21,7 @@ import { API_BASE_URL } from "../../../config";
  * - state kezelés ne kerüljön ide
  * - csak API kommunikáció legyen benne
  */
+
 function getAuthHeaders(token, extra = {}) {
   return {
     "Content-Type": "application/json",
@@ -45,11 +47,15 @@ async function request(path, token, options = {}) {
 }
 
 export async function fetchAdminTournaments(token) {
-  return request("/api/tournaments", token, { method: "GET" });
+  return request("/api/tournaments", token, {
+    method: "GET",
+  });
 }
 
 export async function fetchTournamentById(id, token) {
-  return request(`/api/tournaments/${id}`, token, { method: "GET" });
+  return request(`/api/tournaments/${id}`, token, {
+    method: "GET",
+  });
 }
 
 export async function createTournament(payload, token) {
@@ -96,7 +102,9 @@ export async function fetchTournamentRegistrations(tournamentId, token) {
   return request(
     `/api/tournament-registrations/admin/by-tournament/${tournamentId}`,
     token,
-    { method: "GET" }
+    {
+      method: "GET",
+    }
   );
 }
 
@@ -105,10 +113,14 @@ export async function updateTournamentRegistrationStatus(
   status,
   token
 ) {
-  return request(`/api/tournament-registrations/admin/${registrationId}/status`, token, {
-    method: "PATCH",
-    body: JSON.stringify({ status }),
-  });
+  return request(
+    `/api/tournament-registrations/admin/${registrationId}/status`,
+    token,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }
+  );
 }
 
 /**

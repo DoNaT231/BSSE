@@ -67,15 +67,22 @@ export default function TournamentRegistrationsPanel({
                 const contactEmail = r.contactEmail ?? r.contact_email ?? "";
                 const userEmail = r.userEmail ?? r.user_email ?? "";
                 const createdAt = r.createdAt ?? r.created_at ?? null;
+                const availableFrom = r.availableFrom ?? r.available_from ?? null;
                 const players = Array.isArray(r.players) ? r.players : [];
+
                 const status = String(
                   r.status ?? r.registration_status ?? "CONFIRMED"
                 ).toUpperCase();
-                const isUpdating = Number(statusUpdateLoadingId) === Number(r.id);
+
+                const isUpdating =
+                  Number(statusUpdateLoadingId) === Number(r.id);
+
                 const paid = Boolean(r.paid ?? r.registration_paid ?? false);
-                const isPaidUpdating = Number(paidUpdateLoadingId) === Number(r.id);
-                
-                // Új számlázási mezők
+
+                const isPaidUpdating =
+                  Number(paidUpdateLoadingId) === Number(r.id);
+
+                // Számlázási mezők
                 const billingName = r.billingName ?? r.billing_name ?? "";
                 const companyName = r.companyName ?? r.company_name ?? "";
                 const taxNumber = r.taxNumber ?? r.tax_number ?? "";
@@ -83,103 +90,141 @@ export default function TournamentRegistrationsPanel({
 
                 return (
                   <>
-              <div className="text-sm font-semibold">
-                {index + 1}. {teamName || "Névtelen csapat"}
-              </div>
+                    <div className="text-sm font-semibold">
+                      {index + 1}. {teamName || "Névtelen csapat"}
+                    </div>
 
-              <div className="mt-1 text-xs text-gray-600">
-                Tel: {telNumber || "—"}
-              </div>
+                    <div className="mt-1 text-xs text-gray-600">
+                      Tel: {telNumber || "—"}
+                    </div>
 
-              <div className="text-xs text-gray-600">
-                Kapcsolati email: {contactEmail || "—"}
-              </div>
+                    <div className="text-xs text-gray-600">
+                      Kapcsolati email: {contactEmail || "—"}
+                    </div>
 
-              <div className="text-xs text-gray-600">
-                Felhasználó email: {userEmail || "—"}
-              </div>
+                    <div className="text-xs text-gray-600">
+                      Felhasználó email: {userEmail || "—"}
+                    </div>
 
-              {/* Számlázási információk - mindig megjelenik */}
-              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="text-xs font-semibold text-blue-800 mb-1">
-                  📄 Számlázási adatok:
-                </div>
-                <div className="text-xs text-gray-700">
-                  Számlázási név: <span className="font-medium">{billingName || "—"}</span>
-                </div>
-                <div className="text-xs text-gray-700">
-                  Cégnév: <span className="font-medium">{companyName || "—"}</span>
-                </div>
-                <div className="text-xs text-gray-700">
-                  Adószám: <span className="font-medium">{taxNumber || "—"}</span>
-                </div>
-                <div className="text-xs text-gray-700">
-                  Cím: <span className="font-medium">{address || "—"}</span>
-                </div>
-              </div>
+                    {/* Számlázási információk */}
+                    <div className="p-2 mt-2 border border-blue-200 rounded-lg bg-blue-50">
+                      <div className="mb-1 text-xs font-semibold text-blue-800">
+                        📄 Számlázási adatok:
+                      </div>
 
-              <div className="text-xs text-gray-600">
-                Jelentkezés ideje: {formatDateTime(createdAt)}
-              </div>
+                      <div className="text-xs text-gray-700">
+                        Számlázási név:{" "}
+                        <span className="font-medium">
+                          {billingName || "—"}
+                        </span>
+                      </div>
 
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs font-semibold text-gray-700">Státusz:</span>
-                <select
-                  value={status}
-                  onChange={(e) => onStatusChange?.(r.id, e.target.value)}
-                  disabled={isUpdating}
-                  className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-xs font-semibold text-gray-700 disabled:opacity-60"
-                >
-                  <option value="CONFIRMED">CONFIRMED</option>
-                  <option value="WAITLISTED">WAITLISTED</option>
-                </select>
-                {isUpdating && (
-                  <span className="text-[11px] text-gray-500">Mentés...</span>
-                )}
-              </div>
+                      <div className="text-xs text-gray-700">
+                        Cégnév:{" "}
+                        <span className="font-medium">
+                          {companyName || "—"}
+                        </span>
+                      </div>
 
-              <div className="mt-2 flex items-center gap-3">
-                <div className="text-xs font-semibold text-gray-700">Fizetve</div>
+                      <div className="text-xs text-gray-700">
+                        Adószám:{" "}
+                        <span className="font-medium">
+                          {taxNumber || "—"}
+                        </span>
+                      </div>
 
-                <label className="inline-flex items-center gap-3 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={paid}
-                    disabled={isPaidUpdating}
-                    onChange={(e) => onPaidChange?.(r.id, e.target.checked)}
-                    className="sr-only"
-                  />
+                      <div className="text-xs text-gray-700">
+                        Cím:{" "}
+                        <span className="font-medium">
+                          {address || "—"}
+                        </span>
+                      </div>
+                    </div>
 
-                  <div
-                    className={`relative w-11 h-6 rounded-full border transition-colors ${
-                      paid ? "bg-emerald-500 border-emerald-500" : "bg-gray-200 border-gray-200"
-                    } ${isPaidUpdating ? "opacity-60" : ""}`}
-                  >
-                    <div
-                      className={`absolute top-[3px] left-[3px] w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-                        paid ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </div>
+                    <div className="mt-2 text-xs text-gray-600">
+                      Jelentkezés ideje: {formatDateTime(createdAt)}
+                    </div>
 
-                  {isPaidUpdating && (
-                    <span className="text-[11px] text-gray-500">Mentés...</span>
-                  )}
-                </label>
-              </div>
+                    {availableFrom && (
+                      <div className="text-xs text-gray-600">
+                        Publikus megjelenés: {formatDateTime(availableFrom)}
+                      </div>
+                    )}
 
-              {players.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {players.map((p, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-1 text-xs border rounded-full bg-gray-50"
-                    >
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              )}
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs font-semibold text-gray-700">
+                        Státusz:
+                      </span>
+
+                      <select
+                        value={status}
+                        onChange={(e) =>
+                          onStatusChange?.(r.id, e.target.value)
+                        }
+                        disabled={isUpdating}
+                        className="px-2 py-1 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-60"
+                      >
+                        <option value="CONFIRMED">CONFIRMED</option>
+                        <option value="WAITLISTED">WAITLISTED</option>
+                      </select>
+
+                      {isUpdating && (
+                        <span className="text-[11px] text-gray-500">
+                          Mentés...
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="text-xs font-semibold text-gray-700">
+                        Fizetve
+                      </div>
+
+                      <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={paid}
+                          disabled={isPaidUpdating}
+                          onChange={(e) =>
+                            onPaidChange?.(r.id, e.target.checked)
+                          }
+                          className="sr-only"
+                        />
+
+                        <div
+                          className={`relative w-11 h-6 rounded-full border transition-colors ${
+                            paid
+                              ? "bg-emerald-500 border-emerald-500"
+                              : "bg-gray-200 border-gray-200"
+                          } ${isPaidUpdating ? "opacity-60" : ""}`}
+                        >
+                          <div
+                            className={`absolute top-[3px] left-[3px] w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+                              paid ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </div>
+
+                        {isPaidUpdating && (
+                          <span className="text-[11px] text-gray-500">
+                            Mentés...
+                          </span>
+                        )}
+                      </label>
+                    </div>
+
+                    {players.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {players.map((p, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-1 text-xs border rounded-full bg-gray-50"
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </>
                 );
               })()}

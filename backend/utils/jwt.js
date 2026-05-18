@@ -18,12 +18,12 @@
 import jwt from "jsonwebtoken";
 
 export function generateAccessToken(user) {
-  console.log("niga", user)
   return jwt.sign(
     {
       id: user.id,
       email: user.email,
       user_type: user.user_type,
+      is_local: Boolean(user.is_local),
     },
     process.env.JWT_SECRET,
     {

@@ -29,6 +29,7 @@ function mapRowToTournament(row) {
     organizerName: row.organizer_name,
     organizerEmail: row.organizer_email,
     registrationDeadline: row.registration_deadline,
+    availableFrom: row.available_from,
     maxTeams: row.max_teams,
     team_size: row.team_size,
     entry_fee: row.entry_fee,
@@ -48,6 +49,7 @@ function mapRowToDetailedTournament(row) {
     organizerEmail: row.organizer_email,
     registrationDeadline: row.registration_deadline,
     maxTeams: row.max_teams,
+    availableFrom: row.available_from,
     team_size: row.team_size,
     entry_fee: row.entry_fee,
     notes: row.notes,
@@ -72,6 +74,7 @@ export async function create(
     organizerName,
     organizerEmail,
     registrationDeadline = null,
+    availableFrom = null,
     maxTeams = null,
     team_size = null,
     entry_fee = null,
@@ -88,12 +91,13 @@ export async function create(
         registration_deadline,
         max_teams,
         team_size,
+        available_from,
         entry_fee,
         notes,
         created_at,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
       RETURNING *
     `,
     [
@@ -103,6 +107,7 @@ export async function create(
       registrationDeadline,
       maxTeams,
       team_size,
+      availableFrom,
       entry_fee,
       notes,
     ]
@@ -157,6 +162,7 @@ export async function findAll(client = pool) {
         t.organizer_name,
         t.organizer_email,
         t.registration_deadline,
+        t.available_from,
         t.max_teams,
         t.team_size,
         t.entry_fee,
@@ -191,7 +197,7 @@ export async function findAll(client = pool) {
  * Csak publikus és aktív eventek jelennek meg.
  * Ha nálad más státusznév van (pl. published), akkor azt igazítsd.
  */
-export async function findAllPublic(client = pool) {
+export async function findAllPublic(isLocalEarlyAccess = false, client = pool) {
   const { rows } = await client.query(
     `
       SELECT
@@ -200,6 +206,7 @@ export async function findAllPublic(client = pool) {
         t.organizer_name,
         t.organizer_email,
         t.registration_deadline,
+        t.available_from,
         t.max_teams,
         t.team_size,
         t.entry_fee,
@@ -214,8 +221,13 @@ export async function findAllPublic(client = pool) {
       INNER JOIN events e ON e.id = t.event_id
       WHERE e.visibility = 'public'
         AND e.status = 'active'
+        AND (
+          t.available_from IS NULL
+          OR t.available_from <= NOW() + CASE WHEN $1::boolean THEN INTERVAL '24 hours' ELSE INTERVAL '0' END
+        )
       ORDER BY t.created_at DESC
-    `
+    `,
+    [isLocalEarlyAccess]
   );
 
   return rows.map((row) => ({
@@ -258,7 +270,11 @@ export async function findDetailedById(id, client = pool) {
  * Public tournament részletes lekérés id alapján
  * Sima usereknek
  */
-export async function findPublicDetailedById(id, client = pool) {
+export async function findPublicDetailedById(
+  id,
+  isLocalEarlyAccess = false,
+  client = pool
+) {
   const { rows } = await client.query(
     `
       SELECT
@@ -276,8 +292,12 @@ export async function findPublicDetailedById(id, client = pool) {
       WHERE t.id = $1
         AND e.visibility = 'public'
         AND e.status = 'active'
+        AND (
+          t.available_from IS NULL
+          OR t.available_from <= NOW() + CASE WHEN $2::boolean THEN INTERVAL '24 hours' ELSE INTERVAL '0' END
+        )
     `,
-    [id]
+    [id, isLocalEarlyAccess]
   );
 
   return mapRowToDetailedTournament(rows[0]);
@@ -295,6 +315,7 @@ export async function updateById(
     registrationDeadline,
     maxTeams,
     team_size,
+    availableFrom,
     entry_fee,
     notes,
   },
@@ -317,6 +338,10 @@ export async function updateById(
   if (registrationDeadline !== undefined) {
     fields.push(`registration_deadline = $${index++}`);
     values.push(registrationDeadline);
+  }
+  if (availableFrom !== undefined) {
+    fields.push(`available_from = $${index++}`);
+    values.push(availableFrom);
   }
 
   if (maxTeams !== undefined) {

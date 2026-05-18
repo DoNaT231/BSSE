@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { datetimeLocalToString } from "../utils/tournamentDateUtils";
-import { toDatetimeLocalValue } from "../utils/tournamentDateUtils";    
+
 export default function TournamentSlotModal({
   open,
   mode,
@@ -32,13 +32,32 @@ export default function TournamentSlotModal({
     return `${hours}:${minutes}`;
   }
 
+  function formatDeadline(value) {
+    if (!value) return null;
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date.toLocaleString("hu-HU", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
+
   useEffect(() => {
     if (!open) return;
+
     setFormError("");
+
     if (mode === "edit" && slot) {
       setCourtId(String(slot.courtId ?? ""));
+
       const start = new Date(slot.startTime);
       const end = new Date(slot.endTime);
+
       setDay(toDateInputValue(start));
       setStartTime(toTimeInputValue(start));
       setEndTime(toTimeInputValue(end));
@@ -61,10 +80,13 @@ export default function TournamentSlotModal({
       return;
     }
 
-    let localStart, localEnd;
+    let localStart;
+    let localEnd;
 
     if (allDay) {
-      const startPart = startTime && startTime.trim() ? startTime.trim() : "00:00";
+      const startPart =
+        startTime && startTime.trim() ? startTime.trim() : "00:00";
+
       localStart = `${day}T${startPart}`;
       localEnd = `${day}T23:59`;
     } else {
@@ -74,6 +96,7 @@ export default function TournamentSlotModal({
         );
         return;
       }
+
       localStart = `${day}T${startTime}`;
       localEnd = `${day}T${endTime}`;
     }
@@ -85,12 +108,14 @@ export default function TournamentSlotModal({
       setFormError("Érvénytelen kezdés/befejezés formátum.");
       return;
     }
+
     if (new Date(normStart) >= new Date(normEnd)) {
       setFormError("A kezdés időpontja korábban kell legyen, mint a befejezés.");
       return;
     }
 
     const allCourtsSelected = mode === "add" && courtId === "__ALL__";
+
     const courtIds = allCourtsSelected
       ? (courts || []).map((court) => Number(court.id)).filter(Boolean)
       : [Number(courtId)];
@@ -111,11 +136,19 @@ export default function TournamentSlotModal({
 
   const title = mode === "edit" ? "Slot szerkesztése" : "Új slot";
 
+  const registrationDeadline =
+    tournament?.registrationDeadline ??
+    tournament?.registration_deadline ??
+    null;
+
+  const formattedDeadline = formatDeadline(registrationDeadline);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="w-full max-w-md bg-white border shadow-xl rounded-2xl p-5">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-6 overflow-y-auto bg-black/40 md:pt-10">
+      <div className="w-full max-w-md p-5 mb-6 bg-white border shadow-xl rounded-2xl md:mb-10">
         <div className="flex items-start justify-between gap-4 mb-4">
           <h3 className="text-lg font-semibold">{title}</h3>
+
           <button
             type="button"
             onClick={onClose}
@@ -127,14 +160,26 @@ export default function TournamentSlotModal({
         </div>
 
         {tournament && (
-          <p className="text-sm text-gray-500 mb-3">
-            Verseny: {tournament.title || `#${tournament.id}`}
-          </p>
+          <div className="px-3 py-2 mb-3 border border-gray-200 rounded-xl bg-gray-50">
+            <p className="text-sm text-gray-600">
+              Verseny:{" "}
+              <span className="font-semibold text-gray-800">
+                {tournament.title || `#${tournament.id}`}
+              </span>
+            </p>
+
+            <p className="mt-1 text-xs text-gray-500">
+              Nevezési határidő:{" "}
+              <span className="font-semibold">
+                {formattedDeadline || "Nincs megadva"}
+              </span>
+            </p>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Pálya</label>
+            <label className="block mb-1 text-sm text-gray-700">Pálya</label>
             <select
               className="w-full px-3 py-2 border rounded-xl"
               value={courtId}
@@ -143,9 +188,11 @@ export default function TournamentSlotModal({
               disabled={saving}
             >
               <option value="">Válassz pályát</option>
+
               {mode === "add" && (
                 <option value="__ALL__">Összes pálya (mindhárom)</option>
               )}
+
               {courts.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name || `Pálya #${c.id}`}
@@ -155,7 +202,7 @@ export default function TournamentSlotModal({
           </div>
 
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Nap</label>
+            <label className="block mb-1 text-sm text-gray-700">Nap</label>
             <input
               type="date"
               className="w-full px-3 py-2 border rounded-xl"
@@ -167,7 +214,7 @@ export default function TournamentSlotModal({
           </div>
 
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Kezdés</label>
+            <label className="block mb-1 text-sm text-gray-700">Kezdés</label>
             <input
               type="time"
               className="w-full px-3 py-2 border rounded-xl"
@@ -178,7 +225,7 @@ export default function TournamentSlotModal({
           </div>
 
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Vég</label>
+            <label className="block mb-1 text-sm text-gray-700">Vég</label>
             <input
               type="time"
               className="w-full px-3 py-2 border rounded-xl"
@@ -201,12 +248,12 @@ export default function TournamentSlotModal({
           </div>
 
           {(formError || externalError) && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            <div className="px-3 py-2 text-sm font-medium text-red-700 border border-red-200 rounded-xl bg-red-50">
               {formError || externalError}
             </div>
           )}
 
-          <div className="flex gap-2 justify-end pt-2">
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
@@ -215,6 +262,7 @@ export default function TournamentSlotModal({
             >
               Mégse
             </button>
+
             <button
               type="submit"
               disabled={saving}

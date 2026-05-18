@@ -67,17 +67,20 @@ export default function TournamentCreateForm({
         </div>
 
         <div>
-            <label className="text-sm text-gray-700">
-                Szervező név (organizerName)
-            </label>
-            <input
-                className="w-full px-3 py-2 mt-1 border rounded-xl"
-                value={createForm.organizerName}
-                onChange={(e) =>
-                    setCreateForm((p) => ({ ...p, organizerName: e.target.value }))
-                }
-                placeholder="Pl. SMASH"
-            />
+          <label className="text-sm text-gray-700">
+            Szervező név (organizerName)
+          </label>
+          <input
+            className="w-full px-3 py-2 mt-1 border rounded-xl"
+            value={createForm.organizerName}
+            onChange={(e) =>
+              setCreateForm((p) => ({
+                ...p,
+                organizerName: e.target.value,
+              }))
+            }
+            placeholder="Pl. SMASH"
+          />
         </div>
 
         <div>
@@ -97,6 +100,27 @@ export default function TournamentCreateForm({
           />
           <p className="mt-1 text-xs text-gray-500">
             Opcionális, de hasznos információ a jelentkezőknek.
+          </p>
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-700">
+            Publikus megjelenés / nevezés kezdete (availableFrom)
+          </label>
+          <input
+            type="datetime-local"
+            className="w-full px-3 py-2 mt-1 border rounded-xl"
+            value={createForm.availableFrom}
+            onChange={(e) =>
+              setCreateForm((p) => ({
+                ...p,
+                availableFrom: e.target.value,
+              }))
+            }
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Opcionális. Ettől az időponttól jelenik meg a verseny a felhasználóknak,
+            és ettől lehet rá jelentkezni.
           </p>
         </div>
 
@@ -132,16 +156,18 @@ export default function TournamentCreateForm({
         </div>
 
         <div>
-            <label className="text-sm text-gray-700">Nevezési díj (entry_fee)</label>
-            <input
-                type="number"
-                className="w-full px-3 py-2 mt-1 border rounded-xl"
-                value={createForm.entry_fee}
-                onChange={(e) =>
-                    setCreateForm((p) => ({ ...p, entry_fee: e.target.value }))
-                }
-                placeholder="Pl. 1000"
-            />
+          <label className="text-sm text-gray-700">
+            Nevezési díj (entry_fee)
+          </label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 mt-1 border rounded-xl"
+            value={createForm.entry_fee}
+            onChange={(e) =>
+              setCreateForm((p) => ({ ...p, entry_fee: e.target.value }))
+            }
+            placeholder="Pl. 1000"
+          />
         </div>
 
         <div className="md:col-span-2">
@@ -156,14 +182,15 @@ export default function TournamentCreateForm({
           />
         </div>
 
-        <div className="md:col-span-2 border-t pt-4 mt-2">
-          <h4 className="font-semibold text-sm text-gray-800">
+        <div className="pt-4 mt-2 border-t md:col-span-2">
+          <h4 className="text-sm font-semibold text-gray-800">
             Időpontok és pályák (slots)
           </h4>
 
           <p className="mt-1 text-xs text-gray-500">
-            Adj meg egy vagy több napot és időintervallumot. Egész napos eseményhez
-            pipáld be az <span className="font-semibold">Egész nap</span> opciót.
+            Adj meg egy vagy több napot és időintervallumot. Egész napos
+            eseményhez pipáld be az{" "}
+            <span className="font-semibold">Egész nap</span> opciót.
           </p>
 
           <div className="grid grid-cols-1 gap-3 mt-3 md:grid-cols-4">
@@ -235,6 +262,7 @@ export default function TournamentCreateForm({
                 />
                 Egész nap
               </label>
+
               <button
                 type="button"
                 onClick={onAddSlot}

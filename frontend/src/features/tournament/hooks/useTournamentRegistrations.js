@@ -20,7 +20,12 @@ export default function useTournamentRegistrations(token) {
 
       const data = await fetchTournamentRegistrations(tournamentId, token);
 
-      setRegistrations(data?.registrations || []);
+      const rawRegistrations = Array.isArray(data?.registrations)
+        ? data.registrations
+        : [];
+
+
+      setRegistrations(rawRegistrations);
       setOpenRegsId(tournamentId);
     } catch (e) {
       setRegsError(e.message || "Hiba történt a jelentkezések lekérésekor.");
@@ -42,9 +47,11 @@ export default function useTournamentRegistrations(token) {
 
   async function changeRegistrationStatus(registrationId, status) {
     if (!registrationId) return;
+
     try {
       setRegsError("");
       setStatusUpdateLoadingId(registrationId);
+
       await updateTournamentRegistrationStatus(registrationId, status, token);
 
       setRegistrations((prev) =>
@@ -66,6 +73,7 @@ export default function useTournamentRegistrations(token) {
 
   async function changeRegistrationPaid(registrationId, paid) {
     if (!registrationId) return;
+
     try {
       setRegsError("");
       setPaidUpdateLoadingId(registrationId);

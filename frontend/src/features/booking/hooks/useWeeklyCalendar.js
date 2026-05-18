@@ -28,6 +28,7 @@ import {
   getBlockedSlotMessage,
 } from "../services/reservationRules.service.js";
 import dayjs from "dayjs";
+import { useAuth } from "../../../contexts/AuthContext.js";
 
 /**
  * useWeeklyCalendar
@@ -145,6 +146,8 @@ export default function useWeeklyCalendar({ user, role, token }) {
    * Az éppen megjelenített hét vasárnapja
    */
   const sunday = useMemo(() => getSundayFromMonday(monday), [monday]);
+
+  const {isAdmin} = useAuth();
 
   /**
    * A hét záró dátuma exclusive módon.
@@ -492,6 +495,7 @@ export default function useWeeklyCalendar({ user, role, token }) {
         monday,
         weekEndExclusive,
         draftReservations,
+        isAdmin,
       });
 
       if (validationError) {

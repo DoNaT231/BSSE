@@ -102,6 +102,7 @@ export function AuthProvider({ children }) {
    * - user?.user_type === "ADMIN"
    */
   const isAdmin = user?.user_type === "admin" || user?.user_type === "ADMIN";
+  const isLocal = Boolean(user?.is_local ?? user?.isLocal);
 
   /**
    * A provider value objektuma.
@@ -112,10 +113,11 @@ export function AuthProvider({ children }) {
       user,
       isLoggedIn,
       isAdmin,
+      isLocal,
       login,
       logout,
     }),
-    [user, isLoggedIn, isAdmin]
+    [user, isLoggedIn, isAdmin, isLocal]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

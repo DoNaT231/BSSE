@@ -11,6 +11,7 @@
  * Funkcio:
  * - Versenyregisztrációs űrlap mezőinek megjelenítése
  * - Feltételes mezők logikája (cégnév, adószám)
+ * - Deadline / nevezési határidő megjelenítése
  *
  * Felelosseg:
  * - Form mezők renderelése
@@ -20,6 +21,21 @@
 
 import React, { useState } from "react";
 import TournamentField from "./TournamentField.jsx";
+
+function formatDeadline(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toLocaleString("hu-HU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
 
 export default function TournamentFormFields({
   teamName,
@@ -36,14 +52,32 @@ export default function TournamentFormFields({
   setAddress,
   billingName,
   setBillingName,
+  deadline = null,
 }) {
   const [registrationType, setRegistrationType] = useState("personal");
 
   const isCompany = registrationType === "company";
   const isAssociation = registrationType === "association";
 
+  const formattedDeadline = formatDeadline(deadline);
+
   return (
     <div className="space-y-6">
+      {formattedDeadline && (
+        <div className="p-4 text-sm font-extrabold border border-amber-200 rounded-2xl bg-amber-50 text-amber-800">
+          <div className="flex items-start gap-2">
+            <span className="text-lg">⏰</span>
+            <div>
+              <p className="font-semibold">Nevezési határidő</p>
+              <p className="mt-1 text-xs text-amber-700">
+                Erre a versenyre eddig lehet jelentkezni:{" "}
+                <span className="font-extrabold">{formattedDeadline}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Alap mezők */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <TournamentField
@@ -75,6 +109,7 @@ export default function TournamentFormFields({
         <label className="block text-sm font-extrabold text-slate-700">
           Nevezés típusa *
         </label>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <button
             type="button"
@@ -87,6 +122,7 @@ export default function TournamentFormFields({
           >
             🧑‍💼 Személyes
           </button>
+
           <button
             type="button"
             onClick={() => setRegistrationType("company")}
@@ -98,6 +134,7 @@ export default function TournamentFormFields({
           >
             🏢 Cég
           </button>
+
           <button
             type="button"
             onClick={() => setRegistrationType("association")}
@@ -117,35 +154,35 @@ export default function TournamentFormFields({
         <label className="block text-sm font-extrabold text-slate-700">
           Számlázási adatok
         </label>
-        
-        {/* Számlázási név - mindig kötelező */}
+
         <TournamentField
           label="Számlázási név *"
           value={billingName}
           onChange={setBillingName}
           placeholder={
-            isCompany 
-              ? "pl. Sport Kft." 
-              : isAssociation 
+            isCompany
+              ? "pl. Sport Kft."
+              : isAssociation
               ? "pl. Strand Sport Egyesület"
               : "pl. Kovács János"
           }
           required
           helpText={
-            !isCompany && !isAssociation 
+            !isCompany && !isAssociation
               ? "A nevezéshez szükséges a teljes név a számlázáshoz"
               : "A számlázáshoz szükséges név"
           }
         />
 
-        {/* Céges/Egyesületi mezők */}
         {(isCompany || isAssociation) && (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <TournamentField
               label={isCompany ? "Cégnév *" : "Egyesület neve *"}
               value={companyName}
               onChange={setCompanyName}
-              placeholder={isCompany ? "pl. Sport Kft." : "pl. Strand Sport Egyesület"}
+              placeholder={
+                isCompany ? "pl. Sport Kft." : "pl. Strand Sport Egyesület"
+              }
               required={isCompany || isAssociation}
             />
 
@@ -160,7 +197,6 @@ export default function TournamentFormFields({
           </div>
         )}
 
-        {/* Cím - mindig kötelező */}
         <TournamentField
           label="Számlázási cím *"
           value={address}
@@ -175,10 +211,12 @@ export default function TournamentFormFields({
       <div className="p-4 text-sm font-extrabold border border-slate-200 rounded-2xl bg-slate-50 text-slate-700">
         <div className="flex items-start gap-2">
           <span className="text-lg">💡</span>
+
           <div>
             <p className="font-semibold">Számlázási információk</p>
+
             <p className="mt-1 text-xs text-slate-600">
-              A megadott adatok alapján állítjuk ki a számlát a nevezési díjról. 
+              A megadott adatok alapján állítjuk ki a számlát a nevezési díjról.
               Kérjük, gondosan ellenőrizd a megadott információkat!
             </p>
           </div>

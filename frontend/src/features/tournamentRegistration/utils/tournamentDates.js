@@ -1,3 +1,5 @@
+export const LOCAL_TOURNAMENT_EARLY_ACCESS_MS = 24 * 60 * 60 * 1000;
+
 export function formatDateTime(iso) {
     if (!iso) return "Nincs megadva";
   
@@ -28,6 +30,31 @@ export function formatDateTime(iso) {
     return min.toISOString();
   }
   
+  export function getAvailableFrom(tournament) {
+    return tournament?.available_from ?? tournament?.availableFrom ?? null;
+  }
+
+  export function getRegistrationOpensAt(tournament, isLocal = false) {
+    const availableFrom = getAvailableFrom(tournament);
+    if (!availableFrom) return null;
+
+    const opensAt = new Date(availableFrom);
+    if (Number.isNaN(opensAt.getTime())) return null;
+
+    if (isLocal) {
+      opensAt.setTime(opensAt.getTime() - LOCAL_TOURNAMENT_EARLY_ACCESS_MS);
+    }
+
+    return opensAt;
+  }
+
+  export function isTournamentNotYetAvailable(tournament, isLocal = false) {
+    const opensAt = getRegistrationOpensAt(tournament, isLocal);
+    if (!opensAt) return false;
+
+    return opensAt.getTime() > Date.now();
+  }
+
   export function isRegistrationDeadlinePassed(tournament) {
     const deadline = tournament?.registration_deadline || tournament?.registrationDeadline;
     if (!deadline) return false;
@@ -60,10 +87,11 @@ export function formatDateTime(iso) {
     return registeredTeams >= maxTeams;
   }
   
-  export function canRegisterToTournament(tournament) {
+  export function canRegisterToTournament(tournament, isLocal = false) {
     if (!tournament) return false;
+    if (isTournamentNotYetAvailable(tournament, isLocal)) return false;
     if (isRegistrationDeadlinePassed(tournament)) return false;
     if (hasTournamentStarted(tournament)) return false;
-  
+
     return true;
   }

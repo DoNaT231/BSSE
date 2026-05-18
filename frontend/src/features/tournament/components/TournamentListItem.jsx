@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TournamentRegistrationsPanel from "./TournamentRegistrationsPanel";
 import TournamentSlotModal from "./TournamentSlotModal";
+import { formatDateTime } from "../utils/tournamentDateUtils";
 
 function formatDate(value) {
   if (!value) return null;
@@ -11,7 +12,12 @@ function formatDate(value) {
 function formatSlotTime(value) {
   if (!value) return "—";
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("hu-HU", { dateStyle: "short", timeStyle: "short" });
+  return Number.isNaN(d.getTime())
+    ? "—"
+    : d.toLocaleString("hu-HU", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
 }
 
 export default function TournamentListItem({
@@ -45,6 +51,7 @@ export default function TournamentListItem({
 
   async function handleSlotSave(payload) {
     setSlotModalError("");
+
     try {
       if (slotModal?.mode === "add") {
         const targetCourtIds =
@@ -54,6 +61,7 @@ export default function TournamentListItem({
 
         for (const courtId of targetCourtIds) {
           if (!courtId) continue;
+
           await onAddSlot?.(tournament.id, {
             ...payload,
             courtId: Number(courtId),
@@ -62,6 +70,7 @@ export default function TournamentListItem({
       } else if (slotModal?.mode === "edit" && slotModal?.slot) {
         await onUpdateSlot?.(tournament.id, slotModal.slot.slotId, payload);
       }
+
       setSlotModal(null);
     } catch (error) {
       setSlotModalError(
@@ -72,10 +81,10 @@ export default function TournamentListItem({
 
   async function handleSlotDelete(slot) {
     if (!window.confirm("Biztosan törlöd ezt az időpontot?")) return;
+
     await onDeleteSlot?.(tournament.id, slot.slotId);
     setSlotModal(null);
   }
-
   return (
     <div className="flex flex-col">
       <div className="flex flex-col gap-3 p-4 border rounded-2xl md:flex-row md:items-center md:justify-between">
@@ -97,9 +106,10 @@ export default function TournamentListItem({
               </span>
             )}
 
-            {(tournament.entry_fee != null && tournament.entry_fee !== 0) && (
+            {tournament.entry_fee != null && tournament.entry_fee !== 0 && (
               <span className="px-2 py-1 text-xs text-gray-700 border rounded-full">
-                nevezési díj: {Number(tournament.entry_fee).toLocaleString("hu-HU")} Ft
+                nevezési díj:{" "}
+                {Number(tournament.entry_fee).toLocaleString("hu-HU")} Ft
               </span>
             )}
           </div>
@@ -114,12 +124,22 @@ export default function TournamentListItem({
             {tournament.organizerName && (
               <span>Szervező: {tournament.organizerName}</span>
             )}
+
             {tournament.registrationDeadline && (
               <>
                 {tournament.organizerName && " • "}
-                Nevezési határidő: {formatDate(tournament.registrationDeadline)}
+                Nevezési határidő:{" "}
+                {formatDate(tournament.registrationDeadline)}
               </>
             )}
+
+            {tournament.availableFrom && (
+                <>
+                  {(tournament.organizerName || tournament.registrationDeadline) && " • "}
+                  Nevezés megnyitása: {formatDate(tournament.availableFrom)}
+                </>
+              )}
+
             {" • "}ID: {tournament.id}
           </div>
         </div>
@@ -148,9 +168,12 @@ export default function TournamentListItem({
         </div>
       </div>
 
-      <div className="mt-0 rounded-b-2xl border border-t-0 border-gray-200 bg-gray-50/80 px-4 py-3">
+      <div className="px-4 py-3 mt-0 border border-t-0 border-gray-200 rounded-b-2xl bg-gray-50/80">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-xs font-medium uppercase tracking-wide text-gray-500">Időpontok (slots)</div>
+          <div className="text-xs font-medium tracking-wide text-gray-500 uppercase">
+            Időpontok (slots)
+          </div>
+
           <button
             type="button"
             onClick={() => {
@@ -158,23 +181,35 @@ export default function TournamentListItem({
               setSlotModal({ mode: "add" });
             }}
             disabled={slotActionLoading}
-            className="text-sm px-2 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-60"
+            className="px-2 py-1 text-sm border rounded-lg hover:bg-gray-100 disabled:opacity-60"
           >
             + Új slot
           </button>
         </div>
+
         {slots.length > 0 ? (
           <ul className="mt-2 space-y-1.5">
             {slots.map((slot) => (
-              <li key={slot.slotId} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-700">
-                <span className="font-medium">{getCourtName(slot.courtId)}</span>
-                <span className="text-gray-500">
-                  {formatSlotTime(slot.startTime)} – {formatSlotTime(slot.endTime)}
+              <li
+                key={slot.slotId}
+                className="flex flex-wrap items-center text-sm text-gray-700 gap-x-3 gap-y-1"
+              >
+                <span className="font-medium">
+                  {getCourtName(slot.courtId)}
                 </span>
+
+                <span className="text-gray-500">
+                  {formatSlotTime(slot.startTime)} –{" "}
+                  {formatSlotTime(slot.endTime)}
+                </span>
+
                 {slot.slotStatus && (
-                  <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs">{slot.slotStatus}</span>
+                  <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs">
+                    {slot.slotStatus}
+                  </span>
                 )}
-                <span className="ml-auto flex gap-1">
+
+                <span className="flex gap-1 ml-auto">
                   <button
                     type="button"
                     onClick={() => {
@@ -182,15 +217,16 @@ export default function TournamentListItem({
                       setSlotModal({ mode: "edit", slot });
                     }}
                     disabled={slotActionLoading}
-                    className="text-xs px-2 py-1 border rounded hover:bg-gray-100 disabled:opacity-60"
+                    className="px-2 py-1 text-xs border rounded hover:bg-gray-100 disabled:opacity-60"
                   >
                     Szerk
                   </button>
+
                   <button
                     type="button"
                     onClick={() => handleSlotDelete(slot)}
                     disabled={slotActionLoading}
-                    className="text-xs px-2 py-1 text-red-700 border border-red-200 rounded hover:bg-red-50 disabled:opacity-60"
+                    className="px-2 py-1 text-xs text-red-700 border border-red-200 rounded hover:bg-red-50 disabled:opacity-60"
                   >
                     Törlés
                   </button>
@@ -199,7 +235,9 @@ export default function TournamentListItem({
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-gray-500">Nincs még slot. Kattints az &quot;Új slot&quot; gombra.</p>
+          <p className="mt-2 text-sm text-gray-500">
+            Nincs még slot. Kattints az &quot;Új slot&quot; gombra.
+          </p>
         )}
       </div>
 

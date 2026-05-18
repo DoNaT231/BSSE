@@ -7,18 +7,25 @@ export default function useTournamentRegistrations(token) {
 
   const refreshMyRegistrations = useCallback(async () => {
     const list = await fetchMyTournamentRegistrations(token);
-    setMyRegistrations(Array.isArray(list) ? list : []);
+
+    const normalizedList = Array.isArray(list) ? list : [];
+
+    setMyRegistrations(normalizedList);
 
     const map = {};
-    for (const registration of list || []) {
-      const tournamentId = registration.tournament_id ?? registration.tournamentId;
+
+    for (const registration of normalizedList) {
+      const tournamentId =
+        registration.tournament_id ?? registration.tournamentId;
+
       if (tournamentId != null) {
         map[tournamentId] = registration;
       }
     }
 
     setRegByTournamentId(map);
-    return list;
+
+    return normalizedList;
   }, [token]);
 
   return {

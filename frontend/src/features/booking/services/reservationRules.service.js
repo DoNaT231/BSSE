@@ -30,6 +30,7 @@ export function validateReservationSelection({
   monday,
   weekEndExclusive,
   draftReservations,
+  isAdmin,
 }) {
   const drafts = Array.isArray(draftReservations) ? draftReservations : [];
 
@@ -39,15 +40,15 @@ export function validateReservationSelection({
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  if (cellDate < now) {
+  if (cellDate < now && !isAdmin) {
     return "Múltbeli időpontokra nem lehet foglalni.";
   }
 
-  if (isSameDay(today, cellDate)) {
+  if (isSameDay(today, cellDate) && !isAdmin) {
     return "A mai napra már nem lehet foglalni.";
   }
 
-  if (isSameDay(tomorrow, cellDate) && now.getHours() >= 18) {
+  if ((isSameDay(tomorrow, cellDate) && now.getHours() >= 18) && !isAdmin) {
     return "18 óra után már nem lehet a következő napra foglalni.";
   }
 
@@ -60,7 +61,7 @@ export function validateReservationSelection({
     .filter(Boolean);
 
   const dayCount = ownDates.filter((date) => isSameDay(date, cellDate)).length;
-  if (dayCount >= 2) {
+  if (dayCount >= 2 && !isAdmin) {
     return "Egy nap maximum két óra foglalható.";
   }
 
@@ -68,7 +69,7 @@ export function validateReservationSelection({
     (date) => date >= monday && date < weekEndExclusive
   ).length;
 
-  if (weekCount >= 10) {
+  if (weekCount >= 10 && !isAdmin) {
     return "Egy héten maximum 10 óra foglalható.";
   }
 

@@ -26,6 +26,24 @@ import {
   sendTournamentRegistrationWaitlistEmail,
 } from "./email/service.js";
 import pool from "../db.js";
+import * as usersRepository from "../repositories/usersRepository.js";
+import {
+  isLocalUser,
+  isTournamentRegistrationOpen,
+} from "../utils/tournamentAvailability.js";
+
+async function resolveUserIsLocal(userId, cachedUser = null) {
+  if (isLocalUser(cachedUser)) {
+    return true;
+  }
+
+  if (!userId) {
+    return false;
+  }
+
+  const user = await usersRepository.findById(Number(userId));
+  return isLocalUser(user);
+}
 
 function isNonEmptyString(v) {
   return typeof v === "string" && v.trim().length > 0;
@@ -120,6 +138,19 @@ export async function registerToTournament({
   const tournament = await tournamentRepository.findDetailedById(tournamentId);
   if (!tournament) {
     throw new Error("Nincs ilyen verseny.");
+  }
+
+  const userIsLocal = await resolveUserIsLocal(userId);
+
+  if (
+    tournament.availableFrom &&
+    !isTournamentRegistrationOpen(tournament.availableFrom, userIsLocal)
+  ) {
+    throw new Error(
+      userIsLocal
+        ? "A versenyre még nem lehet jelentkezni (helyi lakosok számára 24 órával korábban nyílik)."
+        : "A versenyre még nem lehet jelentkezni."
+    );
   }
 
   if (tournament.registrationDeadline) {
@@ -231,6 +262,19 @@ export async function updateOwnTournamentRegistration({
   const tournament = await tournamentRepository.findById(registration.tournamentId);
   if (!tournament) {
     throw new Error("A verseny nem található.");
+  }
+
+  const userIsLocal = await resolveUserIsLocal(userId);
+
+  if (
+    tournament.availableFrom &&
+    !isTournamentRegistrationOpen(tournament.availableFrom, userIsLocal)
+  ) {
+    throw new Error(
+      userIsLocal
+        ? "A versenyre még nem lehet jelentkezni (helyi lakosok számára 24 órával korábban nyílik)."
+        : "A versenyre még nem lehet jelentkezni."
+    );
   }
 
   if (tournament.registrationDeadline) {

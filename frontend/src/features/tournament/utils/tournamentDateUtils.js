@@ -37,3 +37,18 @@ export function toDatetimeLocalValue(isoStringOrNull) {
   
     return `${value}:00`;
   }
+  export function formatDateTime(value) {
+  if (!value) return null;
+
+  const d = new Date(value);
+
+  return Number.isNaN(d.getTime())
+    ? null
+    : d.toLocaleString("hu-HU", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+}

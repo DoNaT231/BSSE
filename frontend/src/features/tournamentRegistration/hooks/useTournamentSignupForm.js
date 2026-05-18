@@ -11,6 +11,7 @@
  * Funkcio:
  * - Versenyregisztrációs űrlap állapotkezelése
  * - Adatok validálása és küldése
+ * - Deadline mező normalizálása a kiválasztott versenyhez
  *
  * Felelosseg:
  * - Form állapotok kezelése
@@ -20,7 +21,6 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { fetchPublicTournaments, fetchMyTournamentRegistrations } from "../api/tournamentRegistrationPublicApi";
 
 export default function useTournamentSignupForm({
   tournaments,
@@ -31,6 +31,7 @@ export default function useTournamentSignupForm({
 }) {
   const { user } = useAuth();
   const userEmail = user?.email;
+
   const [openTournamentId, setOpenTournamentId] = useState(null);
   const [teamName, setTeamName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,16 +46,23 @@ export default function useTournamentSignupForm({
   const [submitErr, setSubmitErr] = useState("");
   const [activeRegistration, setActiveRegistration] = useState(null);
 
-  const selectedTournament = useMemo(
-    () => tournaments.find((t) => t.id === openTournamentId) || null,
-    [tournaments, openTournamentId]
-  );
+  const selectedTournament = useMemo(() => {
+    const tournament =
+      tournaments.find((t) => Number(t.id) === Number(openTournamentId)) || null;
+
+    if (!tournament) return null;
+
+    return tournament;
+  }, [tournaments, openTournamentId]);
 
   function openForm(tournamentId) {
     setOpenTournamentId(tournamentId);
 
     const existingFromMap =
-      regByTournamentId[tournamentId] ?? regByTournamentId[String(tournamentId)] ?? null;
+      regByTournamentId[tournamentId] ??
+      regByTournamentId[String(tournamentId)] ??
+      null;
+
     const existingFromList =
       Array.isArray(myRegistrations) &&
       myRegistrations.find(
@@ -62,13 +70,16 @@ export default function useTournamentSignupForm({
           Number(registration?.tournament_id ?? registration?.tournamentId) ===
           Number(tournamentId)
       );
+
     const existing = existingFromMap || existingFromList || null;
+
     setActiveRegistration(existing);
 
     if (existing) {
       const team = existing.team_name ?? existing.teamName ?? "";
       const tel = existing.tel_number ?? existing.telNumber ?? "";
-      const contact = existing.contact_email ?? existing.contactEmail ?? userEmail ?? "";
+      const contact =
+        existing.contact_email ?? existing.contactEmail ?? userEmail ?? "";
       const company = existing.company_name ?? existing.companyName ?? "";
       const tax = existing.tax_number ?? existing.taxNumber ?? "";
       const addr = existing.address ?? "";
@@ -83,10 +94,14 @@ export default function useTournamentSignupForm({
       setBillingName(billing);
 
       const required = Number(
-        tournaments.find((t) => t.id === tournamentId)?.team_size ?? 0
+        tournaments.find((t) => Number(t.id) === Number(tournamentId))
+          ?.team_size ?? 0
       );
 
-      const existingPlayers = Array.isArray(existing.players) ? existing.players : [];
+      const existingPlayers = Array.isArray(existing.players)
+        ? existing.players
+        : [];
+
       const normalizedPlayers = Array.from(
         { length: required > 0 ? required : existingPlayers.length },
         (_, i) => existingPlayers[i] ?? ""
@@ -94,7 +109,10 @@ export default function useTournamentSignupForm({
 
       setPlayers(normalizedPlayers);
     } else {
-      const tournament = tournaments.find((t) => t.id === tournamentId);
+      const tournament = tournaments.find(
+        (t) => Number(t.id) === Number(tournamentId)
+      );
+
       const required = Number(tournament?.team_size ?? 0);
 
       setTeamName("");

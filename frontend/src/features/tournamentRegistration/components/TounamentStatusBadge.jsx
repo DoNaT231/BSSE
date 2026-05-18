@@ -1,12 +1,17 @@
 import React from "react";
 import {
   isRegistrationDeadlinePassed,
+  isTournamentNotYetAvailable,
   hasTournamentStarted,
   isTournamentFull,
 } from "../utils/tournamentDates.js";
 import { TOURNAMENT_STATUS_LABELS } from "../constants/tournamentLabels.js";
 
-export default function TournamentStatusBadge({ tournament, alreadyRegistered }) {
+export default function TournamentStatusBadge({
+  tournament,
+  alreadyRegistered,
+  isLocal = false,
+}) {
   if (alreadyRegistered) {
     return (
       <div className="inline-flex items-center gap-2 px-3 py-1 mt-3 text-xs font-extrabold border rounded-full bg-emerald-50 border-emerald-200 text-emerald-700">
@@ -15,9 +20,17 @@ export default function TournamentStatusBadge({ tournament, alreadyRegistered })
     );
   }
 
+  if (isTournamentNotYetAvailable(tournament, isLocal)) {
+    return (
+      <div className="inline-flex items-center gap-2 px-3 py-1 mt-3 text-xs font-extrabold border rounded-full bg-slate-100 border-slate-200 text-slate-700">
+        🕒 {TOURNAMENT_STATUS_LABELS.NOT_YET_AVAILABLE}
+      </div>
+    );
+  }
+
   if (isRegistrationDeadlinePassed(tournament)) {
     return (
-      <div className="inline-flex items-center gap-2 px-3 py-1 mt-3 text-xs font-extrabold border rounded-full bg-red-50 border-red-200 text-red-700">
+      <div className="inline-flex items-center gap-2 px-3 py-1 mt-3 text-xs font-extrabold text-red-700 border border-red-200 rounded-full bg-red-50">
         ⛔ {TOURNAMENT_STATUS_LABELS.DEADLINE_PASSED}
       </div>
     );

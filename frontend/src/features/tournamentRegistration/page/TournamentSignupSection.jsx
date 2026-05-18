@@ -17,21 +17,19 @@ import useTournamentSignupForm from "../hooks/useTournamentSignupForm.js";
 import { validateTournamentRegistrationForm } from "../utils/tournamentValidation.js";
 import { isRegistrationDeadlinePassed } from "../utils/tournamentDates.js";
 
+
 export default function TournamentSignupSection() {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [detailsTournament, setDetailsTournament] = useState(null);
 
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, isLocal } = useAuth();
   const userEmail = user?.email || "";
   const token = localStorage.getItem("token");
 
-  const {
-    myRegistrations,
-    regByTournamentId,
-    refreshMyRegistrations,
-  } = useTournamentRegistrations(token);
+  const { myRegistrations, regByTournamentId, refreshMyRegistrations } =
+    useTournamentRegistrations(token);
 
   const {
     selectedTournament,
@@ -64,6 +62,8 @@ export default function TournamentSignupSection() {
     tournaments,
     regByTournamentId,
     myRegistrations,
+    reloadTournamentData,
+    refreshMyRegistrations,
     userEmail,
   });
 
@@ -81,7 +81,10 @@ export default function TournamentSignupSection() {
         setLoadError("");
 
         const data = await fetchPublicTournaments(token);
-        if (mounted) setTournaments(Array.isArray(data) ? data : []);
+
+        if (mounted) {
+          setTournaments(Array.isArray(data) ? data : []);
+        }
 
         if (mounted && isLoggedIn) {
           await refreshMyRegistrations();
@@ -100,7 +103,7 @@ export default function TournamentSignupSection() {
     return () => {
       mounted = false;
     };
-  }, [isLoggedIn, token, refreshMyRegistrations]);
+  }, [isLoggedIn, isLocal, token, refreshMyRegistrations]);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -113,6 +116,7 @@ export default function TournamentSignupSection() {
       telNumber,
       email,
       players,
+      isLocal,
     });
 
     if (validationError) {
@@ -147,6 +151,7 @@ export default function TournamentSignupSection() {
       const status = String(
         response?.status ?? response?.registration_status ?? "CONFIRMED"
       ).toUpperCase();
+
       if (isEdit) {
         setSubmitMsg("Nevezés módosítva ✅");
       } else if (status === "WAITLISTED") {
@@ -154,6 +159,7 @@ export default function TournamentSignupSection() {
       } else {
         setSubmitMsg("Sikeres nevezés! ✅");
       }
+
       closeForm();
     } catch (err) {
       setSubmitErr(err.message || "Szerver hiba nevezés közben.");
@@ -175,6 +181,7 @@ export default function TournamentSignupSection() {
       await refreshMyRegistrations();
 
       const afterDeadline = isRegistrationDeadlinePassed(selectedTournament);
+
       const message = afterDeadline
         ? "Nevezés törölve. A nevezési határidő lejárt, ezért erre a versenyre már nem tudsz újra jelentkezni."
         : "Nevezés törölve 🗑️";
@@ -196,7 +203,7 @@ export default function TournamentSignupSection() {
       <AuthFrostLock loggedIn={isLoggedIn}>
         <section className="page-main">
           {/* háttér díszítések */}
-          <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-[-120px] left-[-80px] h-[280px] w-[280px] rounded-full bg-lightBlue/25 blur-3xl" />
             <div className="absolute top-[180px] right-[-60px] h-[260px] w-[260px] rounded-full bg-cyan-200/40 blur-3xl" />
             <div className="absolute bottom-[-100px] left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full bg-lightBlue/20 blur-3xl" />
@@ -210,7 +217,9 @@ export default function TournamentSignupSection() {
 
                 <h1 className="mt-5 type-page-title">
                   Jelentkezz a következő
-                  <span className="type-page-title-accent">strandröplabda versenyre</span>
+                  <span className="type-page-title-accent">
+                    strandröplabda versenyre
+                  </span>
                 </h1>
 
                 <p className="type-lead">
@@ -218,9 +227,9 @@ export default function TournamentSignupSection() {
                   nevezési adatokat, és pár kattintással add le a jelentkezést.
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <div className="flex flex-wrap gap-3 mt-8">
+                  <div className="px-4 py-3 bg-white border shadow-sm rounded-2xl border-slate-200">
+                    <p className="text-xs font-semibold tracking-wide uppercase text-slate-500">
                       Elérhető versenyek
                     </p>
                     <p className="mt-1 text-2xl font-extrabold text-brandDark">
@@ -228,8 +237,8 @@ export default function TournamentSignupSection() {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="px-4 py-3 bg-white border shadow-sm rounded-2xl border-slate-200">
+                    <p className="text-xs font-semibold tracking-wide uppercase text-slate-500">
                       Saját nevezéseid
                     </p>
                     <p className="mt-1 text-2xl font-extrabold text-brandDark">
@@ -254,19 +263,19 @@ export default function TournamentSignupSection() {
             {/* STATE MESSAGES */}
             <div className="mt-10">
               {loading && (
-                <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm">
+                <div className="px-5 py-4 text-sm font-semibold bg-white border shadow-sm rounded-2xl border-slate-200 text-slate-700">
                   Betöltés...
                 </div>
               )}
 
               {loadError && (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700 shadow-sm">
+                <div className="px-5 py-4 text-sm font-bold text-red-700 border border-red-200 shadow-sm rounded-2xl bg-red-50">
                   {loadError}
                 </div>
               )}
 
               {!loading && !loadError && tournaments.length === 0 && (
-                <div className="rounded-2xl border border-slate-200 bg-white px-5 py-5 text-slate-700 shadow-sm">
+                <div className="px-5 py-5 bg-white border shadow-sm rounded-2xl border-slate-200 text-slate-700">
                   Jelenleg nincs aktív verseny.
                 </div>
               )}
@@ -275,15 +284,16 @@ export default function TournamentSignupSection() {
             {/* TOURNAMENT LIST */}
             {!loading && !loadError && tournaments.length > 0 && (
               <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.25)] backdrop-blur sm:p-6 lg:p-8">
-                <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-4 mb-6">
                   <div>
                     <h2 className="type-section-title">Aktív versenyek</h2>
                     <p className="type-section-desc">
-                      Kattints a kiválasztott versenyre a nevezéshez vagy módosításhoz.
+                      Kattints a kiválasztott versenyre a nevezéshez vagy
+                      módosításhoz.
                     </p>
                   </div>
 
-                  <div className="hidden rounded-full bg-primaryLight px-4 py-2 text-sm font-bold text-lightBlueStrong md:block">
+                  <div className="hidden px-4 py-2 text-sm font-bold rounded-full bg-primaryLight text-lightBlueStrong md:block">
                     {tournaments.length} elérhető verseny
                   </div>
                 </div>
@@ -294,8 +304,11 @@ export default function TournamentSignupSection() {
                       key={tournament.id}
                       tournament={tournament}
                       registration={regByTournamentId[tournament.id]}
+                      isLocal={isLocal}
                       onOpen={openForm}
-                      onOpenDetails={setDetailsTournament}
+                      onOpenDetails={(item) =>
+                        setDetailsTournament(item)
+                      }
                     />
                   ))}
                 </div>
@@ -330,15 +343,16 @@ export default function TournamentSignupSection() {
             updatePlayer={updatePlayer}
           />
 
-        <TournamentDetailsModal
-          tournament={detailsTournament}
-          registration={
-            detailsTournament ? regByTournamentId[detailsTournament.id] : null
-          }
-          isOpen={Boolean(detailsTournament)}
-          onClose={() => setDetailsTournament(null)}
-          onRegister={openForm}
-        />
+          <TournamentDetailsModal
+            tournament={detailsTournament}
+            registration={
+              detailsTournament ? regByTournamentId[detailsTournament.id] : null
+            }
+            isLocal={isLocal}
+            isOpen={Boolean(detailsTournament)}
+            onClose={() => setDetailsTournament(null)}
+            onRegister={openForm}
+          />
         </section>
       </AuthFrostLock>
     </div>

@@ -1,5 +1,5 @@
 // +------------------------------------------------------------------+
-// |                     TournamentModal.jsx                            |
+// |                     TournamentModal.jsx                          |
 // |                   Copyright (c) 2026, Komoroczy Donat            |
 // |                    donatkomoroczy@gmail.com                     |
 // +------------------------------------------------------------------+
@@ -11,6 +11,7 @@
  * Funkcio:
  * - Versenyregisztrációs modal megjelenítése
  * - Form adatok küldése és kezelése
+ * - Deadline / nevezési határidő továbbítása az űrlapmezőknek
  *
  * Felelosseg:
  * - Modal renderelése
@@ -56,7 +57,14 @@ export default function TournamentModal({
   if (!selectedTournament) return null;
 
   const startIso = getTournamentStart(selectedTournament);
-  const willBeWaitlisted = !activeRegistration?.id && isTournamentFull(selectedTournament);
+
+  const registrationDeadline =
+    selectedTournament?.registrationDeadline ??
+    selectedTournament?.registration_deadline ??
+    null;
+
+  const willBeWaitlisted =
+    !activeRegistration?.id && isTournamentFull(selectedTournament);
 
   return (
     <div
@@ -69,7 +77,7 @@ export default function TournamentModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)] border border-white/60 flex flex-col"
       >
-        <div className="bg-lightBlue px-5 py-4">
+        <div className="px-5 py-4 bg-lightBlue">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 className="text-lg font-extrabold text-white truncate">
@@ -92,7 +100,7 @@ export default function TournamentModal({
           </div>
         </div>
 
-        <div className="p-5 overflow-y-auto flex-1">
+        <div className="flex-1 p-5 overflow-y-auto">
           <form onSubmit={onSubmit} className="space-y-4">
             <TournamentFormFields
               teamName={teamName}
@@ -109,6 +117,7 @@ export default function TournamentModal({
               setAddress={setAddress}
               billingName={billingName}
               setBillingName={setBillingName}
+              deadline={registrationDeadline}
             />
 
             <TournamentPlayersFields
@@ -136,12 +145,12 @@ export default function TournamentModal({
               </div>
             )}
 
-            <div className="mt-6 space-y-4 border-t border-slate-200 pt-4">
+            <div className="pt-4 mt-6 space-y-4 border-t border-slate-200">
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="submit"
                   disabled={submitLoading}
-                  className="w-full rounded-2xl bg-yellow px-4 py-3 text-sm font-extrabold text-blackSoft shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full px-4 py-3 text-sm font-extrabold transition shadow-sm rounded-2xl bg-yellow text-blackSoft hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-lightBlue/25 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitLoading
                     ? "Mentés..."
