@@ -4,9 +4,11 @@ import {
   getTournamentStart,
   getAvailableFrom,
   getRegistrationOpensAt,
+  isTournamentNotYetAvailable,
   canRegisterToTournament,
   isTournamentFull,
 } from "../utils/tournamentDates.js";
+import { LOCAL_EARLY_ACCESS_NOTICE } from "../constants/tournamentLabels.js";
 
 export default function TournamentDetailsModal({
   tournament,
@@ -22,6 +24,7 @@ export default function TournamentDetailsModal({
   const startIso = getTournamentStart(tournament);
   const canRegister = canRegisterToTournament(tournament, isLocal);
   const isFull = isTournamentFull(tournament);
+  const notYetOpen = isTournamentNotYetAvailable(tournament, isLocal);
 
   const registrationDeadline =
     tournament?.registration_deadline ??
@@ -97,21 +100,28 @@ export default function TournamentDetailsModal({
               </div>
             )}
 
-            <div className="p-4 border rounded-2xl border-slate-200 bg-slate-50">
+            <div className="p-4 border rounded-2xl border-slate-200 bg-slate-50 sm:col-span-2">
               <p className="text-xs font-bold tracking-wide uppercase text-slate-500">
                 Nevezés megnyitása
               </p>
 
-              <p className="mt-2 text-base font-bold text-brandDark">
-                {registrationOpensAt
-                  ? formatDateTime(registrationOpensAt.toISOString())
-                  : "Azonnal"}
-              </p>
-
-              {isLocal && availableFrom && (
-                <p className="mt-1 text-xs text-slate-500">
-                  Publikus megnyitás: {formatDateTime(availableFrom)}
-                </p>
+              {availableFrom ? (
+                <>
+                  <p className="mt-2 text-base font-bold text-brandDark">
+                    Publikus nyitás: {formatDateTime(availableFrom)}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {LOCAL_EARLY_ACCESS_NOTICE}
+                  </p>
+                  {isLocal && registrationOpensAt && (
+                    <p className="mt-2 text-sm font-bold text-lightBlueStrong">
+                      Neked nyílik:{" "}
+                      {formatDateTime(registrationOpensAt.toISOString())}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-2 text-base font-bold text-brandDark">Azonnal</p>
               )}
             </div>
 
@@ -185,6 +195,8 @@ export default function TournamentDetailsModal({
           >
             {alreadyRegistered
               ? "Nevezés módosítása"
+              : notYetOpen
+              ? "Nevezés még nem nyílt"
               : isFull
               ? "Betelt a maximum csapatszám"
               : "Jelentkezés"}

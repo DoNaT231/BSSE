@@ -3,9 +3,12 @@ import TournamentStatusBadge from "./TounamentStatusBadge.jsx";
 import {
   formatDateTime,
   getTournamentStart,
+  getAvailableFrom,
   getRegistrationOpensAt,
+  isTournamentNotYetAvailable,
   canRegisterToTournament,
 } from "../utils/tournamentDates.js";
+import { LOCAL_EARLY_ACCESS_NOTICE } from "../constants/tournamentLabels.js";
 
 export default function TournamentCard({
   tournament,
@@ -17,13 +20,15 @@ export default function TournamentCard({
   const alreadyRegistered = Boolean(registration?.id);
   const startIso = getTournamentStart(tournament);
   const canRegister = canRegisterToTournament(tournament, isLocal);
+  const notYetOpen = isTournamentNotYetAvailable(tournament, isLocal);
 
   const registrationDeadlineIso =
     tournament?.registrationDeadline ??
     tournament?.registration_deadline ??
     null;
 
-  const registrationOpensAt = getRegistrationOpensAt(tournament, isLocal);
+  const publicOpensAt = getAvailableFrom(tournament);
+  const personalOpensAt = getRegistrationOpensAt(tournament, isLocal);
 
   return (
     <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(35,31,32,0.28)] transition hover:-translate-y-1 hover:shadow-[0_22px_55px_-28px_rgba(35,31,32,0.34)]">
@@ -41,11 +46,20 @@ export default function TournamentCard({
               : "Kezdés: nincs megadva"}
           </p>
 
-          {registrationOpensAt ? (
-            <p className="mt-1 text-sm font-medium text-slate-500">
-              Nevezés megnyitása: {formatDateTime(registrationOpensAt.toISOString())}
-              {isLocal && " (helyi lakos)"}
-            </p>
+          {publicOpensAt ? (
+            <>
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                Publikus nevezés kezdete: {formatDateTime(publicOpensAt)}
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                {LOCAL_EARLY_ACCESS_NOTICE}
+              </p>
+              {isLocal && personalOpensAt && (
+                <p className="mt-1 text-sm font-semibold text-lightBlueStrong">
+                  Neked nyílik: {formatDateTime(personalOpensAt.toISOString())}
+                </p>
+              )}
+            </>
           ) : (
             <p className="mt-1 text-sm font-medium text-slate-500">
               Nevezés megnyitása: azonnal
@@ -95,7 +109,11 @@ export default function TournamentCard({
           disabled={!alreadyRegistered && !canRegister}
           className="rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm transition bg-lightBlue hover:-translate-y-0.5 hover:bg-lightBlueStrong disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {alreadyRegistered ? "Nevezés módosítása" : "Jelentkezés"}
+          {alreadyRegistered
+            ? "Nevezés módosítása"
+            : notYetOpen
+            ? "Nevezés még nem nyílt"
+            : "Jelentkezés"}
         </button>
       </div>
     </div>

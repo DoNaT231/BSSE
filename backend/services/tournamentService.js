@@ -301,8 +301,8 @@ export async function getAllTournaments() {
   return attachSlotsToTournaments(tournamentsWithStats, allSlots);
 }
 
-export async function getAllPublicTournaments(isLocalEarlyAccess = false) {
-  const tournaments = await tournamentRepository.findAllPublic(isLocalEarlyAccess);
+export async function getAllPublicTournaments() {
+  const tournaments = await tournamentRepository.findAllPublic();
   const tournamentsWithStats = await attachRegistrationStats(tournaments);
   const eventIds = tournamentsWithStats.map((t) => t.eventId).filter(Boolean);
 
@@ -543,11 +543,8 @@ export async function getTournamentById(id) {
   };
 }
 
-export async function getPublicTournamentById(id, isLocalEarlyAccess = false) {
-  const tournament = await tournamentRepository.findPublicDetailedById(
-    id,
-    isLocalEarlyAccess
-  );
+export async function getPublicTournamentById(id) {
+  const tournament = await tournamentRepository.findPublicDetailedById(id);
 
   if (!tournament) {
     throw new Error("A tournament nem talalhato.");

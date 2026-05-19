@@ -2,6 +2,8 @@ import React from "react";
 import {
   isRegistrationDeadlinePassed,
   isTournamentNotYetAvailable,
+  getRegistrationOpensAt,
+  formatDateTime,
   hasTournamentStarted,
   isTournamentFull,
 } from "../utils/tournamentDates.js";
@@ -21,9 +23,16 @@ export default function TournamentStatusBadge({
   }
 
   if (isTournamentNotYetAvailable(tournament, isLocal)) {
+    const opensAt = getRegistrationOpensAt(tournament, isLocal);
+
     return (
-      <div className="inline-flex items-center gap-2 px-3 py-1 mt-3 text-xs font-extrabold border rounded-full bg-slate-100 border-slate-200 text-slate-700">
-        🕒 {TOURNAMENT_STATUS_LABELS.NOT_YET_AVAILABLE}
+      <div className="inline-flex flex-col gap-1 px-3 py-2 mt-3 text-xs font-extrabold border rounded-2xl bg-slate-100 border-slate-200 text-slate-700">
+        <span>🕒 {TOURNAMENT_STATUS_LABELS.NOT_YET_AVAILABLE}</span>
+        {opensAt && (
+          <span className="font-semibold text-slate-500">
+            Nyitás: {formatDateTime(opensAt.toISOString())}
+          </span>
+        )}
       </div>
     );
   }

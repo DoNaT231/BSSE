@@ -20,20 +20,9 @@ import authMiddleware from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminOnly.js";
 import * as tournamentRegistrationService from "../services/tournamentRegistrationService.js";
 import * as tournamentService from "../services/tournamentService.js";
-import * as usersRepository from "../repositories/usersRepository.js";
-import { isLocalUser } from "../utils/tournamentAvailability.js";
 
-async function resolveIsLocalEarlyAccess(req) {
-  if (isLocalUser(req.user)) {
-    return true;
-  }
-
-  if (!req.user?.id) {
-    return false;
-  }
-
-  const user = await usersRepository.findById(Number(req.user.id));
-  return isLocalUser(user);
+function isAdminUser(user) {
+  return String(user?.user_type ?? "").toUpperCase() === "ADMIN";
 }
 
 const router = express.Router();
@@ -123,17 +112,29 @@ router.post("/", adminOnly, async (req, res) => {
 });
 
 /**
- * GET /api/
+ * GET /api/tournaments/admin/all
  *
- * Összes tournament listázása
+ * Admin teljes tournament lista (szűrés nélkül)
+ */
+router.get("/admin/all", adminOnly, async (req, res) => {
+  try {
+    const tournaments = await tournamentService.getAllTournaments();
+    return res.status(200).json(tournaments);
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/tournaments
+ *
+ * Publikus tournament lista (nevezés oldal)
  */
 router.get("/", async (req, res) => {
   try {
-    const isAdmin = req.user?.user_type === "ADMIN";
-    const isLocalEarlyAccess = await resolveIsLocalEarlyAccess(req);
-    const tournaments = isAdmin
-      ? await tournamentService.getAllTournaments()
-      : await tournamentService.getAllPublicTournaments(isLocalEarlyAccess);
+    const tournaments = await tournamentService.getAllPublicTournaments();
     return res.status(200).json(tournaments);
   } catch (error) {
     return res.status(400).json({
@@ -150,15 +151,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const isAdmin = req.user?.user_type === "ADMIN";
-    const isLocalEarlyAccess = await resolveIsLocalEarlyAccess(req);
+    const isAdmin = isAdminUser(req.user);
 
     const tournament = isAdmin
       ? await tournamentService.getTournamentById(Number(id))
-      : await tournamentService.getPublicTournamentById(
-          Number(id),
-          isLocalEarlyAccess
-        );
+      : await tournamentService.getPublicTournamentById(Number(id));
 
     return res.status(200).json(tournament);
   } catch (error) {

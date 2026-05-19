@@ -192,12 +192,9 @@ export async function findAll(client = pool) {
 
 /**
  * Public tournament lista
- * Sima usereknek
- *
- * Csak publikus és aktív eventek jelennek meg.
- * Ha nálad más státusznév van (pl. published), akkor azt igazítsd.
+ * Sima usereknek – minden publikus verseny, a nevezés nyitása külön ellenőrzés
  */
-export async function findAllPublic(isLocalEarlyAccess = false, client = pool) {
+export async function findAllPublic(client = pool) {
   const { rows } = await client.query(
     `
       SELECT
@@ -220,14 +217,9 @@ export async function findAllPublic(isLocalEarlyAccess = false, client = pool) {
       FROM tournament_details t
       INNER JOIN events e ON e.id = t.event_id
       WHERE e.visibility = 'public'
-        AND e.status = 'active'
-        AND (
-          t.available_from IS NULL
-          OR t.available_from <= NOW() + CASE WHEN $1::boolean THEN INTERVAL '24 hours' ELSE INTERVAL '0' END
-        )
+        AND e.status IN ('published', 'active')
       ORDER BY t.created_at DESC
-    `,
-    [isLocalEarlyAccess]
+    `
   );
 
   return rows.map((row) => ({
@@ -270,11 +262,7 @@ export async function findDetailedById(id, client = pool) {
  * Public tournament részletes lekérés id alapján
  * Sima usereknek
  */
-export async function findPublicDetailedById(
-  id,
-  isLocalEarlyAccess = false,
-  client = pool
-) {
+export async function findPublicDetailedById(id, client = pool) {
   const { rows } = await client.query(
     `
       SELECT
@@ -291,13 +279,9 @@ export async function findPublicDetailedById(
         ON e.id = t.event_id
       WHERE t.id = $1
         AND e.visibility = 'public'
-        AND e.status = 'active'
-        AND (
-          t.available_from IS NULL
-          OR t.available_from <= NOW() + CASE WHEN $2::boolean THEN INTERVAL '24 hours' ELSE INTERVAL '0' END
-        )
+        AND e.status IN ('published', 'active')
     `,
-    [id, isLocalEarlyAccess]
+    [id]
   );
 
   return mapRowToDetailedTournament(rows[0]);

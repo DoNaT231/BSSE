@@ -16,6 +16,7 @@ import useTournamentRegistrations from "../hooks/useTournamenRegistrations.js";
 import useTournamentSignupForm from "../hooks/useTournamentSignupForm.js";
 import { validateTournamentRegistrationForm } from "../utils/tournamentValidation.js";
 import { isRegistrationDeadlinePassed } from "../utils/tournamentDates.js";
+import { LOCAL_EARLY_ACCESS_NOTICE } from "../constants/tournamentLabels.js";
 
 
 export default function TournamentSignupSection() {
@@ -87,7 +88,11 @@ export default function TournamentSignupSection() {
         }
 
         if (mounted && isLoggedIn) {
-          await refreshMyRegistrations();
+          try {
+            await refreshMyRegistrations();
+          } catch (registrationError) {
+            console.error("Nevezések betöltése sikertelen:", registrationError);
+          }
         }
       } catch (e) {
         if (mounted) {
@@ -227,6 +232,15 @@ export default function TournamentSignupSection() {
                   nevezési adatokat, és pár kattintással add le a jelentkezést.
                 </p>
 
+                <div className="p-4 mt-6 text-sm border rounded-2xl border-lightBlue/25 bg-primaryLight/70 text-slate-700">
+                  <p className="font-bold text-lightBlueStrong">Nevezési időpontok</p>
+                  <p className="mt-2 leading-6">
+                    A még nem nyitott versenyek is megjelennek a listában, de
+                    jelentkezni csak a megadott időponttól lehet.{" "}
+                    {LOCAL_EARLY_ACCESS_NOTICE}
+                  </p>
+                </div>
+
                 <div className="flex flex-wrap gap-3 mt-8">
                   <div className="px-4 py-3 bg-white border shadow-sm rounded-2xl border-slate-200">
                     <p className="text-xs font-semibold tracking-wide uppercase text-slate-500">
@@ -286,15 +300,15 @@ export default function TournamentSignupSection() {
               <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_20px_60px_-30px_rgba(35,31,32,0.25)] backdrop-blur sm:p-6 lg:p-8">
                 <div className="flex items-center justify-between gap-4 mb-6">
                   <div>
-                    <h2 className="type-section-title">Aktív versenyek</h2>
+                    <h2 className="type-section-title">Versenyek</h2>
                     <p className="type-section-desc">
-                      Kattints a kiválasztott versenyre a nevezéshez vagy
-                      módosításhoz.
+                      A közelgő versenyek is láthatók; a jelentkezés csak a
+                      nevezési időpont után nyílik meg.
                     </p>
                   </div>
 
                   <div className="hidden px-4 py-2 text-sm font-bold rounded-full bg-primaryLight text-lightBlueStrong md:block">
-                    {tournaments.length} elérhető verseny
+                    {tournaments.length} verseny
                   </div>
                 </div>
 

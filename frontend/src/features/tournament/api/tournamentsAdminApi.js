@@ -47,7 +47,7 @@ async function request(path, token, options = {}) {
 }
 
 export async function fetchAdminTournaments(token) {
-  return request("/api/tournaments", token, {
+  return request("/api/tournaments/admin/all", token, {
     method: "GET",
   });
 }
