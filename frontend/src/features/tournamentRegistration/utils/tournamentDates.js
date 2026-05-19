@@ -1,6 +1,6 @@
 export const LOCAL_TOURNAMENT_EARLY_ACCESS_MS = 24 * 60 * 60 * 1000;
 
-export function formatDateTime(iso) {
+  export function formatDateTime(iso) {
     if (!iso) return "Nincs megadva";
   
     const d = new Date(iso);
@@ -14,6 +14,53 @@ export function formatDateTime(iso) {
       minute: "2-digit",
     });
   }
+
+function extractAvailableFromLiteral(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(raw)) {
+    return `${raw}:00`;
+  }
+
+  const match = raw.match(
+    /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/
+  );
+
+  if (!match) return null;
+
+  const seconds = match[4] ?? "00";
+  return `${match[1]} ${match[2]}:${match[3]}:${seconds}`;
+}
+
+function parseAvailableFromWallClock(value) {
+  const wallClock = extractAvailableFromLiteral(value);
+  if (!wallClock) return null;
+
+  const [datePart, timePart = "00:00:00"] = wallClock.split(" ");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute, second] = timePart.split(":").map(Number);
+
+  return new Date(
+    year,
+    month - 1,
+    day,
+    hour,
+    minute,
+    Number.isFinite(second) ? second : 0,
+    0
+  );
+}
+
+export {
+  formatAvailableFrom,
+  availableFromToWallClock,
+  toAvailableFromDatetimeLocal,
+} from "../../tournament/utils/tournamentDateUtils.js";
   
   export function getTournamentStart(tournament) {
     if (!tournament?.slots || !Array.isArray(tournament.slots) || tournament.slots.length === 0) {
@@ -38,8 +85,8 @@ export function formatDateTime(iso) {
     const availableFrom = getAvailableFrom(tournament);
     if (!availableFrom) return null;
 
-    const opensAt = new Date(availableFrom);
-    if (Number.isNaN(opensAt.getTime())) return null;
+    const opensAt = parseAvailableFromWallClock(availableFrom);
+    if (!opensAt || Number.isNaN(opensAt.getTime())) return null;
 
     if (isLocal) {
       opensAt.setTime(opensAt.getTime() - LOCAL_TOURNAMENT_EARLY_ACCESS_MS);

@@ -25,6 +25,7 @@ import {
   normalizeWallClockValue,
   parseLocalDateTime,
 } from "../utils/bookingTime.js";
+import { normalizeAvailableFrom } from "../utils/tournamentDateTime.js";
 
 function normalizeTournamentDateTime(day, value, fallbackTime = "00:00:00") {
   const raw = String(value ?? "").trim();
@@ -143,7 +144,7 @@ export async function createTournament({
   const normalizedRegistrationDeadline =
     normalizeOptionalDateTime(registrationDeadline);
 
-  const normalizedAvailableFrom = normalizeOptionalDateTime(availableFrom);
+  const normalizedAvailableFrom = normalizeAvailableFrom(availableFrom);
   const normalizedSlots = slots.map((slot) => {
     if (slot.day) {
       const day = slot.day;
@@ -603,12 +604,17 @@ export async function updateTournamentFully(id, data) {
       organizerEmail: data.organizerEmail,
       organizerLogoUrl: data.organizerLogoUrl,
       registrationDeadline: normalizeOptionalDateTime(data.registrationDeadline),
-      availableFrom: normalizeOptionalDateTime(data.availableFrom),
       maxTeams: data.maxTeams,
       team_size: data.team_size,
       entry_fee: data.entry_fee,
       notes: data.notes,
     };
+
+    if (data.availableFrom !== undefined) {
+      tournamentUpdateData.availableFrom = normalizeAvailableFrom(
+        data.availableFrom
+      );
+    }
 
     await tournamentRepository.updateById(id, tournamentUpdateData, client);
 

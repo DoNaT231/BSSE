@@ -3,7 +3,7 @@ import {
   isRegistrationDeadlinePassed,
   isTournamentNotYetAvailable,
   getRegistrationOpensAt,
-  formatDateTime,
+  formatAvailableFrom,
   hasTournamentStarted,
   isTournamentFull,
 } from "../utils/tournamentDates.js";
@@ -30,7 +30,7 @@ export default function TournamentStatusBadge({
         <span>🕒 {TOURNAMENT_STATUS_LABELS.NOT_YET_AVAILABLE}</span>
         {opensAt && (
           <span className="font-semibold text-slate-500">
-            Nyitás: {formatDateTime(opensAt.toISOString())}
+            Nyitás: {formatAvailableFrom(opensAt)}
           </span>
         )}
       </div>

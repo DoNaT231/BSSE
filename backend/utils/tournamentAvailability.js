@@ -1,3 +1,5 @@
+import { parseAvailableFrom } from "./tournamentDateTime.js";
+
 export const LOCAL_TOURNAMENT_EARLY_ACCESS_MS = 24 * 60 * 60 * 1000;
 
 export function isLocalUser(userOrFlag) {
@@ -17,8 +19,8 @@ export function getRegistrationOpensAt(availableFrom, isLocal = false) {
     return null;
   }
 
-  const opensAt = new Date(availableFrom);
-  if (Number.isNaN(opensAt.getTime())) {
+  const opensAt = parseAvailableFrom(availableFrom);
+  if (!opensAt || Number.isNaN(opensAt.getTime())) {
     return null;
   }
 

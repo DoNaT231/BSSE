@@ -18,6 +18,8 @@ import {
 import {
   datetimeLocalToString,
   toDatetimeLocalValue,
+  availableFromToWallClock,
+  toAvailableFromDatetimeLocal,
 } from "../utils/tournamentDateUtils";
 
 export default function useAdminTournaments(token) {
@@ -211,7 +213,7 @@ export default function useAdminTournaments(token) {
           ? datetimeLocalToString(createForm.registrationDeadline)
           : null,
         availableFrom: createForm.availableFrom
-          ? datetimeLocalToString(createForm.availableFrom)
+          ? availableFromToWallClock(createForm.availableFrom)
           : null,
         maxTeams: createForm.maxTeams ? Number(createForm.maxTeams) : null,
         team_size: createForm.team_size ? Number(createForm.team_size) : null,
@@ -262,7 +264,7 @@ export default function useAdminTournaments(token) {
           ? toDatetimeLocalValue(detailed.registrationDeadline)
           : "",
         availableFrom: detailed?.availableFrom
-          ? toDatetimeLocalValue(detailed.availableFrom)
+          ? toAvailableFromDatetimeLocal(detailed.availableFrom)
           : "",
         maxTeams: detailed?.maxTeams != null ? String(detailed.maxTeams) : "",
         team_size:
@@ -303,7 +305,7 @@ export default function useAdminTournaments(token) {
           ? datetimeLocalToString(editForm.registrationDeadline)
           : null,
         availableFrom: editForm.availableFrom
-          ? datetimeLocalToString(editForm.availableFrom)
+          ? availableFromToWallClock(editForm.availableFrom)
           : null,
         maxTeams: editForm.maxTeams ? Number(editForm.maxTeams) : null,
         team_size: editForm.team_size ? Number(editForm.team_size) : null,

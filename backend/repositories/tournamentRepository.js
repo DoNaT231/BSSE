@@ -16,6 +16,7 @@
  */
 
 import pool from "../db.js";
+import { normalizeAvailableFrom } from "../utils/tournamentDateTime.js";
 
 /**
  * Tournament row átalakítása
@@ -29,7 +30,7 @@ function mapRowToTournament(row) {
     organizerName: row.organizer_name,
     organizerEmail: row.organizer_email,
     registrationDeadline: row.registration_deadline,
-    availableFrom: row.available_from,
+    availableFrom: normalizeAvailableFrom(row.available_from),
     maxTeams: row.max_teams,
     team_size: row.team_size,
     entry_fee: row.entry_fee,
@@ -49,7 +50,7 @@ function mapRowToDetailedTournament(row) {
     organizerEmail: row.organizer_email,
     registrationDeadline: row.registration_deadline,
     maxTeams: row.max_teams,
-    availableFrom: row.available_from,
+    availableFrom: normalizeAvailableFrom(row.available_from),
     team_size: row.team_size,
     entry_fee: row.entry_fee,
     notes: row.notes,

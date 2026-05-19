@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TournamentRegistrationsPanel from "./TournamentRegistrationsPanel";
 import TournamentSlotModal from "./TournamentSlotModal";
-import { formatDateTime } from "../utils/tournamentDateUtils";
+import { formatDateTime, formatAvailableFrom } from "../utils/tournamentDateUtils";
 
 function formatDate(value) {
   if (!value) return null;
@@ -136,7 +136,7 @@ export default function TournamentListItem({
             {tournament.availableFrom && (
                 <>
                   {(tournament.organizerName || tournament.registrationDeadline) && " • "}
-                  Nevezés megnyitása: {formatDate(tournament.availableFrom)}
+                  Nevezés megnyitása: {formatAvailableFrom(tournament.availableFrom)}
                 </>
               )}
 

@@ -1,6 +1,7 @@
 import React from "react";
 import {
   formatDateTime,
+  formatAvailableFrom,
   getTournamentStart,
   getAvailableFrom,
   getRegistrationOpensAt,
@@ -108,7 +109,7 @@ export default function TournamentDetailsModal({
               {availableFrom ? (
                 <>
                   <p className="mt-2 text-base font-bold text-brandDark">
-                    Publikus nyitás: {formatDateTime(availableFrom)}
+                    Publikus nyitás: {formatAvailableFrom(availableFrom)}
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
                     {LOCAL_EARLY_ACCESS_NOTICE}
@@ -116,7 +117,7 @@ export default function TournamentDetailsModal({
                   {isLocal && registrationOpensAt && (
                     <p className="mt-2 text-sm font-bold text-lightBlueStrong">
                       Neked nyílik:{" "}
-                      {formatDateTime(registrationOpensAt.toISOString())}
+                      {formatAvailableFrom(registrationOpensAt)}
                     </p>
                   )}
                 </>

@@ -19,6 +19,7 @@
  */
 
 import React from "react";
+import { formatAvailableFrom } from "../utils/tournamentDateUtils";
 
 export default function TournamentRegistrationsPanel({
   isOpen,
@@ -147,7 +148,7 @@ export default function TournamentRegistrationsPanel({
 
                     {availableFrom && (
                       <div className="text-xs text-gray-600">
-                        Publikus megjelenés: {formatDateTime(availableFrom)}
+                        Publikus megjelenés: {formatAvailableFrom(availableFrom)}
                       </div>
                     )}
 

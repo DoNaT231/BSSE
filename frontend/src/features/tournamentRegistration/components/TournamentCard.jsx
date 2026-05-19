@@ -2,6 +2,7 @@ import React from "react";
 import TournamentStatusBadge from "./TounamentStatusBadge.jsx";
 import {
   formatDateTime,
+  formatAvailableFrom,
   getTournamentStart,
   getAvailableFrom,
   getRegistrationOpensAt,
@@ -49,14 +50,14 @@ export default function TournamentCard({
           {publicOpensAt ? (
             <>
               <p className="mt-1 text-sm font-medium text-slate-500">
-                Publikus nevezés kezdete: {formatDateTime(publicOpensAt)}
+                Publikus nevezés kezdete: {formatAvailableFrom(publicOpensAt)}
               </p>
               <p className="mt-1 text-xs text-slate-400">
                 {LOCAL_EARLY_ACCESS_NOTICE}
               </p>
               {isLocal && personalOpensAt && (
                 <p className="mt-1 text-sm font-semibold text-lightBlueStrong">
-                  Neked nyílik: {formatDateTime(personalOpensAt.toISOString())}
+                  Neked nyílik: {formatAvailableFrom(personalOpensAt)}
                 </p>
               )}
             </>
