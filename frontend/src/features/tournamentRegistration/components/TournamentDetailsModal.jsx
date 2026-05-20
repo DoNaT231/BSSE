@@ -62,7 +62,7 @@ export default function TournamentDetailsModal({
                 Verseny részletei
               </p>
 
-              <h3 className="mt-2 text-2xl font-extrabold tracking-tight">
+              <h3 className="mt-2 min-w-0 max-w-full break-words text-2xl font-extrabold tracking-tight">
                 {tournament.title}
               </h3>
             </div>

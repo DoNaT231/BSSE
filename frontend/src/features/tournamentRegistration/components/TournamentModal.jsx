@@ -80,7 +80,7 @@ export default function TournamentModal({
         <div className="px-5 py-4 bg-lightBlue">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 className="text-lg font-extrabold text-white truncate">
+              <h3 className="text-lg font-extrabold text-white break-words">
                 Jelentkezés: {selectedTournament.title}
               </h3>
 

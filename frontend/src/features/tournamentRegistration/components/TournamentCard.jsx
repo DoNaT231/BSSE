@@ -37,7 +37,7 @@ export default function TournamentCard({
 
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="max-w-[90%] whitespace-normal break-all text-xl font-extrabold tracking-tight text-brandDark">
+          <h3 className="min-w-0 max-w-full break-words text-xl font-extrabold tracking-tight text-brandDark">
             {tournament.title}
           </h3>
 

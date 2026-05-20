@@ -90,7 +90,7 @@ export default function TournamentListItem({
       <div className="flex flex-col gap-3 p-4 border rounded-2xl md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="font-semibold truncate">
+            <div className="min-w-0 max-w-full font-semibold break-words">
               {tournament.title || `Verseny #${tournament.id}`}
             </div>
 
