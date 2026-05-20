@@ -31,6 +31,25 @@ import {
   isLocalUser,
   isTournamentRegistrationOpen,
 } from "../utils/tournamentAvailability.js";
+import { logActivity } from "./activityLogService.js";
+import { logError } from "./errorLogService.js";
+import { buildEmailFailureMetadata } from "../utils/errorDebugContext.js";
+
+function rejectRegistration({ userId, userEmail, tournamentId, message, metadata = {} }) {
+  logActivity({
+    level: "warn",
+    category: "tournament",
+    eventType: "tournament.register.rejected",
+    message,
+    userId,
+    userEmail,
+    httpStatus: 400,
+    entityType: "registration",
+    entityId: tournamentId != null ? String(tournamentId) : null,
+    metadata,
+  });
+  throw new Error(message);
+}
 
 async function resolveUserIsLocal(userId, cachedUser = null) {
   if (isLocalUser(cachedUser)) {
@@ -108,6 +127,21 @@ async function sendRegistrationEmailSafe({
     }
   } catch (e) {
     console.error("Tournament registration email failed:", e);
+    logError({
+      category: "tournament",
+      eventType: "tournament.email.failed",
+      message: e.message,
+      error: e,
+      userId,
+      metadata: buildEmailFailureMetadata({
+        toEmail: contactEmail,
+        tournamentId,
+        emailType:
+          String(status).toUpperCase() === "WAITLISTED"
+            ? "registration_waitlist"
+            : "registration_success",
+      }),
+    });
   }
 }
 
@@ -122,22 +156,43 @@ export async function registerToTournament({
   taxNumber,
   address,
   players = [],
+  userEmail = null,
 }) {
   if (!userId) {
-    throw new Error("Nincs bejelentkezve.");
+    rejectRegistration({
+      userId,
+      userEmail,
+      tournamentId,
+      message: "Nincs bejelentkezve.",
+    });
   }
 
   if (!tournamentId || !isNonEmptyString(telNumber)) {
-    throw new Error("Hiányzó mezők: tournamentId és telNumber kötelező.");
+    rejectRegistration({
+      userId,
+      userEmail,
+      tournamentId,
+      message: "Hiányzó mezők: tournamentId és telNumber kötelező.",
+    });
   }
 
   if (players !== undefined && !Array.isArray(players)) {
-    throw new Error("A players mezőnek tömbnek kell lennie.");
+    rejectRegistration({
+      userId,
+      userEmail,
+      tournamentId,
+      message: "A players mezőnek tömbnek kell lennie.",
+    });
   }
 
   const tournament = await tournamentRepository.findDetailedById(tournamentId);
   if (!tournament) {
-    throw new Error("Nincs ilyen verseny.");
+    rejectRegistration({
+      userId,
+      userEmail,
+      tournamentId,
+      message: "Nincs ilyen verseny.",
+    });
   }
 
   const userIsLocal = await resolveUserIsLocal(userId);
@@ -146,18 +201,28 @@ export async function registerToTournament({
     tournament.availableFrom &&
     !isTournamentRegistrationOpen(tournament.availableFrom, userIsLocal)
   ) {
-    throw new Error(
-      userIsLocal
+    rejectRegistration({
+      userId,
+      userEmail,
+      tournamentId,
+      message: userIsLocal
         ? "A versenyre még nem lehet jelentkezni (helyi lakosok számára 24 órával korábban nyílik)."
-        : "A versenyre még nem lehet jelentkezni."
-    );
+        : "A versenyre még nem lehet jelentkezni.",
+      metadata: { isLocal: userIsLocal, availableFrom: tournament.availableFrom },
+    });
   }
 
   if (tournament.registrationDeadline) {
     const now = new Date();
     const deadline = new Date(tournament.registrationDeadline);
     if (now > deadline) {
-      throw new Error("A nevezési határidő lejárt.");
+      rejectRegistration({
+        userId,
+        userEmail,
+        tournamentId,
+        message: "A nevezési határidő lejárt.",
+        metadata: { registrationDeadline: tournament.registrationDeadline },
+      });
     }
   }
 
@@ -167,7 +232,12 @@ export async function registerToTournament({
   );
 
   if (existing) {
-    throw new Error("Erre a versenyre már van nevezésed.");
+    rejectRegistration({
+      userId,
+      userEmail,
+      tournamentId,
+      message: "Erre a versenyre már van nevezésed.",
+    });
   }
 
   if (teamName && teamName.trim()) {
@@ -178,15 +248,28 @@ export async function registerToTournament({
       );
 
     if (existingTeam) {
-      throw new Error("Ez a csapatnév már foglalt ennél a versenynél.");
+      rejectRegistration({
+        userId,
+        userEmail,
+        tournamentId,
+        message: "Ez a csapatnév már foglalt ennél a versenynél.",
+        metadata: { teamName: teamName.trim() },
+      });
     }
   }
 
   if (tournament.team_size && Array.isArray(players)) {
     if (players.length !== Number(tournament.team_size)) {
-      throw new Error(
-        `Pontosan ${tournament.team_size} játékost kell megadni.`
-      );
+      rejectRegistration({
+        userId,
+        userEmail,
+        tournamentId,
+        message: `Pontosan ${tournament.team_size} játékost kell megadni.`,
+        metadata: {
+          expectedPlayers: tournament.team_size,
+          receivedPlayers: players.length,
+        },
+      });
     }
   }
 
@@ -224,6 +307,22 @@ export async function registerToTournament({
     taxNumber: created.taxNumber,
     address: created.address,
     status: created.status ?? registrationStatus,
+  });
+
+  logActivity({
+    category: "tournament",
+    eventType: "tournament.register.success",
+    message: `Sikeres nevezés: ${teamName?.trim() || "—"} (${registrationStatus})`,
+    userId,
+    userEmail: userEmail ?? contactEmail,
+    httpStatus: 201,
+    entityType: "registration",
+    entityId: String(created.id),
+    metadata: {
+      tournamentId,
+      teamName: teamName?.trim() || null,
+      status: registrationStatus,
+    },
   });
 
   return created;
@@ -313,7 +412,7 @@ export async function updateOwnTournamentRegistration({
     }
   }
 
-  return tournamentRegistrationRepository.updateById(registrationId, {
+  const updated = await tournamentRegistrationRepository.updateById(registrationId, {
     telNumber: telNumber !== undefined ? telNumber?.trim() || null : undefined,
     players,
     teamName: teamName !== undefined ? teamName?.trim() || null : undefined,
@@ -324,6 +423,26 @@ export async function updateOwnTournamentRegistration({
     taxNumber: taxNumber !== undefined ? taxNumber?.trim() || null : undefined,
     address: address !== undefined ? address?.trim() || null : undefined,
   });
+
+  logActivity({
+    category: "tournament",
+    eventType: "tournament.register.updated",
+    message: `Nevezés módosítva (#${registrationId})`,
+    userId,
+    entityType: "registration",
+    entityId: String(registrationId),
+    metadata: {
+      tournamentId: registration.tournamentId,
+      changedFields: [
+        teamName !== undefined ? "teamName" : null,
+        telNumber !== undefined ? "telNumber" : null,
+        contactEmail !== undefined ? "contactEmail" : null,
+        players !== undefined ? "players" : null,
+      ].filter(Boolean),
+    },
+  });
+
+  return updated;
 }
 
 export async function deleteOwnTournamentRegistration({
@@ -345,7 +464,19 @@ export async function deleteOwnTournamentRegistration({
     throw new Error("A verseny nem található.");
   }
 
-  return tournamentRegistrationRepository.deleteById(registrationId);
+  const deleted = await tournamentRegistrationRepository.deleteById(registrationId);
+
+  logActivity({
+    category: "tournament",
+    eventType: "tournament.register.cancelled",
+    message: `Nevezés törölve (#${registrationId})`,
+    userId,
+    entityType: "registration",
+    entityId: String(registrationId),
+    metadata: { tournamentId: registration.tournamentId },
+  });
+
+  return deleted;
 }
 
 export async function getTournamentRegistrations(tournamentId) {
@@ -407,9 +538,23 @@ export async function updateRegistrationStatusByAdmin({
     newStatus: normalizedStatus,
   });
 
-  return tournamentRegistrationRepository.updateById(registrationId, {
+  const updated = await tournamentRegistrationRepository.updateById(registrationId, {
     status: normalizedStatus,
   });
+
+  logActivity({
+    category: "admin",
+    eventType: "admin.registration.status_changed",
+    message: `Nevezés státusz módosítva: ${normalizedStatus}`,
+    entityType: "registration",
+    entityId: String(registrationId),
+    metadata: {
+      tournamentId: registration.tournamentId,
+      status: normalizedStatus,
+    },
+  });
+
+  return updated;
 }
 
 async function sendStatusChangeEmail({ registration, newStatus }) {
@@ -450,6 +595,20 @@ async function sendStatusChangeEmail({ registration, newStatus }) {
     }
   } catch (e) {
     console.error("Status change email failed:", e);
+    logError({
+      category: "tournament",
+      eventType: "tournament.email.failed",
+      message: e.message,
+      error: e,
+      userId: registration.userId,
+      metadata: buildEmailFailureMetadata({
+        toEmail: registration.contactEmail,
+        tournamentId: registration.tournamentId,
+        registrationId: registration.id,
+        emailType: "status_change",
+        newStatus,
+      }),
+    });
   }
 }
 
@@ -479,7 +638,21 @@ export async function updateRegistrationPaidByAdmin({ registrationId, paid }) {
     throw new Error("A jelentkezés nem található.");
   }
 
-  return tournamentRegistrationRepository.updateById(registrationId, {
+  const updated = await tournamentRegistrationRepository.updateById(registrationId, {
     paid: normalizedPaid,
   });
+
+  logActivity({
+    category: "admin",
+    eventType: "admin.registration.paid_changed",
+    message: `Fizetés státusz módosítva: ${normalizedPaid ? "fizetve" : "nincs fizetve"}`,
+    entityType: "registration",
+    entityId: String(registrationId),
+    metadata: {
+      tournamentId: registration.tournamentId,
+      paid: normalizedPaid,
+    },
+  });
+
+  return updated;
 }

@@ -26,6 +26,8 @@ import {
   parseLocalDateTime,
 } from "../utils/bookingTime.js";
 import { normalizeAvailableFrom } from "../utils/tournamentDateTime.js";
+import { logActivity } from "./activityLogService.js";
+import { logError } from "./errorLogService.js";
 
 function normalizeTournamentDateTime(day, value, fallbackTime = "00:00:00") {
   const raw = String(value ?? "").trim();
@@ -275,6 +277,19 @@ export async function createTournament({
 
     await client.query("COMMIT");
 
+    logActivity({
+      category: "admin",
+      eventType: "admin.tournament.created",
+      message: `Verseny létrehozva: ${title}`,
+      userId: createdByUserId,
+      entityType: "tournament",
+      entityId: String(tournament.id),
+      metadata: {
+        eventId: event.id,
+        slotCount: createdSlots.length,
+      },
+    });
+
     return {
       event,
       tournament,
@@ -335,6 +350,15 @@ export async function deleteTournamentById(id) {
     await eventWriteRepository.deleteEventById(tournament.eventId, client);
 
     await client.query("COMMIT");
+
+    logActivity({
+      category: "admin",
+      eventType: "admin.tournament.deleted",
+      message: `Verseny törölve (#${id})`,
+      entityType: "tournament",
+      entityId: String(id),
+      metadata: { eventId: tournament.eventId },
+    });
 
     return tournament;
   } catch (error) {
@@ -408,6 +432,15 @@ export async function addTournamentSlot(
     );
 
     await client.query("COMMIT");
+
+    logActivity({
+      category: "admin",
+      eventType: "admin.tournament.slot.changed",
+      message: `Verseny slot hozzáadva (#${tournamentId})`,
+      entityType: "tournament",
+      entityId: String(tournamentId),
+      metadata: { action: "add", slotId: created.id, courtId },
+    });
 
     return {
       slotId: created.id,
@@ -501,6 +534,15 @@ export async function updateTournamentSlot(
 
     await client.query("COMMIT");
 
+    logActivity({
+      category: "admin",
+      eventType: "admin.tournament.slot.changed",
+      message: `Verseny slot módosítva (#${tournamentId})`,
+      entityType: "tournament",
+      entityId: String(tournamentId),
+      metadata: { action: "update", slotId, courtId },
+    });
+
     return updated;
   } catch (error) {
     await client.query("ROLLBACK");
@@ -524,7 +566,18 @@ export async function deleteTournamentSlot(tournamentId, slotId) {
     throw new Error("A slot nem tartozik ehhez a versenyhez.");
   }
 
-  return eventWriteRepository.deleteEventSlotById(slotId);
+  const deleted = await eventWriteRepository.deleteEventSlotById(slotId);
+
+  logActivity({
+    category: "admin",
+    eventType: "admin.tournament.slot.changed",
+    message: `Verseny slot törölve (#${tournamentId})`,
+    entityType: "tournament",
+    entityId: String(tournamentId),
+    metadata: { action: "delete", slotId },
+  });
+
+  return deleted;
 }
 
 export async function getTournamentById(id) {
@@ -620,6 +673,18 @@ export async function updateTournamentFully(id, data) {
 
     await client.query("COMMIT");
 
+    logActivity({
+      category: "admin",
+      eventType: "admin.tournament.updated",
+      message: `Verseny módosítva (#${id})`,
+      entityType: "tournament",
+      entityId: String(id),
+      metadata: {
+        title: data.title ?? undefined,
+        status: data.status ?? undefined,
+      },
+    });
+
     return await getTournamentById(id);
   } catch (error) {
     await client.query("ROLLBACK");
@@ -628,6 +693,7 @@ export async function updateTournamentFully(id, data) {
     client.release();
   }
 }
+
 function normalizeOptionalDateTime(value) {
   if (value === undefined) {
     return undefined;

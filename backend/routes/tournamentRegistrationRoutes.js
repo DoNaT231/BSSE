@@ -33,6 +33,7 @@ router.post("/", authMiddleware, async (req, res) => {
       await tournamentRegistrationService.registerToTournament({
         tournamentId: Number(req.body.tournamentId ?? req.body.tournament_id),
         userId: Number(userId),
+        userEmail: req.user?.email ?? null,
         teamName: req.body.teamName ?? req.body.team_name,
         telNumber: req.body.telNumber ?? req.body.tel_number,
         contactEmail: req.body.contactEmail ?? req.body.contact_email,

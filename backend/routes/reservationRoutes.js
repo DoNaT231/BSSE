@@ -126,6 +126,8 @@ router.post("/sync", async (req, res) => {
       weekStart: start,
       weekEnd,
       slots,
+      userEmail: req.user?.email ?? null,
+      userType: req.user?.user_type ?? null,
     });
 
     return res.status(200).json(result);

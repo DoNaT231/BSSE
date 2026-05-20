@@ -5,6 +5,7 @@ import WeeklyCalendar from "../../features/booking/pages/WeeklyCalendar";
 import UsersSection from "./users/components/UsersSection";
 import CourtsList from "../../features/courts/components/CourtsList";
 import TournamentsAdminSection from "../../features/tournament/components/TournamentsAdminSection";
+import LogsSection from "./logs/LogsSection";
 
 const SECTIONS = {
   DASHBOARD: "dashboard",
@@ -12,6 +13,7 @@ const SECTIONS = {
   BOOKINGS: "bookings",
   TOURNAMENTS: "tournaments",
   COURTS: "courts",
+  LOGS: "logs",
 };
 
 const AdminDashboard = () => {
@@ -27,6 +29,8 @@ const AdminDashboard = () => {
         return "Verseny / Versenyjelentkezés";
       case SECTIONS.COURTS:
         return "Pályák";
+      case SECTIONS.LOGS:
+        return "Naplók / Monitor";
       default:
         return "Dashboard";
     }
@@ -100,6 +104,17 @@ const AdminDashboard = () => {
                 }}
               >
                 🏐 Pályák
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveSection(SECTIONS.LOGS);
+                }}
+              >
+                📋 Naplók / Monitor
               </a>
             </li>
           </ul>
@@ -215,6 +230,29 @@ const AdminDashboard = () => {
                     Megnyitás →
                   </span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection(SECTIONS.LOGS)}
+                  className="group rounded-xl border border-[#d9e2ec] bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-semibold tracking-wide text-[#6b7c93] uppercase">
+                        Naplók
+                      </div>
+                      <h4 className="mt-1 text-xl font-semibold text-[#2c3e50]">
+                        Monitor / hibák
+                      </h4>
+                    </div>
+                    <span className="text-xl">📋</span>
+                  </div>
+                  <p className="mt-2 text-sm text-[#5c6b7a]">
+                    Foglalások, nevezések és rendszerhibák naplója.
+                  </p>
+                  <span className="inline-flex items-center mt-4 text-sm font-semibold text-[#2c3e50] group-hover:text-[#1f2d3a]">
+                    Megnyitás →
+                  </span>
+                </button>
               </div>
             </div>
           )}
@@ -240,6 +278,12 @@ const AdminDashboard = () => {
           {activeSection === SECTIONS.TOURNAMENTS && (
             <section>
               <TournamentsAdminSection />
+            </section>
+          )}
+
+          {activeSection === SECTIONS.LOGS && (
+            <section>
+              <LogsSection />
             </section>
           )}
         </main>

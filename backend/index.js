@@ -45,10 +45,15 @@ import tournamentRoutes from "./routes/tournamentRoutes.js";
 import tournamentRegistrations from './routes/tournamentRegistrationRoutes.js';
 import thursdayLeaderboardRoutes from './routes/thursdayLeaderboardRoutes.js';
 import contactRoutes from "./routes/contactRoutes.js";
+import adminActivityLogsRoutes from "./routes/adminActivityLogsRoutes.js";
 
 // MiddleWarek
 import authMiddleware from './middleware/authMiddleware.js';
 import adminOnly from './middleware/adminOnly.js';
+import requestLoggerMiddleware from "./middleware/requestLoggerMiddleware.js";
+import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
+import { ensureLogTables } from "./scripts/initLogTables.js";
+import { scheduleLogRetentionJob } from "./jobs/logRetentionJob.js";
 
 // Adatbázis kapcsolat inicializálása (side-effect import)
 import './db.js';
@@ -86,6 +91,7 @@ app.use(
   })
 );
 app.use(express.json());           // JSON body parsing
+app.use(requestLoggerMiddleware);
 
 // API route-ok regisztrálása
 console.log("Mount /api/auth");
@@ -109,35 +115,14 @@ console.log("Mount /api/reservations");
 app.use("/api/reservations", authMiddleware, reservationRoutes);
 console.log("Mount /api/admin/users");
 app.use("/api/admin/users", authMiddleware, adminOnly, adminUsersRoutes);
+console.log("Mount /api/admin/logs");
+app.use("/api/admin/logs", authMiddleware, adminOnly, adminActivityLogsRoutes);
 console.log("Mount /api/tournament-registrations");
 app.use("/api/tournament-registrations", authMiddleware, tournamentRegistrations);
 
-console.log('Routerek bekötve: auth, courts, users, reservations');
+console.log('Routerek bekötve: auth, courts, users, reservations, logs');
 
-// Kérés–válasz logger middleware
-app.use((req, res, next) => {
-  const start = Date.now();
-
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    console.log(`
-📥 API Hívás:
-➤ Dátum:        ${new Date().toISOString()}
-➤ Módszer:      ${req.method}
-➤ URL:          ${req.originalUrl}
-➤ IP:           ${req.ip}
-➤ Státuszkód:   ${res.statusCode}
-➤ Feldolgozási idő: ${duration} ms
-➤ Authorization: ${req.headers['authorization'] || 'Nincs'}
-➤ Body:         ${JSON.stringify(req.body)}
-➤ Query:        ${JSON.stringify(req.query)}
-➤ Params:       ${JSON.stringify(req.params)}
-➤ Felhasználó:  ${req.user ? JSON.stringify(req.user) : 'Nincs'}
-`);
-  });
-
-  next();
-});
+app.use(errorHandlerMiddleware);
 
 // Frontend (React build) statikus kiszolgálása
 app.use(express.static(path.join(__dirname, '../frontend/build')));
@@ -156,6 +141,17 @@ app.use((req, res, next) => {
 
 // Szerver indítása
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`⚡ Server fut a ${PORT}-es porton`);
-});
+
+ensureLogTables()
+  .then(() => {
+    scheduleLogRetentionJob();
+    app.listen(PORT, () => {
+      console.log(`⚡ Server fut a ${PORT}-es porton`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Log táblák inicializálása sikertelen:", err.message);
+    app.listen(PORT, () => {
+      console.log(`⚡ Server fut a ${PORT}-es porton (log táblák nélkül)`);
+    });
+  });
