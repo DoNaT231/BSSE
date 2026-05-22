@@ -13,6 +13,13 @@ html {
 
 @tailwind utilities;
 
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}
+
 @layer base {
   body {
     @apply bg-page-bg font-sans antialiased text-brandDark;

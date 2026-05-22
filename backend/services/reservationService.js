@@ -486,15 +486,12 @@ export async function deleteReservationBySlotId({ slotId, currentUser }) {
 }
 
 /**
- * Nyomtatási célra: reservation típusú event_slots lekérése user_type szerint.
- *
- * Fontos: a "reservation" itt a DB-ben a reservation event típus.
+ * Nyomtatási célra: reservation + tournament események egy pályára (minden user).
  */
 export async function getPrintableReservationsForPrint({
   currentUser,
   courtId,
   weekStart,
-  userType,
 }) {
   if (!courtId) {
     throw new Error("A courtId kötelező.");
@@ -502,35 +499,6 @@ export async function getPrintableReservationsForPrint({
 
   if (!weekStart) {
     throw new Error("A weekStart kötelező.");
-  }
-
-  const requestedType = (userType || "").toString().trim();
-  if (!requestedType) {
-    throw new Error("A userType megadása kötelező.");
-  }
-
-  // DB-ben a stranddolgozók valószínűleg STRAND_WORKER-ként vannak tárolva,
-  // de a UI-ban két opció is lehet (STRAND / STRAND_WORKER). Normalizáljuk.
-  function normalizeUserTypeForQuery(type) {
-    const t = (type || "").toString().trim().toUpperCase();
-    if (t === "STRAND") return "STRAND_WORKER";
-    return t;
-  }
-
-  const normalizedRequestedType = normalizeUserTypeForQuery(requestedType);
-  const normalizedCurrentType = normalizeUserTypeForQuery(
-    currentUser?.user_type
-  );
-
-  const isAdmin =
-    normalizedCurrentType.toLowerCase() === "admin";
-  const currentTypeLower = normalizedCurrentType.toLowerCase();
-  const requestedTypeLower = normalizedRequestedType.toLowerCase();
-
-  if (!isAdmin && currentTypeLower !== requestedTypeLower) {
-    const err = new Error("Nincs jogosultságod a kért user_type-hoz.");
-    err.status = 403;
-    throw err;
   }
 
   const { weekStart: start, weekEnd } = buildWeekRangeFromWeekStart(weekStart);
@@ -541,7 +509,6 @@ export async function getPrintableReservationsForPrint({
       courtId: Number(courtId),
       weekStart: start,
       weekEnd,
-      userType: normalizedRequestedType,
     }
   );
 
@@ -553,49 +520,21 @@ export async function getPrintableReservationsForPrint({
     userEmail: currentUser?.email,
     entityType: "reservation",
     entityId: String(courtId),
-    metadata: { courtId, weekStart, userType: normalizedRequestedType },
+    metadata: { courtId, weekStart, allUsers: true },
   });
 
   return result;
 }
 
 /**
- * Nyomtatási célra: heti események lekérése AZ ÖSSZES pályára user_type szerint.
+ * Nyomtatási célra: heti események AZ ÖSSZES pályára (minden user foglalása).
  */
 export async function getPrintableReservationsForPrintAll({
   currentUser,
   weekStart,
-  userType,
 }) {
   if (!weekStart) {
     throw new Error("A weekStart kötelező.");
-  }
-
-  const requestedType = (userType || "").toString().trim();
-  if (!requestedType) {
-    throw new Error("A userType megadása kötelező.");
-  }
-
-  function normalizeUserTypeForQuery(type) {
-    const t = (type || "").toString().trim().toUpperCase();
-    if (t === "STRAND") return "STRAND_WORKER";
-    return t;
-  }
-
-  const normalizedRequestedType = normalizeUserTypeForQuery(requestedType);
-  const normalizedCurrentType = normalizeUserTypeForQuery(
-    currentUser?.user_type
-  );
-
-  const isAdmin =
-    normalizedCurrentType.toLowerCase() === "admin";
-  const currentTypeLower = normalizedCurrentType.toLowerCase();
-  const requestedTypeLower = normalizedRequestedType.toLowerCase();
-
-  if (!isAdmin && currentTypeLower !== requestedTypeLower) {
-    const err = new Error("Nincs jogosultságod a kért user_type-hoz.");
-    err.status = 403;
-    throw err;
   }
 
   const { weekStart: start, weekEnd } = buildWeekRangeFromWeekStart(weekStart);
@@ -603,7 +542,6 @@ export async function getPrintableReservationsForPrintAll({
   const result = await calendarRepository.getPrintableReservationsByWeekAndUserType({
     weekStart: start,
     weekEnd,
-    userType: normalizedRequestedType,
   });
 
   logActivity({
@@ -612,7 +550,7 @@ export async function getPrintableReservationsForPrintAll({
     message: "Nyomtatási jelentés generálva (összes pálya)",
     userId: currentUser?.id,
     userEmail: currentUser?.email,
-    metadata: { weekStart, userType: normalizedRequestedType, allCourts: true },
+    metadata: { weekStart, allCourts: true, allUsers: true },
   });
 
   return result;

@@ -1,7 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./PrintableSchedule.css"; // ebben van a @media print
 import { DAYS, HOURS } from "../constants/reservation.constants.js";
+import {
+  getPrintCellClasses,
+  PRINT_HEADER_CELL,
+  PRINT_HOUR_CELL,
+} from "../utils/printScheduleClasses.js";
 
 const PrintableSchedule = ({ reservations, courts, weekStart }) => {
   const safeReservations = Array.isArray(reservations) ? reservations : [];
@@ -25,8 +29,6 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
   }
 
   function getCellEvent(courtId, day, hour) {
-    // Calendar UI-ban a tournament az egész napot blokkolli,
-    // ezért a printben is: ha van tournament ezen a napon, akkor minden óracellába ezt írjuk.
     const tournamentForDay = safeReservations.find((r) => {
       const rd = new Date(r.booked_time);
       return (
@@ -40,7 +42,6 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
       return { kind: "tournament", text: tournamentForDay.username };
     }
 
-    // Reservationeknél marad a "pont abban az órában" logika.
     const reservationForCell = safeReservations.find((r) => {
       const rd = new Date(r.booked_time);
       return (
@@ -59,16 +60,24 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
   }
 
   return ReactDOM.createPortal(
-    <div className="print-container">
+    <div className="w-full bg-white p-0 text-black print:mx-auto">
       {safeCourts.map((court) => (
-        <div key={court.id} className="print-court-block">
-          <div className="print-court-title">{court.name}</div>
+        <div
+          key={court.id}
+          className="mb-6 min-h-[450px] break-inside-avoid break-after-page last:break-after-auto"
+        >
+          <div className="mb-2.5 text-center text-base font-bold">
+            {court.name}
+          </div>
 
-          <div className="print-calendar">
-            <div className="print-header grid grid-cols-[80px_repeat(7,1fr)]">
+          <div className="w-full overflow-hidden rounded-[10px] border border-black">
+            <div className="grid grid-cols-[80px_repeat(7,1fr)]">
               <div />
               {DAYS.map((dayLabel) => (
-                <div key={dayLabel} className="print-header-cell">
+                <div
+                  key={dayLabel}
+                  className={`${PRINT_HEADER_CELL} py-2 text-[11pt]`}
+                >
                   {dayLabel}
                 </div>
               ))}
@@ -77,25 +86,19 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
             {HOURS.map((hour) => (
               <div
                 key={hour}
-                className="print-row grid grid-cols-[80px_repeat(7,1fr)]"
+                className="grid grid-cols-[80px_repeat(7,1fr)] border-t border-black"
               >
-                <div className="print-hour-cell">{hour}:00</div>
+                <div className={`${PRINT_HOUR_CELL} py-1.5 text-[10.5pt]`}>
+                  {hour}:00
+                </div>
 
                 {days.map((day, dayIndex) => {
                   const cell = getCellEvent(court.id, day, hour);
-                  const hasEvent = cell.kind !== "free";
 
                   return (
                     <div
                       key={`${dayIndex}-${hour}`}
-                      className={
-                        "print-cell " +
-                        (cell.kind === "reservation"
-                          ? "print-cell--reserved"
-                          : cell.kind === "tournament"
-                          ? "print-cell--tournament"
-                          : "print-cell--free")
-                      }
+                      className={`${getPrintCellClasses(cell.kind)} h-12 px-1.5 text-[10.5pt]`}
                     >
                       {cell.text}
                     </div>

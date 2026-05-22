@@ -1,3 +1,5 @@
+import { DAYS } from "../constants/reservation.constants.js";
+
 export default function ReservationHeader({
   monday,
   sunday,
@@ -5,10 +7,26 @@ export default function ReservationHeader({
   courts,
   bookedCourt,
   handleChangeCourt,
-  handlePrint,
+  printDayOffset,
+  setPrintDayOffset,
+  handlePrintWeekly,
+  handlePrintDaily,
   handleSubmit,
 }) {
   const courtList = Array.isArray(courts) ? courts : [];
+
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    return {
+      offset: i,
+      label: DAYS[i],
+      dateLabel: d.toLocaleDateString("hu-HU", {
+        month: "2-digit",
+        day: "2-digit",
+      }),
+    };
+  });
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -63,13 +81,41 @@ export default function ReservationHeader({
 
       {/* jobb oldal */}
       <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
-        <div className="flex gap-2 sm:self-end">
-          <button
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-brandDark shadow-sm transition hover:-translate-y-0.5 hover:border-lightBlue/35 hover:text-lightBlueStrong"
-            onClick={handlePrint}
-          >
-            Nyomtatás
-          </button>
+        <div className="flex flex-col gap-2 sm:self-end">
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="min-w-[160px]">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                Napi nyomtatás napja
+              </label>
+              <select
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-brandDark shadow-sm outline-none transition focus:border-lightBlue focus:ring-4 focus:ring-lightBlue/20"
+                value={printDayOffset}
+                onChange={(e) => setPrintDayOffset(Number(e.target.value))}
+              >
+                {weekDays.map((day) => (
+                  <option key={day.offset} value={day.offset}>
+                    {day.label} ({day.dateLabel})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-brandDark shadow-sm transition hover:-translate-y-0.5 hover:border-lightBlue/35 hover:text-lightBlueStrong"
+              onClick={handlePrintDaily}
+            >
+              Napi nyomtatás
+            </button>
+
+            <button
+              type="button"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-brandDark shadow-sm transition hover:-translate-y-0.5 hover:border-lightBlue/35 hover:text-lightBlueStrong"
+              onClick={handlePrintWeekly}
+            >
+              Heti nyomtatás
+            </button>
+          </div>
 
           <button
             className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition bg-lightBlue hover:-translate-y-0.5 hover:bg-lightBlueStrong"

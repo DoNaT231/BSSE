@@ -45,8 +45,11 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="print-root"></div>
-    <div id="root"></div>
+    <div
+      id="print-root"
+      class="hidden print:absolute print:inset-x-0 print:top-0 print:z-[999999] print:block print:w-full print:bg-white print:p-5 print:text-black [&_*]:print:visible"
+    ></div>
+    <div id="root" class="print:hidden"></div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

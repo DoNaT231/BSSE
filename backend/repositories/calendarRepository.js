@@ -263,7 +263,7 @@ export async function getSlotWithEventBySlotId(slotId, client = pool) {
 
 /**
  * Nyomtatási célra (reservation -> event_slots) heti események lekérése
- * user_type szerint szűrve.
+ * (minden user_type foglalása + tournament).
  *
  * A frontend a következő mezőket várja:
  * - court_id
@@ -271,7 +271,7 @@ export async function getSlotWithEventBySlotId(slotId, client = pool) {
  * - username (fallback: email)
  */
 export async function getPrintableReservationsByCourtAndWeekAndUserType(
-  { courtId, weekStart, weekEnd, userType },
+  { courtId, weekStart, weekEnd },
   client = pool
 ) {
   const { rows } = await client.query(
@@ -290,18 +290,18 @@ export async function getPrintableReservationsByCourtAndWeekAndUserType(
       WHERE es.court_id = $1
         AND es.start_time >= $2
         AND es.start_time < $3
-        AND (e.type = 'tournament'
-          OR (e.type = 'reservation' AND LOWER(u.user_type) = LOWER($4)))
+        AND e.type IN ('reservation', 'tournament')
       ORDER BY es.start_time ASC
     `,
-    [courtId, weekStart, weekEnd, userType]
+    [courtId, weekStart, weekEnd]
   );
 
   return rows;
 }
 
 /**
- * Nyomtatási célra: heti események lekérése AZ ÖSSZES pályára user_type szerint.
+ * Nyomtatási célra: heti események lekérése AZ ÖSSZES pályára
+ * (minden user_type foglalása + tournament).
  *
  * A frontend a következő mezőket várja:
  * - court_id
@@ -310,7 +310,7 @@ export async function getPrintableReservationsByCourtAndWeekAndUserType(
  * - username
  */
 export async function getPrintableReservationsByWeekAndUserType(
-  { weekStart, weekEnd, userType },
+  { weekStart, weekEnd },
   client = pool
 ) {
   const { rows } = await client.query(
@@ -328,11 +328,10 @@ export async function getPrintableReservationsByWeekAndUserType(
       LEFT JOIN users u ON u.id = e.created_by_user_id
       WHERE es.start_time >= $1
         AND es.start_time < $2
-        AND (e.type = 'tournament'
-          OR (e.type = 'reservation' AND LOWER(u.user_type) = LOWER($3)))
+        AND e.type IN ('reservation', 'tournament')
       ORDER BY es.start_time ASC
     `,
-    [weekStart, weekEnd, userType]
+    [weekStart, weekEnd]
   );
 
   return rows;

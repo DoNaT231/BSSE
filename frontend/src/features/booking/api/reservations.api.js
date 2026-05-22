@@ -201,23 +201,20 @@ export async function apiDeleteReservationBySlotId({ slotId, token }) {
 }
 
 /**
- * GET /api/calendar/print?courtId=...&weekStart=...&userType=...
+ * GET /api/calendar/print?courtId=...&weekStart=...
  *
- * Nyomtatási célra visszaadja a reservation típusú event_slots-ot
- * user_type szűréssel.
+ * Nyomtatási célra: minden reservation + tournament az adott pályán.
  */
 export async function apiGetPrintableReservations({
   courtId,
   monday,
   token,
-  userType,
 }) {
   const weekStart = formatWeekStart(monday);
 
   const query = new URLSearchParams({
     courtId: String(courtId),
     weekStart,
-    userType: String(userType),
   });
 
   const res = await fetch(
@@ -244,20 +241,15 @@ export async function apiGetPrintableReservations({
 }
 
 /**
- * GET /api/calendar/print/all?weekStart=...&userType=...
+ * GET /api/calendar/print/all?weekStart=...
  *
- * Nyomtatási célra visszaadja AZ ÖSSZES pályára a heti eseményeket.
+ * Nyomtatási célra: minden pálya, minden user foglalása + tournament.
  */
-export async function apiGetPrintableReservationsAll({
-  monday,
-  token,
-  userType,
-}) {
+export async function apiGetPrintableReservationsAll({ monday, token }) {
   const weekStart = formatWeekStart(monday);
 
   const query = new URLSearchParams({
     weekStart,
-    userType: String(userType),
   });
 
   const res = await fetch(

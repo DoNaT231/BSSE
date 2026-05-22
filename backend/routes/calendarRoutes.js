@@ -129,21 +129,19 @@ router.get("/slot/:slotId", async (req, res) => {
 });
 
 /**
- * GET /api/calendar/print?courtId=1&weekStart=2026-03-09&userType=USER
+ * GET /api/calendar/print?courtId=1&weekStart=2026-03-09
  *
- * Nyomtatási célra visszaadja a "reservation" (eventType) jellegű heti eseményeket
- * user_type szűréssel.
+ * Nyomtatási célra: minden reservation + tournament az adott pályán/héten.
  */
 router.get("/print", authMiddleware, async (req, res) => {
   try {
-    const { courtId, weekStart, userType } = req.query;
+    const { courtId, weekStart } = req.query;
 
     const reservations = await reservationService.getPrintableReservationsForPrint(
       {
         currentUser: req.user,
         courtId: Number(courtId),
         weekStart,
-        userType,
       }
     );
 
@@ -155,19 +153,18 @@ router.get("/print", authMiddleware, async (req, res) => {
 });
 
 /**
- * GET /api/calendar/print/all?weekStart=2026-03-09&userType=USER
+ * GET /api/calendar/print/all?weekStart=2026-03-09
  *
- * Nyomtatási célra az összes pálya heti eseményeit adja vissza.
+ * Nyomtatási célra az összes pálya heti eseményei (minden user foglalása).
  */
 router.get("/print/all", authMiddleware, async (req, res) => {
   try {
-    const { weekStart, userType } = req.query;
+    const { weekStart } = req.query;
 
     const reservations = await reservationService.getPrintableReservationsForPrintAll(
       {
         currentUser: req.user,
         weekStart,
-        userType,
       }
     );
 

@@ -12,7 +12,22 @@ import ReservationChangeConfirmModal from "../components/ReservationChangeConfir
 import ReservationInfoModal from "../components/ReservationInfoModal.jsx";
 import ReservationAdminModal from "../components/ReservationAdminModal.jsx";
 import PrintableSchedule from "../components/PrintableSchedule.js";
+import PrintableDailySchedule from "../components/PrintableDailySchedule.js";
 import { apiGetPrintableReservationsAll } from "../api/reservations.api.js";
+import { isSameDay } from "../utils/reservationDate.utils.js";
+
+function getDefaultPrintDayOffset(weekMonday) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const weekStart = new Date(weekMonday);
+  weekStart.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    if (isSameDay(d, today)) return i;
+  }
+  return 0;
+}
 
 function WeeklyCalendar() {
   const { user } = useAuth();
@@ -21,6 +36,7 @@ function WeeklyCalendar() {
   const token = localStorage.getItem("token");
   const [printData, setPrintData] = useState(null);
   const [pendingPrint, setPendingPrint] = useState(false);
+  const [printDayOffset, setPrintDayOffset] = useState(0);
 
   const {
     courts,
@@ -67,33 +83,39 @@ function WeeklyCalendar() {
     navigate("/versenyek");
   }
 
-  async function handlePrint() {
+  useEffect(() => {
+    setPrintDayOffset(getDefaultPrintDayOffset(monday));
+  }, [monday]);
+
+  async function loadPrintReservations() {
+    if (!token) throw new Error("Hiányzó token.");
+
+    const courtList = Array.isArray(courts) ? courts : [];
+    if (courtList.length === 0) throw new Error("Nincs pálya betöltve.");
+
+    const rows = await apiGetPrintableReservationsAll({
+      monday,
+      token,
+    });
+
+    const reservations = Array.isArray(rows)
+      ? rows.map((r) => ({
+          courtId: Number(r.court_id),
+          booked_time: r.start_time,
+          username: r.username,
+          eventType: r.event_type,
+        }))
+      : [];
+
+    return { reservations, courts: courtList };
+  }
+
+  async function handlePrintWeekly() {
     try {
-      if (!token) throw new Error("Hiányzó token.");
-
-      const courtList = Array.isArray(courts) ? courts : [];
-      if (courtList.length === 0) throw new Error("Nincs pálya betöltve.");
-
-      const userTypeParam = user?.user_type
-        ? String(user.user_type).toUpperCase()
-        : "USER";
-
-      const rows = await apiGetPrintableReservationsAll({
-        monday,
-        token,
-        userType: userTypeParam,
-      });
-
-      const reservations = Array.isArray(rows)
-        ? rows.map((r) => ({
-            courtId: Number(r.court_id),
-            booked_time: r.start_time,
-            username: r.username,
-            eventType: r.event_type,
-          }))
-        : [];
+      const { reservations, courts: courtList } = await loadPrintReservations();
 
       setPrintData({
+        mode: "weekly",
         reservations,
         courts: courtList,
         weekStart: monday,
@@ -102,6 +124,32 @@ function WeeklyCalendar() {
       setPendingPrint(true);
     } catch (e) {
       alert(e.message || "Nyomtatás sikertelen.");
+      console.error(e);
+    }
+  }
+
+  async function handlePrintDaily() {
+    try {
+      const { reservations, courts: courtList } = await loadPrintReservations();
+
+      const printDate = new Date(monday);
+      printDate.setHours(0, 0, 0, 0);
+      printDate.setDate(printDate.getDate() + printDayOffset);
+
+      const dayReservations = reservations.filter((r) =>
+        isSameDay(new Date(r.booked_time), printDate)
+      );
+
+      setPrintData({
+        mode: "daily",
+        reservations: dayReservations,
+        courts: courtList,
+        printDate,
+      });
+
+      setPendingPrint(true);
+    } catch (e) {
+      alert(e.message || "Napi nyomtatás sikertelen.");
       console.error(e);
     }
   }
@@ -187,7 +235,10 @@ function WeeklyCalendar() {
                 courts={courts}
                 bookedCourt={selectedCourtId}
                 handleChangeCourt={handleChangeCourt}
-                handlePrint={handlePrint}
+                printDayOffset={printDayOffset}
+                setPrintDayOffset={setPrintDayOffset}
+                handlePrintWeekly={handlePrintWeekly}
+                handlePrintDaily={handlePrintDaily}
                 handleSubmit={handleSubmit}
               />
             </div>
@@ -235,12 +286,20 @@ function WeeklyCalendar() {
             isDeleting={isDeletingAdminReservation}
           />
 
-          {printData && (
-            <PrintableSchedule
+          {printData?.mode === "daily" ? (
+            <PrintableDailySchedule
               reservations={printData.reservations}
               courts={printData.courts}
-              weekStart={printData.weekStart}
+              printDate={printData.printDate}
             />
+          ) : (
+            printData?.mode === "weekly" && (
+              <PrintableSchedule
+                reservations={printData.reservations}
+                courts={printData.courts}
+                weekStart={printData.weekStart}
+              />
+            )
           )}
           </section>
         </div>
