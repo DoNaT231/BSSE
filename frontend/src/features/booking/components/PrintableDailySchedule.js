@@ -5,45 +5,7 @@ import {
   getPrintCellClasses,
   PRINT_HEADER_CELL,
 } from "../utils/printScheduleClasses.js";
-
-function isSameDay(d1, d2) {
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-}
-
-function getCellEvent(reservations, courtId, day, hour) {
-  const tournamentForDay = reservations.find((r) => {
-    const rd = new Date(r.booked_time);
-    return (
-      r.eventType === "tournament" &&
-      Number(r.courtId) === Number(courtId) &&
-      isSameDay(rd, day)
-    );
-  });
-
-  if (tournamentForDay?.username) {
-    return { kind: "tournament", text: tournamentForDay.username };
-  }
-
-  const reservationForCell = reservations.find((r) => {
-    const rd = new Date(r.booked_time);
-    return (
-      r.eventType === "reservation" &&
-      Number(r.courtId) === Number(courtId) &&
-      isSameDay(rd, day) &&
-      rd.getHours() === hour
-    );
-  });
-
-  if (reservationForCell?.username) {
-    return { kind: "reservation", text: reservationForCell.username };
-  }
-
-  return { kind: "free", text: "" };
-}
+import { getPrintCellEvent } from "../utils/printScheduleMatch.js";
 
 const PrintableDailySchedule = ({ reservations, courts, printDate }) => {
   const safeReservations = Array.isArray(reservations) ? reservations : [];
@@ -92,7 +54,12 @@ const PrintableDailySchedule = ({ reservations, courts, printDate }) => {
             </div>
 
             {HOURS.map((hour) => {
-              const cell = getCellEvent(safeReservations, court.id, day, hour);
+              const cell = getPrintCellEvent(
+                safeReservations,
+                court.id,
+                day,
+                hour
+              );
               return (
                 <div
                   key={hour}

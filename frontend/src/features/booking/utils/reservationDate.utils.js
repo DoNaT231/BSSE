@@ -1,18 +1,64 @@
 import dayjs from "dayjs";
 
 /**
- * PostgreSQL timestamp without time zone
- * pl. "2026-03-11 14:00:00"
- * => local Date objektummá alakítja
+ * Falióra részek kiolvasása stringből — Date objektum nélkül (nyomtatás, illesztés).
+ * Elfogadja: "2026-03-11 14:00:00", "2026-03-11T14:00:00"
+ */
+export function parseWallClockParts(dateTimeString) {
+  if (dateTimeString == null) return null;
+
+  const normalized = String(dateTimeString)
+    .trim()
+    .replace("T", " ")
+    .replace(/\.\d+$/, "")
+    .replace(/Z$/i, "");
+
+  const match = normalized.match(
+    /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+  if (!match) return null;
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5]),
+    second: Number(match[6] || 0),
+  };
+}
+
+/**
+ * Falióra (wall-clock) → Date, időzóna-eltolás nélkül.
  */
 export function parseLocalDateTime(dateTimeString) {
-  if (!dateTimeString) return null;
+  const parts = parseWallClockParts(dateTimeString);
+  if (!parts) return null;
 
-  const [datePart, timePart = "00:00:00"] = dateTimeString.split(" ");
-  const [year, month, day] = datePart.split("-").map(Number);
-  const [hour, minute, second] = timePart.split(":").map(Number);
+  return new Date(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second,
+    0
+  );
+}
 
-  return new Date(year, month - 1, day, hour, minute, second || 0, 0);
+export function getWallClockHour(dateTimeString) {
+  return parseWallClockParts(dateTimeString)?.hour ?? null;
+}
+
+export function isSameWallClockDay(dateTimeString, dayDate) {
+  const parts = parseWallClockParts(dateTimeString);
+  if (!parts || !dayDate) return false;
+
+  return (
+    parts.year === dayDate.getFullYear() &&
+    parts.month === dayDate.getMonth() + 1 &&
+    parts.day === dayDate.getDate()
+  );
 }
 
 export function getMondayFromOffset(weekOffset) {

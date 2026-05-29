@@ -14,7 +14,10 @@ import ReservationAdminModal from "../components/ReservationAdminModal.jsx";
 import PrintableSchedule from "../components/PrintableSchedule.js";
 import PrintableDailySchedule from "../components/PrintableDailySchedule.js";
 import { apiGetPrintableReservationsAll } from "../api/reservations.api.js";
-import { isSameDay } from "../utils/reservationDate.utils.js";
+import {
+  isSameDay,
+  isSameWallClockDay,
+} from "../utils/reservationDate.utils.js";
 
 function getDefaultPrintDayOffset(weekMonday) {
   const today = new Date();
@@ -137,7 +140,7 @@ function WeeklyCalendar() {
       printDate.setDate(printDate.getDate() + printDayOffset);
 
       const dayReservations = reservations.filter((r) =>
-        isSameDay(new Date(r.booked_time), printDate)
+        isSameWallClockDay(r.booked_time, printDate)
       );
 
       setPrintData({

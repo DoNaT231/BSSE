@@ -278,7 +278,7 @@ export async function getPrintableReservationsByCourtAndWeekAndUserType(
     `
       SELECT
         es.court_id AS court_id,
-        es.start_time AS start_time,
+        to_char(es.start_time, 'YYYY-MM-DD HH24:MI:SS') AS start_time,
         e.type AS event_type,
         CASE
           WHEN e.type = 'reservation' THEN COALESCE(u.username, u.email)
@@ -317,7 +317,7 @@ export async function getPrintableReservationsByWeekAndUserType(
     `
       SELECT
         es.court_id AS court_id,
-        es.start_time AS start_time,
+        to_char(es.start_time, 'YYYY-MM-DD HH24:MI:SS') AS start_time,
         e.type AS event_type,
         CASE
           WHEN e.type = 'reservation' THEN COALESCE(u.username, u.email)

@@ -6,6 +6,7 @@ import {
   PRINT_HEADER_CELL,
   PRINT_HOUR_CELL,
 } from "../utils/printScheduleClasses.js";
+import { getPrintCellEvent } from "../utils/printScheduleMatch.js";
 
 const PrintableSchedule = ({ reservations, courts, weekStart }) => {
   const safeReservations = Array.isArray(reservations) ? reservations : [];
@@ -19,45 +20,6 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
     d.setDate(d.getDate() + i);
     return d;
   });
-
-  function isSameDay(d1, d2) {
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  }
-
-  function getCellEvent(courtId, day, hour) {
-    const tournamentForDay = safeReservations.find((r) => {
-      const rd = new Date(r.booked_time);
-      return (
-        r.eventType === "tournament" &&
-        Number(r.courtId) === Number(courtId) &&
-        isSameDay(rd, day)
-      );
-    });
-
-    if (tournamentForDay?.username) {
-      return { kind: "tournament", text: tournamentForDay.username };
-    }
-
-    const reservationForCell = safeReservations.find((r) => {
-      const rd = new Date(r.booked_time);
-      return (
-        r.eventType === "reservation" &&
-        Number(r.courtId) === Number(courtId) &&
-        isSameDay(rd, day) &&
-        rd.getHours() === hour
-      );
-    });
-
-    if (reservationForCell?.username) {
-      return { kind: "reservation", text: reservationForCell.username };
-    }
-
-    return { kind: "free", text: "" };
-  }
 
   return ReactDOM.createPortal(
     <div className="w-full bg-white p-0 text-black print:mx-auto">
@@ -93,7 +55,12 @@ const PrintableSchedule = ({ reservations, courts, weekStart }) => {
                 </div>
 
                 {days.map((day, dayIndex) => {
-                  const cell = getCellEvent(court.id, day, hour);
+                  const cell = getPrintCellEvent(
+                    safeReservations,
+                    court.id,
+                    day,
+                    hour
+                  );
 
                   return (
                     <div
