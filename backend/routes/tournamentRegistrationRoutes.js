@@ -180,4 +180,29 @@ router.patch(
   }
 );
 
+/**
+ * PATCH /api/tournament-registrations/admin/:id/invoice-sent
+ * Body: { invoiceSent: boolean }
+ */
+router.patch(
+  "/admin/:id/invoice-sent",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const updated =
+        await tournamentRegistrationService.updateRegistrationInvoiceSentByAdmin(
+          {
+            registrationId: Number(req.params.id),
+            invoiceSent: req.body?.invoiceSent ?? req.body?.invoice_sent,
+          }
+        );
+
+      return res.status(200).json(updated);
+    } catch (err) {
+      return res.status(400).json({ message: err.message });
+    }
+  }
+);
+
 export default router;

@@ -74,6 +74,8 @@ export default function TournamentsAdminSection() {
         statusUpdateLoadingId={registrations.statusUpdateLoadingId}
         onPaidChange={registrations.changeRegistrationPaid}
         paidUpdateLoadingId={registrations.paidUpdateLoadingId}
+        onInvoiceSentChange={registrations.changeRegistrationInvoiceSent}
+        invoiceSentUpdateLoadingId={registrations.invoiceSentUpdateLoadingId}
       />
 
       <TournamentDeleteModal

@@ -34,6 +34,7 @@ function mapRow(row) {
     address: row.address,
     status: row.status ?? row.registration_status ?? "CONFIRMED",
     paid: row.paid ?? row.registration_paid ?? false,
+    invoiceSent: row.invoice_sent ?? false,
     createdAt: row.created_at,
   };
 }
@@ -52,6 +53,7 @@ export async function create(
     address = null,
     status = "CONFIRMED",
     paid = false,
+    invoiceSent = false,
   },
   client = pool
 ) {
@@ -69,13 +71,14 @@ export async function create(
         tax_number,
         address,
         paid,
+        invoice_sent,
         status,
         created_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
       RETURNING *
     `,
-    [tournamentId, userId, telNumber, players, teamName, contactEmail, billingName, companyName, taxNumber, address, paid, status]
+    [tournamentId, userId, telNumber, players, teamName, contactEmail, billingName, companyName, taxNumber, address, paid, invoiceSent, status]
   );
 
   return mapRow(rows[0]);
@@ -167,7 +170,19 @@ export async function countByTournamentId(tournamentId, client = pool) {
 
 export async function updateById(
   id,
-  { telNumber, players, teamName, contactEmail, billingName, companyName, taxNumber, address, status, paid },
+  {
+    telNumber,
+    players,
+    teamName,
+    contactEmail,
+    billingName,
+    companyName,
+    taxNumber,
+    address,
+    status,
+    paid,
+    invoiceSent,
+  },
   client = pool
 ) {
   const fields = [];
@@ -224,6 +239,11 @@ export async function updateById(
     values.push(paid);
   }
 
+  if (invoiceSent !== undefined) {
+    fields.push(`invoice_sent = $${index++}`);
+    values.push(invoiceSent);
+  }
+
   if (fields.length === 0) {
     return findById(id, client);
   }
@@ -273,6 +293,7 @@ export async function findAllDetailedByTournamentId(tournamentId, client = pool)
         tr.address,
         tr.status,
         tr.paid,
+        tr.invoice_sent,
         tr.created_at,
         u.email AS user_email
       FROM tournament_registrations tr

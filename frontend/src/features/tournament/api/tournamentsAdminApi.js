@@ -141,3 +141,22 @@ export async function updateTournamentRegistrationPaid(
     }
   );
 }
+
+/**
+ * Admin: díjbekérő kiküldésének jelölése
+ * Body: { invoiceSent: boolean }
+ */
+export async function updateTournamentRegistrationInvoiceSent(
+  registrationId,
+  invoiceSent,
+  token
+) {
+  return request(
+    `/api/tournament-registrations/admin/${registrationId}/invoice-sent`,
+    token,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ invoiceSent }),
+    }
+  );
+}

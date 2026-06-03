@@ -20,6 +20,8 @@ export default function TournamentList({
   statusUpdateLoadingId,
   onPaidChange,
   paidUpdateLoadingId,
+  onInvoiceSentChange,
+  invoiceSentUpdateLoadingId,
 }) {
   return (
     <div className="mt-6">
@@ -51,6 +53,8 @@ export default function TournamentList({
               statusUpdateLoadingId={statusUpdateLoadingId}
               onPaidChange={onPaidChange}
               paidUpdateLoadingId={paidUpdateLoadingId}
+              onInvoiceSentChange={onInvoiceSentChange}
+              invoiceSentUpdateLoadingId={invoiceSentUpdateLoadingId}
             />
           ))}
         </div>

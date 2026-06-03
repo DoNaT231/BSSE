@@ -656,3 +656,52 @@ export async function updateRegistrationPaidByAdmin({ registrationId, paid }) {
 
   return updated;
 }
+
+/**
+ * Admin: díjbekérő kiküldésének jelölése
+ * invoiceSent: boolean (vagy true/false string)
+ */
+export async function updateRegistrationInvoiceSentByAdmin({
+  registrationId,
+  invoiceSent,
+}) {
+  if (invoiceSent === undefined) {
+    throw new Error("Hiányzó invoiceSent mező.");
+  }
+
+  const normalized =
+    typeof invoiceSent === "boolean"
+      ? invoiceSent
+      : ["true", "1", "yes"].includes(String(invoiceSent).trim().toLowerCase());
+
+  if (!Number.isFinite(Number(registrationId))) {
+    throw new Error("Érvénytelen registrationId.");
+  }
+
+  const registration = await tournamentRegistrationRepository.findById(
+    registrationId
+  );
+
+  if (!registration) {
+    throw new Error("A jelentkezés nem található.");
+  }
+
+  const updated = await tournamentRegistrationRepository.updateById(
+    registrationId,
+    { invoiceSent: normalized }
+  );
+
+  logActivity({
+    category: "admin",
+    eventType: "admin.registration.invoice_sent_changed",
+    message: `Díjbekérő státusz: ${normalized ? "kiküldve" : "nincs kiküldve"}`,
+    entityType: "registration",
+    entityId: String(registrationId),
+    metadata: {
+      tournamentId: registration.tournamentId,
+      invoiceSent: normalized,
+    },
+  });
+
+  return updated;
+}

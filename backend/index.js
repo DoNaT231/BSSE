@@ -53,6 +53,7 @@ import adminOnly from './middleware/adminOnly.js';
 import requestLoggerMiddleware from "./middleware/requestLoggerMiddleware.js";
 import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
 import { ensureLogTables } from "./scripts/initLogTables.js";
+import { ensureRegistrationSchema } from "./scripts/ensureRegistrationSchema.js";
 import { scheduleLogRetentionJob } from "./jobs/logRetentionJob.js";
 
 // Adatbázis kapcsolat inicializálása (side-effect import)
@@ -142,7 +143,7 @@ app.use((req, res, next) => {
 // Szerver indítása
 const PORT = process.env.PORT || 5000;
 
-ensureLogTables()
+Promise.all([ensureLogTables(), ensureRegistrationSchema()])
   .then(() => {
     scheduleLogRetentionJob();
     app.listen(PORT, () => {

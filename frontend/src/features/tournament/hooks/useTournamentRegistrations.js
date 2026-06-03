@@ -3,6 +3,7 @@ import {
   fetchTournamentRegistrations,
   updateTournamentRegistrationStatus,
   updateTournamentRegistrationPaid,
+  updateTournamentRegistrationInvoiceSent,
 } from "../api/tournamentsAdminApi";
 
 export default function useTournamentRegistrations(token) {
@@ -12,6 +13,8 @@ export default function useTournamentRegistrations(token) {
   const [regsError, setRegsError] = useState("");
   const [statusUpdateLoadingId, setStatusUpdateLoadingId] = useState(null);
   const [paidUpdateLoadingId, setPaidUpdateLoadingId] = useState(null);
+  const [invoiceSentUpdateLoadingId, setInvoiceSentUpdateLoadingId] =
+    useState(null);
 
   async function loadRegistrations(tournamentId) {
     try {
@@ -97,6 +100,38 @@ export default function useTournamentRegistrations(token) {
     }
   }
 
+  async function changeRegistrationInvoiceSent(registrationId, invoiceSent) {
+    if (!registrationId) return;
+
+    try {
+      setRegsError("");
+      setInvoiceSentUpdateLoadingId(registrationId);
+
+      await updateTournamentRegistrationInvoiceSent(
+        registrationId,
+        invoiceSent,
+        token
+      );
+
+      setRegistrations((prev) =>
+        prev.map((item) =>
+          Number(item.id) === Number(registrationId)
+            ? {
+                ...item,
+                invoiceSent: Boolean(invoiceSent),
+              }
+            : item
+        )
+      );
+    } catch (e) {
+      setRegsError(
+        e.message || "Díjbekérő állapot módosítása sikertelen."
+      );
+    } finally {
+      setInvoiceSentUpdateLoadingId(null);
+    }
+  }
+
   return {
     openRegsId,
     registrations,
@@ -104,9 +139,11 @@ export default function useTournamentRegistrations(token) {
     regsError,
     statusUpdateLoadingId,
     paidUpdateLoadingId,
+    invoiceSentUpdateLoadingId,
     toggleRegistrations,
     loadRegistrations,
     changeRegistrationStatus,
     changeRegistrationPaid,
+    changeRegistrationInvoiceSent,
   };
 }

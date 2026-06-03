@@ -30,6 +30,8 @@ export default function TournamentRegistrationsPanel({
   statusUpdateLoadingId,
   onPaidChange,
   paidUpdateLoadingId,
+  onInvoiceSentChange,
+  invoiceSentUpdateLoadingId,
 }) {
   if (!isOpen) return null;
 
@@ -82,6 +84,13 @@ export default function TournamentRegistrationsPanel({
 
                 const isPaidUpdating =
                   Number(paidUpdateLoadingId) === Number(r.id);
+
+                const invoiceSent = Boolean(
+                  r.invoiceSent ?? r.invoice_sent ?? false
+                );
+
+                const isInvoiceSentUpdating =
+                  Number(invoiceSentUpdateLoadingId) === Number(r.id);
 
                 // Számlázási mezők
                 const billingName = r.billingName ?? r.billing_name ?? "";
@@ -207,6 +216,44 @@ export default function TournamentRegistrationsPanel({
                         </div>
 
                         {isPaidUpdating && (
+                          <span className="text-[11px] text-gray-500">
+                            Mentés...
+                          </span>
+                        )}
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="text-xs font-semibold text-gray-700">
+                        Díjbekérő kiküldve
+                      </div>
+
+                      <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={invoiceSent}
+                          disabled={isInvoiceSentUpdating}
+                          onChange={(e) =>
+                            onInvoiceSentChange?.(r.id, e.target.checked)
+                          }
+                          className="sr-only"
+                        />
+
+                        <div
+                          className={`relative w-11 h-6 rounded-full border transition-colors ${
+                            invoiceSent
+                              ? "bg-sky-500 border-sky-500"
+                              : "bg-gray-200 border-gray-200"
+                          } ${isInvoiceSentUpdating ? "opacity-60" : ""}`}
+                        >
+                          <div
+                            className={`absolute top-[3px] left-[3px] w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+                              invoiceSent ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </div>
+
+                        {isInvoiceSentUpdating && (
                           <span className="text-[11px] text-gray-500">
                             Mentés...
                           </span>

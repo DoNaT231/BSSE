@@ -38,6 +38,8 @@ export default function TournamentListItem({
   statusUpdateLoadingId,
   onPaidChange,
   paidUpdateLoadingId,
+  onInvoiceSentChange,
+  invoiceSentUpdateLoadingId,
 }) {
   const [slotModal, setSlotModal] = useState(null);
   const [slotModalError, setSlotModalError] = useState("");
@@ -265,6 +267,8 @@ export default function TournamentListItem({
         statusUpdateLoadingId={statusUpdateLoadingId}
         onPaidChange={onPaidChange}
         paidUpdateLoadingId={paidUpdateLoadingId}
+        onInvoiceSentChange={onInvoiceSentChange}
+        invoiceSentUpdateLoadingId={invoiceSentUpdateLoadingId}
       />
     </div>
   );
