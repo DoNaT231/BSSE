@@ -59,7 +59,14 @@ export default function TournamentRegistrationsPanel({
       {!loading && registrations.length > 0 && (
         <div className="space-y-3">
           {registrations.map((r, index) => (
-            <div key={r.id} className="p-3 bg-white border rounded-xl">
+            <div
+              key={r.id}
+              className={`p-3 border rounded-xl ${
+                r.isCancelled || r.cancelledAt || r.cancelled_at
+                  ? "bg-gray-100 border-gray-300 opacity-90"
+                  : "bg-white"
+              }`}
+            >
               {/*
                 A backend különböző endpointjai camelCase/snake_case neveket is adhatnak.
                 Mindkét formátumot támogatjuk, hogy biztosan látszódjanak az adatok.
@@ -92,6 +99,12 @@ export default function TournamentRegistrationsPanel({
                 const isInvoiceSentUpdating =
                   Number(invoiceSentUpdateLoadingId) === Number(r.id);
 
+                const isCancelled = Boolean(
+                  r.isCancelled ?? r.cancelledAt ?? r.cancelled_at
+                );
+                const cancelledAt = r.cancelledAt ?? r.cancelled_at ?? null;
+                const statusDisabled = isCancelled || isUpdating;
+
                 // Számlázási mezők
                 const billingName = r.billingName ?? r.billing_name ?? "";
                 const companyName = r.companyName ?? r.company_name ?? "";
@@ -100,8 +113,15 @@ export default function TournamentRegistrationsPanel({
 
                 return (
                   <>
-                    <div className="text-sm font-semibold">
-                      {index + 1}. {teamName || "Névtelen csapat"}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-sm font-semibold">
+                        {index + 1}. {teamName || "Névtelen csapat"}
+                      </div>
+                      {isCancelled && (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-red-800">
+                          Lemondva
+                        </span>
+                      )}
                     </div>
 
                     <div className="mt-1 text-xs text-gray-600">
@@ -155,6 +175,12 @@ export default function TournamentRegistrationsPanel({
                       Jelentkezés ideje: {formatDateTime(createdAt)}
                     </div>
 
+                    {isCancelled && (
+                      <div className="text-xs font-medium text-red-700">
+                        Lemondás ideje: {formatDateTime(cancelledAt)}
+                      </div>
+                    )}
+
                     {availableFrom && (
                       <div className="text-xs text-gray-600">
                         Publikus megjelenés: {formatAvailableFrom(availableFrom)}
@@ -171,7 +197,7 @@ export default function TournamentRegistrationsPanel({
                         onChange={(e) =>
                           onStatusChange?.(r.id, e.target.value)
                         }
-                        disabled={isUpdating}
+                        disabled={statusDisabled}
                         className="px-2 py-1 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-60"
                       >
                         <option value="CONFIRMED">CONFIRMED</option>

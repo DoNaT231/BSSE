@@ -17,8 +17,15 @@
 
 import pool from "../db.js";
 
+function activeClause(alias = "") {
+  const prefix = alias ? `${alias}.` : "";
+  return `${prefix}cancelled_at IS NULL`;
+}
+
 function mapRow(row) {
   if (!row) return null;
+
+  const cancelledAt = row.cancelled_at ?? null;
 
   return {
     id: row.id,
@@ -35,6 +42,8 @@ function mapRow(row) {
     status: row.status ?? row.registration_status ?? "CONFIRMED",
     paid: row.paid ?? row.registration_paid ?? false,
     invoiceSent: row.invoice_sent ?? false,
+    cancelledAt,
+    isCancelled: Boolean(cancelledAt),
     createdAt: row.created_at,
   };
 }
@@ -78,7 +87,21 @@ export async function create(
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
       RETURNING *
     `,
-    [tournamentId, userId, telNumber, players, teamName, contactEmail, billingName, companyName, taxNumber, address, paid, invoiceSent, status]
+    [
+      tournamentId,
+      userId,
+      telNumber,
+      players,
+      teamName,
+      contactEmail,
+      billingName,
+      companyName,
+      taxNumber,
+      address,
+      paid,
+      invoiceSent,
+      status,
+    ]
   );
 
   return mapRow(rows[0]);
@@ -97,6 +120,21 @@ export async function findById(id, client = pool) {
   return mapRow(rows[0]);
 }
 
+/** Csak aktív (nem lemondott) nevezés */
+export async function findActiveById(id, client = pool) {
+  const { rows } = await client.query(
+    `
+      SELECT *
+      FROM tournament_registrations
+      WHERE id = $1
+        AND ${activeClause()}
+    `,
+    [id]
+  );
+
+  return mapRow(rows[0]);
+}
+
 export async function findByTournamentIdAndUserId(tournamentId, userId, client = pool) {
   const { rows } = await client.query(
     `
@@ -104,6 +142,7 @@ export async function findByTournamentIdAndUserId(tournamentId, userId, client =
       FROM tournament_registrations
       WHERE tournament_id = $1
         AND user_id = $2
+        AND ${activeClause()}
       LIMIT 1
     `,
     [tournamentId, userId]
@@ -112,13 +151,18 @@ export async function findByTournamentIdAndUserId(tournamentId, userId, client =
   return mapRow(rows[0]);
 }
 
-export async function findByTournamentIdAndTeamName(tournamentId, teamName, client = pool) {
+export async function findByTournamentIdAndTeamName(
+  tournamentId,
+  teamName,
+  client = pool
+) {
   const { rows } = await client.query(
     `
       SELECT *
       FROM tournament_registrations
       WHERE tournament_id = $1
         AND LOWER(team_name) = LOWER($2)
+        AND ${activeClause()}
       LIMIT 1
     `,
     [tournamentId, teamName]
@@ -133,6 +177,7 @@ export async function findAllByUserId(userId, client = pool) {
       SELECT *
       FROM tournament_registrations
       WHERE user_id = $1
+        AND ${activeClause()}
       ORDER BY created_at DESC
     `,
     [userId]
@@ -141,12 +186,13 @@ export async function findAllByUserId(userId, client = pool) {
   return rows.map(mapRow);
 }
 
-export async function findAllByTournamentId(tournamentId, client = pool) {
+export async function findAllActiveByTournamentId(tournamentId, client = pool) {
   const { rows } = await client.query(
     `
       SELECT *
       FROM tournament_registrations
       WHERE tournament_id = $1
+        AND ${activeClause()}
       ORDER BY created_at DESC
     `,
     [tournamentId]
@@ -161,6 +207,7 @@ export async function countByTournamentId(tournamentId, client = pool) {
       SELECT COUNT(*)::int AS count
       FROM tournament_registrations
       WHERE tournament_id = $1
+        AND ${activeClause()}
     `,
     [tournamentId]
   );
@@ -263,11 +310,14 @@ export async function updateById(
   return mapRow(rows[0]);
 }
 
-export async function deleteById(id, client = pool) {
+/** Soft delete: lemondás időbélyeggel */
+export async function cancelById(id, client = pool) {
   const { rows } = await client.query(
     `
-      DELETE FROM tournament_registrations
+      UPDATE tournament_registrations
+      SET cancelled_at = NOW()
       WHERE id = $1
+        AND ${activeClause()}
       RETURNING *
     `,
     [id]
@@ -276,6 +326,7 @@ export async function deleteById(id, client = pool) {
   return mapRow(rows[0]);
 }
 
+/** Admin: aktív + lemondott nevezések együtt */
 export async function findAllDetailedByTournamentId(tournamentId, client = pool) {
   const { rows } = await client.query(
     `
@@ -294,12 +345,13 @@ export async function findAllDetailedByTournamentId(tournamentId, client = pool)
         tr.status,
         tr.paid,
         tr.invoice_sent,
+        tr.cancelled_at,
         tr.created_at,
         u.email AS user_email
       FROM tournament_registrations tr
       LEFT JOIN users u ON u.id = tr.user_id
       WHERE tr.tournament_id = $1
-      ORDER BY tr.created_at DESC
+      ORDER BY tr.cancelled_at NULLS FIRST, tr.created_at DESC
     `,
     [tournamentId]
   );

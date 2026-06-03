@@ -348,10 +348,11 @@ export async function updateOwnTournamentRegistration({
   address,
   players,
 }) {
-  const registration = await tournamentRegistrationRepository.findById(registrationId);
+  const registration =
+    await tournamentRegistrationRepository.findActiveById(registrationId);
 
   if (!registration) {
-    throw new Error("A jelentkezés nem található.");
+    throw new Error("A jelentkezés nem található vagy már lemondtad.");
   }
 
   if (Number(registration.userId) !== Number(userId)) {
@@ -449,10 +450,11 @@ export async function deleteOwnTournamentRegistration({
   registrationId,
   userId,
 }) {
-  const registration = await tournamentRegistrationRepository.findById(registrationId);
+  const registration =
+    await tournamentRegistrationRepository.findActiveById(registrationId);
 
   if (!registration) {
-    throw new Error("A jelentkezés nem található.");
+    throw new Error("A jelentkezés nem található vagy már lemondtad.");
   }
 
   if (Number(registration.userId) !== Number(userId)) {
@@ -464,19 +466,27 @@ export async function deleteOwnTournamentRegistration({
     throw new Error("A verseny nem található.");
   }
 
-  const deleted = await tournamentRegistrationRepository.deleteById(registrationId);
+  const cancelled = await tournamentRegistrationRepository.cancelById(registrationId);
+
+  if (!cancelled) {
+    throw new Error("A lemondás sikertelen.");
+  }
 
   logActivity({
     category: "tournament",
     eventType: "tournament.register.cancelled",
-    message: `Nevezés törölve (#${registrationId})`,
+    message: `Nevezés lemondva (#${registrationId})`,
     userId,
     entityType: "registration",
     entityId: String(registrationId),
-    metadata: { tournamentId: registration.tournamentId },
+    metadata: {
+      tournamentId: registration.tournamentId,
+      teamName: registration.teamName,
+      softDelete: true,
+    },
   });
 
-  return deleted;
+  return cancelled;
 }
 
 export async function getTournamentRegistrations(tournamentId) {
