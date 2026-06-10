@@ -14,6 +14,8 @@ const PrintableDailySchedule = ({ reservations, courts, printDate }) => {
   const day = new Date(printDate);
   day.setHours(0, 0, 0, 0);
 
+  const hourGridCols = `120px repeat(${HOURS.length}, 1fr)`;
+
   const titleDate = day.toLocaleDateString("hu-HU", {
     weekday: "long",
     year: "numeric",
@@ -28,7 +30,7 @@ const PrintableDailySchedule = ({ reservations, courts, printDate }) => {
       </h1>
 
       <div className="w-full overflow-hidden rounded-lg border border-black">
-        <div className="grid grid-cols-[120px_repeat(12,1fr)]">
+        <div className="grid" style={{ gridTemplateColumns: hourGridCols }}>
           <div
             className={`${PRINT_HEADER_CELL} border-r border-black px-2 py-1.5 text-left text-[8.5pt]`}
           >
@@ -47,7 +49,8 @@ const PrintableDailySchedule = ({ reservations, courts, printDate }) => {
         {safeCourts.map((court) => (
           <div
             key={court.id}
-            className="grid grid-cols-[120px_repeat(12,1fr)] border-t border-black"
+            className="grid border-t border-black"
+            style={{ gridTemplateColumns: hourGridCols }}
           >
             <div className="flex items-center border-r border-black bg-[#f3f7ff] px-2 py-1.5 text-[9pt] font-bold">
               {court.name}
