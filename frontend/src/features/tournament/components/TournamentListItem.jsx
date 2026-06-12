@@ -40,6 +40,8 @@ export default function TournamentListItem({
   paidUpdateLoadingId,
   onInvoiceSentChange,
   invoiceSentUpdateLoadingId,
+  onExportRegistrations,
+  exportingRegistrations,
 }) {
   const [slotModal, setSlotModal] = useState(null);
   const [slotModalError, setSlotModalError] = useState("");
@@ -260,6 +262,7 @@ export default function TournamentListItem({
 
       <TournamentRegistrationsPanel
         isOpen={isRegistrationsOpen}
+        tournamentTitle={tournament.title || `Verseny #${tournament.id}`}
         registrations={registrations}
         loading={regsLoading}
         error={regsError}
@@ -269,6 +272,12 @@ export default function TournamentListItem({
         paidUpdateLoadingId={paidUpdateLoadingId}
         onInvoiceSentChange={onInvoiceSentChange}
         invoiceSentUpdateLoadingId={invoiceSentUpdateLoadingId}
+        onExport={() =>
+          onExportRegistrations?.(
+            tournament.title || `Verseny #${tournament.id}`
+          )
+        }
+        exporting={exportingRegistrations}
       />
     </div>
   );

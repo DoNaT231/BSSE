@@ -23,6 +23,7 @@ import { formatAvailableFrom } from "../utils/tournamentDateUtils";
 
 export default function TournamentRegistrationsPanel({
   isOpen,
+  tournamentTitle,
   registrations,
   loading,
   error,
@@ -32,6 +33,8 @@ export default function TournamentRegistrationsPanel({
   paidUpdateLoadingId,
   onInvoiceSentChange,
   invoiceSentUpdateLoadingId,
+  onExport,
+  exporting = false,
 }) {
   if (!isOpen) return null;
 
@@ -42,8 +45,33 @@ export default function TournamentRegistrationsPanel({
     return date.toLocaleString("hu-HU");
   }
 
+  const activeRegistrationCount = registrations.filter(
+    (registration) =>
+      !(
+        registration?.isCancelled ??
+        registration?.cancelledAt ??
+        registration?.cancelled_at
+      )
+  ).length;
+
   return (
     <div className="p-4 mt-3 border bg-gray-50 rounded-2xl">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="text-sm font-semibold text-gray-800">
+          Jelentkezők{tournamentTitle ? `: ${tournamentTitle}` : ""}
+        </div>
+
+        <button
+          type="button"
+          onClick={onExport}
+          disabled={exporting || loading || activeRegistrationCount === 0}
+          className="px-3 py-2 text-sm border rounded-xl bg-white hover:bg-gray-50 disabled:opacity-60"
+          title="Jelentkezők exportálása Excelbe"
+        >
+          {exporting ? "Exportálás..." : "Excel export"}
+        </button>
+      </div>
+
       {loading && <div className="text-sm text-gray-600">Betöltés...</div>}
 
       {error && (

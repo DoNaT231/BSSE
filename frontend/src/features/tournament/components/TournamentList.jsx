@@ -22,6 +22,8 @@ export default function TournamentList({
   paidUpdateLoadingId,
   onInvoiceSentChange,
   invoiceSentUpdateLoadingId,
+  onExportRegistrations,
+  exportingRegistrations,
 }) {
   return (
     <div className="mt-6">
@@ -55,6 +57,8 @@ export default function TournamentList({
               paidUpdateLoadingId={paidUpdateLoadingId}
               onInvoiceSentChange={onInvoiceSentChange}
               invoiceSentUpdateLoadingId={invoiceSentUpdateLoadingId}
+              onExportRegistrations={onExportRegistrations}
+              exportingRegistrations={exportingRegistrations}
             />
           ))}
         </div>

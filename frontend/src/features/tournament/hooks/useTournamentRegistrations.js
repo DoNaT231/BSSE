@@ -5,6 +5,10 @@ import {
   updateTournamentRegistrationPaid,
   updateTournamentRegistrationInvoiceSent,
 } from "../api/tournamentsAdminApi";
+import {
+  exportAllTournamentRegistrations,
+  exportSingleTournamentRegistrations,
+} from "../utils/exportTournamentRegistrationsExcel";
 
 export default function useTournamentRegistrations(token) {
   const [openRegsId, setOpenRegsId] = useState(null);
@@ -15,6 +19,7 @@ export default function useTournamentRegistrations(token) {
   const [paidUpdateLoadingId, setPaidUpdateLoadingId] = useState(null);
   const [invoiceSentUpdateLoadingId, setInvoiceSentUpdateLoadingId] =
     useState(null);
+  const [exporting, setExporting] = useState(false);
 
   async function loadRegistrations(tournamentId) {
     try {
@@ -132,6 +137,78 @@ export default function useTournamentRegistrations(token) {
     }
   }
 
+  async function exportOpenTournament(tournamentTitle) {
+    try {
+      setExporting(true);
+      setRegsError("");
+
+      const hasActiveRegistration = registrations.some(
+        (registration) =>
+          !(
+            registration?.isCancelled ??
+            registration?.cancelledAt ??
+            registration?.cancelled_at
+          )
+      );
+
+      if (!hasActiveRegistration) {
+        throw new Error("Nincs exportálható jelentkezés.");
+      }
+
+      await exportSingleTournamentRegistrations({
+        tournamentTitle,
+        registrations,
+      });
+    } catch (error) {
+      setRegsError(error?.message || "Excel export sikertelen.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function exportAllTournaments(tournamentItems) {
+    try {
+      setExporting(true);
+      setRegsError("");
+
+      const items = Array.isArray(tournamentItems) ? tournamentItems : [];
+      const tournamentsWithRegistrations = await Promise.all(
+        items.map(async (tournament) => {
+          const data = await fetchTournamentRegistrations(tournament.id, token);
+          return {
+            id: tournament.id,
+            title: tournament.title || `Verseny #${tournament.id}`,
+            registrations: Array.isArray(data?.registrations)
+              ? data.registrations
+              : [],
+          };
+        })
+      );
+
+      const hasAnyRegistration = tournamentsWithRegistrations.some(
+        (tournament) =>
+          tournament.registrations.some(
+            (registration) =>
+              !(
+                registration?.isCancelled ??
+                registration?.cancelledAt ??
+                registration?.cancelled_at
+              )
+          )
+      );
+
+      if (!hasAnyRegistration) {
+        throw new Error("Nincs exportálható jelentkezés.");
+      }
+
+      await exportAllTournamentRegistrations(tournamentsWithRegistrations);
+    } catch (error) {
+      setRegsError(error?.message || "Excel export sikertelen.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return {
     openRegsId,
     registrations,
@@ -140,10 +217,13 @@ export default function useTournamentRegistrations(token) {
     statusUpdateLoadingId,
     paidUpdateLoadingId,
     invoiceSentUpdateLoadingId,
+    exporting,
     toggleRegistrations,
     loadRegistrations,
     changeRegistrationStatus,
     changeRegistrationPaid,
     changeRegistrationInvoiceSent,
+    exportOpenTournament,
+    exportAllTournaments,
   };
 }

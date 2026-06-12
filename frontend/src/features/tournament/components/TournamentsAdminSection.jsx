@@ -25,14 +25,31 @@ export default function TournamentsAdminSection() {
           </p>
         </div>
 
-        <button
-          onClick={tournaments.loadAll}
-          className="px-3 py-2 text-sm border shrink-0 rounded-xl hover:bg-gray-50"
-          disabled={tournaments.loadingList}
-          title="Lista frissítése"
-        >
-          {tournaments.loadingList ? "Frissítés..." : "Frissítés"}
-        </button>
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={() =>
+              registrations.exportAllTournaments(tournaments.items)
+            }
+            className="px-3 py-2 text-sm border rounded-xl hover:bg-gray-50"
+            disabled={
+              registrations.exporting ||
+              tournaments.loadingList ||
+              tournaments.items.length === 0
+            }
+            title="Összes verseny jelentkezőinek exportálása Excelbe"
+          >
+            {registrations.exporting ? "Exportálás..." : "Exportálás"}
+          </button>
+
+          <button
+            onClick={tournaments.loadAll}
+            className="px-3 py-2 text-sm border rounded-xl hover:bg-gray-50"
+            disabled={tournaments.loadingList}
+            title="Lista frissítése"
+          >
+            {tournaments.loadingList ? "Frissítés..." : "Frissítés"}
+          </button>
+        </div>
       </div>
 
       {tournaments.error ? (
@@ -76,6 +93,8 @@ export default function TournamentsAdminSection() {
         paidUpdateLoadingId={registrations.paidUpdateLoadingId}
         onInvoiceSentChange={registrations.changeRegistrationInvoiceSent}
         invoiceSentUpdateLoadingId={registrations.invoiceSentUpdateLoadingId}
+        onExportRegistrations={registrations.exportOpenTournament}
+        exportingRegistrations={registrations.exporting}
       />
 
       <TournamentDeleteModal
